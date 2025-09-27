@@ -5,24 +5,64 @@
   <title>Pi-hole Speedtest</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; }
+    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; margin: 16px; }
     h1 { font-size: 20px; margin-bottom: 8px; }
-    #status { margin: 8px 0 16px 0; }
-    canvas { width: 100%; max-width: 900px; height: 320px; border: 1px solid #ddd; }
-    table { border-collapse: collapse; margin-top: 16px; width: 100%; max-width: 900px; }
-    th, td { padding: 6px 8px; border: 1px solid #ddd; font-size: 12px; }
-    th { background: #f7f7f7; text-align: left; }
-    .muted { color: #666; }
+    #status { margin: 8px 0 16px 0; color: #333; }
+    #wrap { max-width: 980px; }
+    canvas { width: 100%; height: 420px; }
+    table { border-collapse: collapse; margin-top: 16px; width: 100%; font-size: 13px; }
+    th, td { padding: 6px 8px; border: 1px solid #ddd; text-align: left; }
+    th { background: #f7f7f7; }
   </style>
 </head>
 <body>
-  <h1>Pi-hole Speedtest</h1>
-  <div id="status" class="muted">Loading latest results…</div>
-  <canvas id="chart"></canvas>
-  <table id="tbl">
-    <thead><tr><th>Time</th><th>Down Mbps</th><th>Up Mbps</th><th>Latency ms</th><th>Jitter ms</th><th>Server</th><th>Interface</th></tr></thead>
-    <tbody></tbody>
-  </table>
-  <script src="speedtest.js"></script>
+  <div id="wrap">
+    <h1>Pi-hole Speedtest</h1>
+    <div id="status">Loading latest results…</div>
+    <canvas id="chart"></canvas>
+    <table id="tbl">
+      <thead><tr><th>Time</th><th>Down Mbps</th><th>Up Mbps</th><th>Latency ms</th><th>Jitter ms</th><th>Server</th><th>Interface</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    function renderPage(data){
+      const recs = (data.records||[]).slice(-200);
+      const status = document.getElementById('status');
+      status.textContent = 'Showing ' + recs.length + ' samples.  Last update: ' + (data.last_run||'');
+      const tbody = document.querySelector('#tbl tbody');
+      tbody.innerHTML = '';
+      recs.slice(-50).reverse().forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = <td></td><td></td><td></td><td></td><td></td><td></td><td></td>;
+        tbody.appendChild(tr);
+      });
+      const ctx = document.getElementById('chart').getContext('2d');
+      const labels = recs.map(r=>r.iso);
+      const dl = recs.map(r=>+r.dl||0);
+      const ul = recs.map(r=>+r.ul||0);
+      if (window.__stChart) { window.__stChart.destroy(); }
+      window.__stChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [
+          { label: 'Download', data: dl, fill: false, tension: 0.2 },
+          { label: 'Upload', data: ul, fill: false, tension: 0.2 }
+        ]},
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          elements: { point: { radius: 3 } },
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: { legend: { position: 'top' } },
+          scales: { x: { ticks: { autoSkip: true, maxTicksLimit: 8 } } }
+        }
+      });
+    }
+    fetch('speedtest.json', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(renderPage)
+      .catch(()=>{ document.getElementById('status').textContent = 'Could not load speedtest.json'; });
+  </script>
 </body>
 </html>
