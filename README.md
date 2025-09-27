@@ -1,5 +1,13 @@
-# Pi hole Speedtest v6
+# Pi-hole Speedtest v6
 
+An independent Pi-hole Speedtest Mod designed for **Pi-hole v6**.  
+This project removes all upstream dependencies, avoids network fetches, and provides:
+
+- A local runner that writes results to **CSV and JSON**  
+- A minimal web page served at `/speedtest/` with a chart and table  
+- Support for both **bare metal installs** and **Docker deployments**
+
+Maintained by **Nilesh Ramrattan**. Licensed under the MIT License.
 A simple runner and web view for periodic internet speed tests that works with Pi hole v6.  No network fetches.  Local scripts only.
 
 ## What it does
