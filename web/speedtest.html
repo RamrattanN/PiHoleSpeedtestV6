@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Pi-hole Speedtest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; }
+    h1 { font-size: 20px; margin-bottom: 8px; }
+    #status { margin: 8px 0 16px 0; }
+    canvas { width: 100%; max-width: 900px; height: 320px; border: 1px solid #ddd; }
+    table { border-collapse: collapse; margin-top: 16px; width: 100%; max-width: 900px; }
+    th, td { padding: 6px 8px; border: 1px solid #ddd; font-size: 12px; }
+    th { background: #f7f7f7; text-align: left; }
+    .muted { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Pi-hole Speedtest</h1>
+  <div id="status" class="muted">Loading latest results…</div>
+  <canvas id="chart"></canvas>
+  <table id="tbl">
+    <thead><tr><th>Time</th><th>Down Mbps</th><th>Up Mbps</th><th>Latency ms</th><th>Jitter ms</th><th>Server</th><th>Interface</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <script src="speedtest.js"></script>
+</body>
+</html>

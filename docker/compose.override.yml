@@ -1,0 +1,9 @@
+services:
+  pihole:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    volumes:
+      - pihole-speedtest:/etc/pihole/speedtest
+volumes:
+  pihole-speedtest: {}
