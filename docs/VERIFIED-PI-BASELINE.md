@@ -77,13 +77,35 @@ complete.
 
 - require the complete expected legacy header;
 - verify that epoch and ISO timestamps agree;
+- tolerate up to five seconds between the legacy epoch and ISO timestamps;
 - normalize accepted timestamps to UTC;
 - require finite, non-negative measurements;
 - stream rows without loading the full CSV into memory;
 - skip exact duplicates on repeat imports;
-- reject timestamp conflicts instead of overwriting data;
+- preserve and report distinct measurements that share a timestamp;
 - report row numbers and reasons for malformed records;
 - return a non-zero review status when any row is rejected.
 
 The first import will use a temporary SQLite database and a copied CSV.  It will
 not read from or write to the live legacy data directory.
+
+## Legacy-history audit
+
+The first copied-history validation processed 98,814 source rows.  It safely
+imported 98,598 rows and rejected 216 for review.  A second pass inserted zero
+rows, recognized all 98,598 imported rows as duplicates, and reproduced the
+same 216 rejections.
+
+Inspection of every rejected source row established:
+
+- 187 rows contain timestamps but no download, upload, latency, jitter, server,
+  or interface result and must remain rejected;
+- one complete measurement has a four-second difference between its epoch and
+  ISO timestamps and is recoverable within the documented tolerance;
+- 28 complete, distinct measurements share one legacy timestamp and can be
+  preserved without overwriting one another.
+
+The refined importer therefore expects 98,627 preserved measurements, 28
+reported timestamp collisions, and 187 rejected empty rows on a clean import.
+An idempotent second pass must insert zero rows and recognize all 98,627
+measurements as duplicates.

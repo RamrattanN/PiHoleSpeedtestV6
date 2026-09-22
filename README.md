@@ -66,9 +66,12 @@ pihole-speedtest import-legacy-csv \
   --database ./data/imported-speedtest.db
 ```
 
-The importer reports inserted, duplicate, and rejected rows.  It returns exit
-code `2` when any row is rejected so the migration requires explicit review.
-Running the same import again does not duplicate matching measurements.
+The importer reports inserted, duplicate, timestamp-collision, and rejected
+rows.  Distinct measurements that share a legacy timestamp are preserved and
+reported rather than overwritten.  It returns exit code `2` when a row is
+rejected or a timestamp collision is first imported so the migration requires
+explicit review.  Running the same import again does not duplicate matching
+measurements.
 
 Start the companion dashboard:
 

@@ -97,7 +97,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"Import failed: {exc}")
             return 1
         print(json.dumps(report.to_dict(), ensure_ascii=False))
-        return 2 if report.rejected else 0
+        return 2 if report.rejected or report.timestamp_collisions else 0
 
     if not 1 <= arguments.port <= 65535:
         parser().error("--port must be between 1 and 65535")

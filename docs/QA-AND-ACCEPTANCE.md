@@ -33,6 +33,7 @@ checksum, and approved legacy-schedule pause are recorded in
 - copy the archived legacy CSV away from the live data directory;
 - import it into a temporary SQLite database;
 - reconcile imported, duplicate, and rejected row counts;
+- reconcile and review every preserved timestamp collision;
 - inspect every reported rejection and preserve the report;
 - rerun the import and verify that no duplicate rows are added;
 - deploy only to a temporary directory;

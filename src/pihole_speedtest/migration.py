@@ -23,6 +23,8 @@ REQUIRED_COLUMNS = {
     "interface",
 }
 
+TIMESTAMP_TOLERANCE_SECONDS = 5
+
 
 class LegacyImportError(RuntimeError):
     """Raised when a legacy CSV cannot be safely interpreted."""
@@ -42,6 +44,7 @@ class ImportReport:
     rows: int
     inserted: int
     duplicates: int
+    timestamp_collisions: int
     rejected: int
     issues: List[ImportIssue]
 
@@ -50,6 +53,7 @@ class ImportReport:
             "rows": self.rows,
             "inserted": self.inserted,
             "duplicates": self.duplicates,
+            "timestamp_collisions": self.timestamp_collisions,
             "rejected": self.rejected,
             "issues": [issue.to_dict() for issue in self.issues],
         }
@@ -82,7 +86,7 @@ def _timestamp(row: dict[str, str]) -> str:
         raise LegacyImportError("timestamp is not numeric") from exc
     if not math.isfinite(epoch):
         raise LegacyImportError("timestamp must be finite")
-    if abs(parsed.timestamp() - epoch) > 1:
+    if abs(parsed.timestamp() - epoch) > TIMESTAMP_TOLERANCE_SECONDS:
         raise LegacyImportError("timestamp and iso8601 do not match")
 
     return (
@@ -132,7 +136,7 @@ def import_legacy_csv(
         raise ValueError("issue_limit must not be negative")
 
     storage.initialize()
-    rows = inserted = duplicates = rejected = 0
+    rows = inserted = duplicates = timestamp_collisions = rejected = 0
     issues: List[ImportIssue] = []
 
     try:
@@ -169,18 +173,18 @@ def import_legacy_csv(
                         FROM measurements
                         WHERE recorded_at = ?
                         ORDER BY id
-                        LIMIT 1
                         """,
                         (measurement.recorded_at,),
-                    ).fetchone()
+                    ).fetchall()
 
-                    if existing is not None:
-                        if _same_measurement(existing, measurement):
+                    if existing:
+                        if any(
+                            _same_measurement(row, measurement)
+                            for row in existing
+                        ):
                             duplicates += 1
                             continue
-                        raise LegacyImportError(
-                            "recorded_at conflicts with an existing measurement"
-                        )
+                        timestamp_collisions += 1
 
                     connection.execute(
                         """
@@ -212,4 +216,11 @@ def import_legacy_csv(
                     if len(issues) < issue_limit:
                         issues.append(ImportIssue(line_number, str(exc)))
 
-    return ImportReport(rows, inserted, duplicates, rejected, issues)
+    return ImportReport(
+        rows,
+        inserted,
+        duplicates,
+        timestamp_collisions,
+        rejected,
+        issues,
+    )

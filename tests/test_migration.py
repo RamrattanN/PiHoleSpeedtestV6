@@ -73,6 +73,7 @@ class MigrationTests(unittest.TestCase):
         self.assertEqual(report.rows, 3)
         self.assertEqual(report.inserted, 1)
         self.assertEqual(report.duplicates, 1)
+        self.assertEqual(report.timestamp_collisions, 0)
         self.assertEqual(report.rejected, 1)
         self.assertEqual(report.issues[0].line, 4)
         self.assertIn("download_mbps", report.issues[0].reason)
@@ -89,7 +90,7 @@ class MigrationTests(unittest.TestCase):
         self.assertEqual(second.duplicates, 1)
         self.assertEqual(self.storage.count(), 1)
 
-    def test_conflicting_timestamp_is_rejected(self):
+    def test_distinct_measurements_at_same_timestamp_are_preserved(self):
         self.storage.insert(
             Measurement(
                 recorded_at="2026-09-22T21:10:01Z",
@@ -106,9 +107,24 @@ class MigrationTests(unittest.TestCase):
 
         report = import_legacy_csv(source, self.storage)
 
-        self.assertEqual(report.inserted, 0)
-        self.assertEqual(report.rejected, 1)
-        self.assertIn("conflicts", report.issues[0].reason)
+        self.assertEqual(report.inserted, 1)
+        self.assertEqual(report.timestamp_collisions, 1)
+        self.assertEqual(report.rejected, 0)
+        self.assertEqual(self.storage.count(), 2)
+
+        repeated = import_legacy_csv(source, self.storage)
+        self.assertEqual(repeated.inserted, 0)
+        self.assertEqual(repeated.duplicates, 1)
+        self.assertEqual(repeated.timestamp_collisions, 0)
+        self.assertEqual(self.storage.count(), 2)
+
+    def test_small_epoch_difference_is_accepted(self):
+        source = self.write_csv([valid_row(timestamp="1790111397")])
+
+        report = import_legacy_csv(source, self.storage)
+
+        self.assertEqual(report.inserted, 1)
+        self.assertEqual(report.rejected, 0)
 
     def test_mismatched_epoch_and_iso_timestamp_is_rejected(self):
         source = self.write_csv([valid_row(timestamp="1")])
@@ -145,5 +161,38 @@ class MigrationTests(unittest.TestCase):
         report = json.loads(output.getvalue())
         self.assertEqual(status, 2)
         self.assertEqual(report["inserted"], 1)
+        self.assertEqual(report["timestamp_collisions"], 0)
         self.assertEqual(report["rejected"], 1)
         self.assertEqual(report["issues"][0]["line"], 3)
+
+    def test_cli_reports_timestamp_collision_with_review_exit_code(self):
+        self.storage.insert(
+            Measurement(
+                recorded_at="2026-09-22T21:10:01Z",
+                download_mbps=1.0,
+                upload_mbps=1.0,
+                latency_ms=1.0,
+                jitter_ms=1.0,
+                server_name="Different",
+                server_id="",
+                interface_name="eth0",
+            )
+        )
+        source = self.write_csv([valid_row()])
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            status = main(
+                [
+                    "import-legacy-csv",
+                    str(source),
+                    "--database",
+                    str(self.storage.path),
+                ]
+            )
+
+        report = json.loads(output.getvalue())
+        self.assertEqual(status, 2)
+        self.assertEqual(report["inserted"], 1)
+        self.assertEqual(report["timestamp_collisions"], 1)
+        self.assertEqual(report["rejected"], 0)
