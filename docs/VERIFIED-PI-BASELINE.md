@@ -105,7 +105,9 @@ Inspection of every rejected source row established:
 - 28 complete, distinct measurements share one legacy timestamp and can be
   preserved without overwriting one another.
 
-The refined importer therefore expects 98,627 preserved measurements, 28
-reported timestamp collisions, and 187 rejected empty rows on a clean import.
-An idempotent second pass must insert zero rows and recognize all 98,627
-measurements as duplicates.
+The refined importer was then accepted on the owner's Mac against a new
+temporary SQLite database.  The clean first pass preserved 98,627
+measurements, reported 28 timestamp collisions, and rejected only the 187
+empty rows.  The second pass inserted zero rows, recognized all 98,627
+measurements as duplicates, reported no new collisions, and left the database
+count unchanged at 98,627.
