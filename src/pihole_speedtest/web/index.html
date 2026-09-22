@@ -30,7 +30,23 @@
         <h2>Download and upload</h2>
         <span id="chart-note">No measurements</span>
       </div>
+      <div class="chart-legend" aria-label="Download and upload chart legend">
+        <span><i class="legend-dot download" aria-hidden="true"></i>Download</span>
+        <span><i class="legend-dot upload" aria-hidden="true"></i>Upload</span>
+      </div>
       <canvas id="history-chart" height="280">Speed history chart</canvas>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Latency and jitter</h2>
+        <span id="latency-chart-note">No measurements</span>
+      </div>
+      <div class="chart-legend" aria-label="Latency and jitter chart legend">
+        <span><i class="legend-dot latency" aria-hidden="true"></i>Latency</span>
+        <span><i class="legend-dot jitter" aria-hidden="true"></i>Jitter</span>
+      </div>
+      <canvas id="latency-chart" height="280">Latency and jitter history chart</canvas>
     </section>
 
     <section class="panel">

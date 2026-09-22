@@ -44,8 +44,8 @@ function renderTable(records) {
   });
 }
 
-function drawChart(records) {
-  const canvas = byId("history-chart");
+function drawChart(records, options) {
+  const canvas = byId(options.canvasId);
   const ratio = window.devicePixelRatio || 1;
   const width = Math.max(canvas.clientWidth, 320);
   const height = 280;
@@ -57,17 +57,21 @@ function drawChart(records) {
   context.clearRect(0, 0, width, height);
 
   if (records.length === 0) {
-    setText("chart-note", "No measurements");
+    setText(options.noteId, "No measurements");
     return;
   }
 
-  setText("chart-note", formatMeasurementCount(records.length));
+  setText(options.noteId, formatMeasurementCount(records.length));
   const padding = { top: 20, right: 16, bottom: 26, left: 46 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
-  const download = records.map((record) => Number(record.download_mbps) || 0);
-  const upload = records.map((record) => Number(record.upload_mbps) || 0);
-  const observedMaximum = Math.max(10, ...download, ...upload);
+  const seriesValues = options.series.map((series) =>
+    records.map((record) => Number(record[series.field]) || 0),
+  );
+  const observedMaximum = Math.max(
+    options.minimumMaximum,
+    ...seriesValues.flat(),
+  );
   const maximum = Math.ceil(observedMaximum * 1.1);
 
   context.strokeStyle = "#263747";
@@ -85,7 +89,7 @@ function drawChart(records) {
     context.fillText(label.toFixed(0), 7, y + 4);
   }
 
-  function line(values, color) {
+  function drawSeries(values, color) {
     const points = [];
     context.strokeStyle = color;
     context.lineWidth = 2.5;
@@ -113,8 +117,9 @@ function drawChart(records) {
     });
   }
 
-  line(download, "#66c2ff");
-  line(upload, "#62d49d");
+  options.series.forEach((series, index) => {
+    drawSeries(seriesValues[index], series.color);
+  });
 }
 
 async function load() {
@@ -145,11 +150,29 @@ async function load() {
     }
 
     renderTable(records);
-    drawChart(records);
+    drawChart(records, {
+      canvasId: "history-chart",
+      noteId: "chart-note",
+      minimumMaximum: 10,
+      series: [
+        { field: "download_mbps", color: "#66c2ff" },
+        { field: "upload_mbps", color: "#62d49d" },
+      ],
+    });
+    drawChart(records, {
+      canvasId: "latency-chart",
+      noteId: "latency-chart-note",
+      minimumMaximum: 10,
+      series: [
+        { field: "latency_ms", color: "#ffb86b" },
+        { field: "jitter_ms", color: "#c792ea" },
+      ],
+    });
   } catch (error) {
     healthElement.textContent = "Dashboard unavailable";
     healthElement.className = "health error";
     setText("chart-note", "Could not load results");
+    setText("latency-chart-note", "Could not load results");
   }
 }
 

@@ -58,6 +58,24 @@ h2 { margin-bottom: 0; font-size: 1.05rem; }
 }
 .panel { margin-top: 18px; padding: 20px; }
 .panel-heading { margin-bottom: 18px; }
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: -8px 0 12px;
+  color: #9db0c2;
+  font-size: 0.78rem;
+}
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.legend-dot.download { background: #66c2ff; }
+.legend-dot.upload { background: #62d49d; }
+.legend-dot.latency { background: #ffb86b; }
+.legend-dot.jitter { background: #c792ea; }
 canvas {
   display: block;
   width: 100%;

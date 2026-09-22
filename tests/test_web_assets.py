@@ -19,3 +19,13 @@ class WebAssetTests(unittest.TestCase):
         )
         self.assertIn('count === 1 ? "measurement" : "measurements"', script)
         self.assertIn("context.arc(x, y, 4", script)
+
+    def test_latency_and_jitter_have_a_dedicated_chart(self):
+        web = files("pihole_speedtest").joinpath("web")
+        page = web.joinpath("index.html").read_text(encoding="utf-8")
+        script = web.joinpath("app.js").read_text(encoding="utf-8")
+
+        self.assertIn("Latency and jitter", page)
+        self.assertIn('id="latency-chart"', page)
+        self.assertIn('field: "latency_ms"', script)
+        self.assertIn('field: "jitter_ms"', script)
