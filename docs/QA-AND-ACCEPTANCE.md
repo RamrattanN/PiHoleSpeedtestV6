@@ -24,8 +24,17 @@ Capture without modifying the Raspberry Pi:
 - existing speedtest files, databases, web changes, and backups;
 - current Pi-hole health and DNS resolution.
 
+Gate 2 was completed on September 22, 2026.  The verified findings, recovery
+checksum, and approved legacy-schedule pause are recorded in
+[`VERIFIED-PI-BASELINE.md`](VERIFIED-PI-BASELINE.md).
+
 ## Gate 3: isolated companion QA
 
+- copy the archived legacy CSV away from the live data directory;
+- import it into a temporary SQLite database;
+- reconcile imported, duplicate, and rejected row counts;
+- inspect every reported rejection and preserve the report;
+- rerun the import and verify that no duplicate rows are added;
 - deploy only to a temporary directory;
 - use a temporary SQLite database;
 - execute one manual official Ookla test;

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from .collector import CollectionError, collect
+from .migration import LegacyImportError, import_legacy_csv
 from .server import serve
 from .storage import Storage
 
@@ -40,6 +41,16 @@ def parser() -> argparse.ArgumentParser:
     collect_command.add_argument("--binary", default="speedtest")
     collect_command.add_argument("--timeout", type=int, default=180)
 
+    import_command = commands.add_parser(
+        "import-legacy-csv",
+        help="Import valid history from the legacy CSV format",
+    )
+    import_command.add_argument("source", type=Path)
+    import_command.add_argument(
+        "--database", type=Path, default=default_database()
+    )
+    import_command.add_argument("--issue-limit", type=int, default=20)
+
     serve_command = commands.add_parser(
         "serve", help="Serve the read-only companion dashboard"
     )
@@ -72,6 +83,21 @@ def main(argv: Optional[List[str]] = None) -> int:
             )
         )
         return 0
+
+    if arguments.command == "import-legacy-csv":
+        if arguments.issue_limit < 0:
+            parser().error("--issue-limit must not be negative")
+        try:
+            report = import_legacy_csv(
+                arguments.source,
+                storage,
+                issue_limit=arguments.issue_limit,
+            )
+        except LegacyImportError as exc:
+            print(f"Import failed: {exc}")
+            return 1
+        print(json.dumps(report.to_dict(), ensure_ascii=False))
+        return 2 if report.rejected else 0
 
     if not 1 <= arguments.port <= 65535:
         parser().error("--port must be between 1 and 65535")

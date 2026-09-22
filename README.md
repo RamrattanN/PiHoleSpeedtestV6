@@ -17,6 +17,7 @@ provides:
 - an official Ookla CLI collector;
 - validated result parsing;
 - SQLite history;
+- a repeatable importer for valid legacy CSV history;
 - a read-only HTTP API and local dashboard;
 - local web assets with no CDN dependency;
 - automated unit tests and pull-request CI.
@@ -57,6 +58,18 @@ Collect one measurement with the official Ookla CLI:
 pihole-speedtest collect --database ./data/speedtest.db
 ```
 
+Import a legacy CSV into a separate development database:
+
+```bash
+pihole-speedtest import-legacy-csv \
+  ./speedtest.csv \
+  --database ./data/imported-speedtest.db
+```
+
+The importer reports inserted, duplicate, and rejected rows.  It returns exit
+code `2` when any row is rejected so the migration requires explicit review.
+Running the same import again does not duplicate matching measurements.
+
 Start the companion dashboard:
 
 ```bash
@@ -73,6 +86,8 @@ Then open <http://127.0.0.1:8765/>.
 Development and automated tests run away from the live Pi-hole first.  The
 project will not be installed on `192.168.2.14` until the documented preflight,
 backup, isolated collection, dashboard, rollback, and acceptance gates pass.
+The verified device baseline is recorded in
+[Verified Raspberry Pi Baseline](docs/VERIFIED-PI-BASELINE.md).
 
 ## License and attribution
 
