@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Pi-hole Speedtest</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <p class="eyebrow">Pi-hole v6 companion</p>
+        <h1>Connection history</h1>
+      </div>
+      <div id="health" class="health" role="status">Loading status</div>
+    </header>
+
+    <section class="summary" aria-label="Latest measurement">
+      <article><span>Download</span><strong id="latest-download">-</strong><small>Mbps</small></article>
+      <article><span>Upload</span><strong id="latest-upload">-</strong><small>Mbps</small></article>
+      <article><span>Latency</span><strong id="latest-latency">-</strong><small>ms</small></article>
+      <article><span>Jitter</span><strong id="latest-jitter">-</strong><small>ms</small></article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Download and upload</h2>
+        <span id="chart-note">No measurements</span>
+      </div>
+      <canvas id="history-chart" height="280">Speed history chart</canvas>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Recent measurements</h2>
+        <span>Newest first</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Time</th>
+              <th scope="col">Download</th>
+              <th scope="col">Upload</th>
+              <th scope="col">Latency</th>
+              <th scope="col">Jitter</th>
+              <th scope="col">Server</th>
+              <th scope="col">Interface</th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+      </div>
+      <p id="empty-state" class="empty">No successful measurements yet.</p>
+    </section>
+  </main>
+</body>
+</html>

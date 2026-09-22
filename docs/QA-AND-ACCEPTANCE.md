@@ -1,0 +1,77 @@
+# QA and acceptance
+
+No development build may modify the live Pi-hole until all preceding gates pass.
+
+## Gate 1: source and automated QA
+
+- repository is clean and based on the reviewed commit;
+- Python compilation passes;
+- unit tests pass;
+- shell syntax checks pass for retained shell files;
+- browser assets contain no external network references;
+- malformed CLI output and failed processes record no result;
+- SQLite schema creation and queries are repeatable.
+
+## Gate 2: read-only Pi preflight
+
+Capture without modifying the Raspberry Pi:
+
+- Pi-hole Core, Web, and FTL versions;
+- operating system, architecture, and Raspberry Pi model;
+- free storage and memory;
+- current services, web listener, timers, and cron entries;
+- installed speed-test CLIs and versions;
+- existing speedtest files, databases, web changes, and backups;
+- current Pi-hole health and DNS resolution.
+
+## Gate 3: isolated companion QA
+
+- deploy only to a temporary directory;
+- use a temporary SQLite database;
+- execute one manual official Ookla test;
+- validate stored units and values against the CLI result;
+- run the dashboard on a temporary non-Pi-hole port;
+- verify health and history APIs;
+- inspect browser network activity for local-only requests;
+- stop and remove the temporary service;
+- confirm Pi-hole health and DNS are unchanged.
+
+## Gate 4: controlled service deployment
+
+- create and verify a recovery point;
+- install the companion without the Pi-hole adapter;
+- use an unprivileged service account;
+- enable the service before enabling the timer;
+- verify restart and reboot behavior;
+- enable a conservative schedule;
+- verify that overlapping runs cannot occur;
+- confirm history survives an application upgrade.
+
+## Gate 5: optional Pi-hole adapter
+
+- require a recognized Pi-hole version and file layout;
+- record checksums and back up exact target files;
+- install the adapter idempotently;
+- display current results and link to the full dashboard;
+- verify all existing Pi-hole pages and controls;
+- remove the adapter and prove exact restoration;
+- simulate an unknown Pi-hole layout and confirm refusal.
+
+## Gate 6: release acceptance
+
+- Pi-hole DNS and admin health remain unaffected;
+- the dashboard uses no CDN or remote browser dependency;
+- failed tests do not create zero-value measurements;
+- measurement units are correct;
+- timestamps are UTC in storage and clearly rendered for the user;
+- data survives restart, reboot, upgrade, and uninstall by default;
+- backup and restore are exercised, not merely documented;
+- Raspberry Pi 3 CPU, memory, disk, and temperature remain acceptable;
+- installation and rollback instructions match the accepted build.
+
+## Stop conditions
+
+Stop immediately if Pi-hole DNS health changes, the admin interface becomes
+unavailable, an installer encounters an unknown file layout, a backup cannot be
+verified, measurement parsing is ambiguous, or rollback cannot restore the
+pre-test state.

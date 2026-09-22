@@ -1,44 +1,80 @@
 # Pi-hole Speedtest v6
 
-An independent Pi-hole Speedtest Mod designed for **Pi-hole v6**.  
-This project removes all upstream dependencies, avoids network fetches, and provides:
+Pi-hole Speedtest v6 is a resilient speed-test companion for Pi-hole v6.  It
+keeps collection, history, and the full dashboard independent from Pi-hole so a
+Pi-hole upgrade cannot erase data or disable scheduled tests.
 
-- A local runner that writes results to **CSV and JSON**  
-- A minimal web page served at `/speedtest/` with a chart and table  
-- Support for both **bare metal installs** and **Docker deployments**
+The project is a modernization of the MIT-licensed
+[`arevindh/pihole-speedtest`](https://github.com/arevindh/pihole-speedtest).
+The original product intent is preserved, while the implementation no longer
+replaces Pi-hole Core or its web interface.
 
-Maintained by **Nilesh Ramrattan**. Licensed under the MIT License.
-A simple runner and web view for periodic internet speed tests that works with Pi hole v6.  No network fetches.  Local scripts only.
+## Current status
 
-## What it does
-- Runs a CLI speed test on a schedule.  Writes CSV and JSON.  
-- Serves a minimal page at `/speedtest/` that reads `speedtest.json` and draws a chart.  
-- Works on bare metal or in Docker.
+This branch is an early development foundation, not a production release.  It
+provides:
 
-## Install on the Pi hole device
+- an official Ookla CLI collector;
+- validated result parsing;
+- SQLite history;
+- a read-only HTTP API and local dashboard;
+- local web assets with no CDN dependency;
+- automated unit tests and pull-request CI.
+
+It does not yet install a service, schedule tests, modify the Pi-hole dashboard,
+or provide an uninstall workflow.  Do not run the legacy installer on a live
+Pi-hole.
+
+## Architecture
+
+The product has two deliberately separate layers:
+
+1. **Companion core:** collection, SQLite history, API, dashboard, service,
+   scheduling, upgrades, and recovery.
+2. **Optional Pi-hole adapter:** a small status card or navigation link.  If a
+   Pi-hole update breaks the adapter, the companion core continues to work.
+
+See [Architecture](docs/ARCHITECTURE.md),
+[Origin and v6 Gap Analysis](docs/ORIGIN-AND-V6-GAP-ANALYSIS.md),
+[QA and Acceptance](docs/QA-AND-ACCEPTANCE.md), and
+[Roadmap](docs/ROADMAP.md).
+
+## Developer quick start
+
+Python 3.11 or newer is recommended.  The runtime uses only the Python standard
+library.
+
 ```bash
-sudo apt-get update
-sudo apt-get install -y git librespeed-cli
-sudo rm -rf /opt/pihole-speedtest
-sudo git clone https://github.com/RamrattanN/PiHoleSpeedtestV6.git /opt/pihole-speedtest
-cd /opt/pihole-speedtest
-sudo chmod +x ./mod ./test ./scripts/mod.sh ./scripts/speedtest.sh
-sudo ./mod --data-dir /etc/pihole/speedtest --cron "*/30 * * * *"
-sudo ./test -o /etc/pihole/speedtest
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
+python -m unittest discover -s tests -v
+```
 
-Open http://<pihole-host>/speedtest/.
+Collect one measurement with the official Ookla CLI:
 
-Docker (optional)
+```bash
+pihole-speedtest collect --database ./data/speedtest.db
+```
 
-Use files in docker/, rebuild, then install a speedtest CLI in the container and run pihole-speedtest.
+Start the companion dashboard:
 
-Files
+```bash
+pihole-speedtest serve \
+  --database ./data/speedtest.db \
+  --host 127.0.0.1 \
+  --port 8765
+```
 
-CSV: /etc/pihole/speedtest/speedtest.csv
+Then open <http://127.0.0.1:8765/>.
 
-JSON: /etc/pihole/speedtest/speedtest.json
+## Raspberry Pi safety boundary
 
-License
+Development and automated tests run away from the live Pi-hole first.  The
+project will not be installed on `192.168.2.14` until the documented preflight,
+backup, isolated collection, dashboard, rollback, and acceptance gates pass.
 
-MIT License. Copyright (c) 2025 Nilesh Ramrattan.
-"@ | Set-Content -Encoding UTF8 .\README.md
+## License and attribution
+
+MIT licensed.  See [LICENSE](LICENSE).  The original project and its
+contributors remain credited in the provenance documentation.

@@ -1,0 +1,72 @@
+import json
+import tempfile
+import threading
+import unittest
+from pathlib import Path
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+from pihole_speedtest.models import Measurement
+from pihole_speedtest.server import CompanionServer
+from pihole_speedtest.storage import Storage
+
+
+class ServerTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.storage = Storage(Path(self.temporary.name) / "speedtest.db")
+        self.storage.insert(
+            Measurement(
+                recorded_at="2026-09-22T18:00:00Z",
+                download_mbps=100.0,
+                upload_mbps=20.0,
+                latency_ms=10.0,
+                jitter_ms=1.0,
+                server_name="Example",
+                server_id="42",
+                interface_name="eth0",
+            )
+        )
+        self.server = CompanionServer(("127.0.0.1", 0), self.storage)
+        self.thread = threading.Thread(
+            target=self.server.serve_forever, daemon=True
+        )
+        self.thread.start()
+        host, port = self.server.server_address
+        self.base_url = f"http://{host}:{port}"
+
+    def tearDown(self):
+        self.server.shutdown()
+        self.server.server_close()
+        self.thread.join(timeout=2)
+        self.temporary.cleanup()
+
+    def get_json(self, path):
+        with urlopen(self.base_url + path, timeout=2) as response:
+            return response, json.loads(response.read())
+
+    def test_health(self):
+        response, payload = self.get_json("/api/health")
+        self.assertEqual(response.status, 200)
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["measurements"], 1)
+        self.assertEqual(payload["last_recorded_at"], "2026-09-22T18:00:00Z")
+
+    def test_results(self):
+        _, payload = self.get_json("/api/results?limit=10")
+        self.assertEqual(len(payload["records"]), 1)
+        self.assertEqual(payload["records"][0]["download_mbps"], 100.0)
+
+    def test_assets_have_security_policy(self):
+        with urlopen(self.base_url + "/", timeout=2) as response:
+            body = response.read().decode("utf-8")
+            self.assertIn("Pi-hole Speedtest", body)
+            self.assertIn("default-src 'self'", response.headers["Content-Security-Policy"])
+
+    def test_manual_http_execution_is_disabled(self):
+        request = Request(
+            self.base_url + "/api/run", data=b"{}", method="POST"
+        )
+        with self.assertRaises(HTTPError) as raised:
+            urlopen(request, timeout=2)
+        self.assertEqual(raised.exception.code, 405)

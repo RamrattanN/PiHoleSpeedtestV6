@@ -1,9 +1,12 @@
 services:
-  pihole:
+  pihole-speedtest:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    ports:
+      - "8765:8765"
     volumes:
-      - pihole-speedtest:/etc/pihole/speedtest
+      - pihole-speedtest:/data
+    restart: unless-stopped
 volumes:
   pihole-speedtest: {}

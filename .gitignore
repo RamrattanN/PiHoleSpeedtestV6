@@ -3,4 +3,9 @@ compose.yml
 Archive/
 
 [Aa]rchive/
-
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+data/
