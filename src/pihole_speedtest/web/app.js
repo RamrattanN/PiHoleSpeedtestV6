@@ -12,6 +12,10 @@ function formatTime(value) {
   return Number.isNaN(date.valueOf()) ? value : date.toLocaleString();
 }
 
+function formatMeasurementCount(count) {
+  return `${count} ${count === 1 ? "measurement" : "measurements"}`;
+}
+
 function setText(id, value) {
   byId(id).textContent = value;
 }
@@ -57,13 +61,14 @@ function drawChart(records) {
     return;
   }
 
-  setText("chart-note", `${records.length} measurements`);
+  setText("chart-note", formatMeasurementCount(records.length));
   const padding = { top: 20, right: 16, bottom: 26, left: 46 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const download = records.map((record) => Number(record.download_mbps) || 0);
   const upload = records.map((record) => Number(record.upload_mbps) || 0);
-  const maximum = Math.max(10, ...download, ...upload);
+  const observedMaximum = Math.max(10, ...download, ...upload);
+  const maximum = Math.ceil(observedMaximum * 1.1);
 
   context.strokeStyle = "#263747";
   context.fillStyle = "#8fa4b8";
@@ -81,6 +86,7 @@ function drawChart(records) {
   }
 
   function line(values, color) {
+    const points = [];
     context.strokeStyle = color;
     context.lineWidth = 2.5;
     context.beginPath();
@@ -90,6 +96,7 @@ function drawChart(records) {
         (chartWidth * index) / Math.max(values.length - 1, 1);
       const y =
         padding.top + chartHeight - (chartHeight * value) / maximum;
+      points.push({ x, y });
       if (index === 0) {
         context.moveTo(x, y);
       } else {
@@ -97,6 +104,13 @@ function drawChart(records) {
       }
     });
     context.stroke();
+
+    context.fillStyle = color;
+    points.forEach(({ x, y }) => {
+      context.beginPath();
+      context.arc(x, y, 4, 0, Math.PI * 2);
+      context.fill();
+    });
   }
 
   line(download, "#66c2ff");
@@ -120,9 +134,7 @@ async function load() {
     const latest = records[records.length - 1];
 
     healthElement.textContent =
-      health.measurements === 1
-        ? "Healthy - 1 measurement"
-        : `Healthy - ${health.measurements} measurements`;
+      `Healthy - ${formatMeasurementCount(health.measurements)}`;
     healthElement.className = "health ok";
 
     if (latest) {

@@ -10,3 +10,12 @@ class WebAssetTests(unittest.TestCase):
             self.assertNotIn("http://", content, name)
             self.assertNotIn("https://", content, name)
             self.assertNotIn("//cdn.", content, name)
+
+    def test_single_measurement_chart_has_visible_point(self):
+        script = (
+            files("pihole_speedtest")
+            .joinpath("web", "app.js")
+            .read_text(encoding="utf-8")
+        )
+        self.assertIn('count === 1 ? "measurement" : "measurements"', script)
+        self.assertIn("context.arc(x, y, 4", script)
