@@ -6,7 +6,8 @@ usage() {
 Usage: sudo scripts/install_pihole_adapter.sh \
   --expected-source-commit SHA \
   --expected-installed-commit SHA \
-  --companion-url URL
+  --companion-url URL \
+  --pihole-origin ORIGIN
 
 Installs the version-gated Pi-hole Web v6.6 sidebar adapter, verifies the
 result, and records its recovery manifest in the companion deployment state.
@@ -16,12 +17,14 @@ EOF
 expected_source_commit=""
 expected_installed_commit=""
 companion_url=""
+pihole_origin=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --expected-source-commit) expected_source_commit="$2"; shift 2 ;;
     --expected-installed-commit) expected_installed_commit="$2"; shift 2 ;;
     --companion-url) companion_url="$2"; shift 2 ;;
+    --pihole-origin) pihole_origin="$2"; shift 2 ;;
     --help|-h) usage; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -37,8 +40,8 @@ then
   echo "STOP: Both commit arguments must be full lowercase Git SHAs." >&2
   exit 1
 fi
-if [ "$companion_url" != "http://192.168.2.14:8765" ]; then
-  echo "STOP: Companion URL does not match the approved Pi deployment." >&2
+if [ -z "$companion_url" ] || [ -z "$pihole_origin" ]; then
+  echo "STOP: Both --companion-url and --pihole-origin are required." >&2
   exit 1
 fi
 
@@ -77,6 +80,50 @@ for command in git python3 systemctl curl sha256sum pihole stat; do
     exit 1
   }
 done
+
+mapfile -t validated_origins < <(python3 - "$companion_url" "$pihole_origin" <<'PY'
+import sys
+from urllib.parse import urlparse
+
+
+def origin(value, label):
+    parsed = urlparse(value)
+    if (
+        parsed.scheme not in {"http", "https"}
+        or not parsed.hostname
+        or parsed.username
+        or parsed.password
+        or parsed.path not in {"", "/"}
+        or parsed.params
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise SystemExit(f"STOP: {label} must be an HTTP(S) origin without a path, credentials, query, or fragment.")
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise SystemExit(f"STOP: {label} has an invalid port: {exc}") from exc
+    host = parsed.hostname.lower()
+    if ":" in host:
+        host = f"[{host}]"
+    port_text = f":{port}" if port is not None else ""
+    return f"{parsed.scheme.lower()}://{host}{port_text}"
+
+
+companion = origin(sys.argv[1], "companion URL")
+pihole = origin(sys.argv[2], "Pi-hole origin")
+if pihole.startswith("https://") and companion.startswith("http://"):
+    raise SystemExit("STOP: An HTTPS Pi-hole page cannot embed an HTTP companion dashboard.")
+print(companion)
+print(pihole)
+PY
+)
+if [ "${#validated_origins[@]}" -ne 2 ]; then
+  echo "STOP: Origin validation did not return the expected values." >&2
+  exit 1
+fi
+companion_url="${validated_origins[0]}"
+pihole_origin="${validated_origins[1]}"
 for path in "$application_cli" "$install_manifest" "$collection_manifest" "$sidebar"; do
   if [ ! -e "$path" ]; then
     echo "STOP: Required installed target is missing: $path" >&2
@@ -115,15 +162,34 @@ if grep -q 'PIHOLE-SPEEDTEST-V6' "$sidebar" || [ -e "$overview" ] || [ -e "$setu
   echo "STOP: Adapter markers or target pages already exist." >&2
   exit 1
 fi
-if ! pihole -v | grep -q '^Web version is v6\.6 '; then
+installed_web_version="$(python3 - <<'PY'
+import re
+import subprocess
+
+
+completed = subprocess.run(
+    ["pihole", "-v"],
+    check=True,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    text=True,
+)
+plain = re.sub(r"\x1b\[[0-9;?]*[ -/]*[@-~]", "", completed.stdout)
+match = re.search(r"(?m)^Web version is (v\S+)", plain)
+if match:
+    print(match.group(1))
+PY
+)"
+if [ "$installed_web_version" != "v6.6" ]; then
   echo "STOP: Installed Pi-hole Web version is not v6.6." >&2
+  echo "Detected: ${installed_web_version:-unknown}" >&2
   exit 1
 fi
 curl -fsS http://127.0.0.1:8765/api/health >/dev/null
 curl -fsS -D - -o /dev/null http://127.0.0.1:8765/ |
   tr -d '\r' |
-  grep -Fq "frame-ancestors 'self' http://192.168.2.14" || {
-    echo "STOP: Companion frame policy does not allow the approved Pi-hole origin." >&2
+  grep -Fq "frame-ancestors 'self' $pihole_origin" || {
+    echo "STOP: Companion frame policy does not allow $pihole_origin." >&2
     exit 1
   }
 
@@ -243,7 +309,7 @@ echo "$install_output"
 echo
 echo "=== LIVE PI-HOLE SIDEBAR ADAPTER INSTALLED ==="
 echo "Recovery manifest: $adapter_manifest"
-echo "Overview: http://192.168.2.14/admin/speedtest"
-echo "Setup: http://192.168.2.14/admin/speedtest-setup"
+echo "Overview: $pihole_origin/admin/speedtest"
+echo "Setup: $pihole_origin/admin/speedtest-setup"
 echo "Companion dashboard and collection timer: active and enabled"
 echo "Pi-hole status: verified"
