@@ -63,6 +63,11 @@ class ServerTests(unittest.TestCase):
             self.assertIn("Pi-hole Speedtest", body)
             self.assertIn("default-src 'self'", response.headers["Content-Security-Policy"])
 
+        with urlopen(self.base_url + "/ramrattan-logo.png") as response:
+            self.assertEqual(response.status, 200)
+            self.assertEqual(response.headers["Content-Type"], "image/png")
+            self.assertTrue(response.read().startswith(b"\x89PNG\r\n\x1a\n"))
+
     def test_manual_http_execution_is_disabled(self):
         request = Request(
             self.base_url + "/api/run", data=b"{}", method="POST"

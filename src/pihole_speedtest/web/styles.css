@@ -37,6 +37,13 @@ h2 { margin-bottom: 0; font-size: 1.05rem; }
 .health, .panel-heading span { color: #9db0c2; font-size: 0.86rem; }
 .health.ok { color: #62d49d; }
 .health.error { color: #ff8a8a; }
+.header-status { display: flex; align-items: center; gap: 18px; }
+.brand-logo {
+  display: block;
+  width: 58px;
+  height: auto;
+  filter: drop-shadow(0 8px 14px rgb(0 0 0 / 28%));
+}
 .summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -100,5 +107,6 @@ th {
 .empty { margin: 24px 0 8px; color: #9db0c2; text-align: center; }
 @media (max-width: 760px) {
   header { align-items: flex-start; flex-direction: column; }
+  .header-status { width: 100%; justify-content: space-between; }
   .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

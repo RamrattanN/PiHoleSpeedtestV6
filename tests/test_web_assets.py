@@ -29,3 +29,12 @@ class WebAssetTests(unittest.TestCase):
         self.assertIn('id="latency-chart"', page)
         self.assertIn('field: "latency_ms"', script)
         self.assertIn('field: "jitter_ms"', script)
+
+    def test_ramrattan_logo_is_local_and_accessible(self):
+        web = files("pihole_speedtest").joinpath("web")
+        page = web.joinpath("index.html").read_text(encoding="utf-8")
+        logo = web.joinpath("ramrattan-logo.png").read_bytes()
+
+        self.assertIn('src="/ramrattan-logo.png"', page)
+        self.assertIn('alt="Ramrattan"', page)
+        self.assertTrue(logo.startswith(b"\x89PNG\r\n\x1a\n"))
