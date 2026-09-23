@@ -79,7 +79,7 @@ The live Raspberry Pi uses the repository wrappers rather than invoking the
 low-level adapter commands directly:
 
 ```bash
-sudo ./scripts/install_pihole_adapter.sh \
+sudo bash ./scripts/install_pihole_adapter.sh \
   --expected-source-commit APPROVED_SOURCE_SHA \
   --expected-installed-commit INSTALLED_SOURCE_SHA \
   --companion-url http://192.168.2.14:8765
@@ -95,7 +95,7 @@ upgrades can verify and preserve the installed adapter state.
 Verified live removal uses the recorded recovery manifest automatically:
 
 ```bash
-sudo ./scripts/remove_pihole_adapter.sh
+sudo bash ./scripts/remove_pihole_adapter.sh
 ```
 
 Removal still refuses if Pi-hole or another process changed any installed
