@@ -206,6 +206,18 @@ display `Not available`; this is a metadata omission, not a failed speed test.
 The collector now falls back to the interface carrying Linux's active IPv4
 default route when Ookla omits the name.  Automated coverage verifies both the
 fallback and `/proc/net/route` parsing.  Existing historical rows are left
-unchanged to preserve source fidelity.  Live acceptance remains pending a
-guarded companion upgrade and one new Raspberry Pi measurement that records
-`eth0`.
+unchanged to preserve source fidelity.
+
+Live acceptance completed on September 22, 2026 local time from commit
+`e06d6c7964acc5bdfb6000488dd7eea79d5ed615`.  All 54 tests passed on the
+Raspberry Pi before the guarded upgrade.  The upgrade preserved 98,634 existing
+measurements and created recovery evidence at:
+
+```text
+/var/lib/pihole-speedtest-upgrade-recovery/20260923T040754Z
+```
+
+Manual measurement `98635` then recorded interface `eth0`, 325.08 Mbps
+download, 102.43 Mbps upload, 8.98 ms latency, and 0.71 ms jitter.  Dashboard
+and timer services were active and enabled, `/api/health` reported 98,635
+measurements, and Pi-hole DNS and blocking remained healthy.
