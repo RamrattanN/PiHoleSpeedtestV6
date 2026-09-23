@@ -30,8 +30,8 @@ No branch-based curl command is supported.
 | Application source commit | `03453bc9f8743b0f3881dde2a82fba874d9ce9da` |
 | Bundle asset commit | `f7454b07849a38e54bf0d8e37d2ca70dd9933f63` |
 | Bundle SHA-256 | `d552f112d52ed53cf0644200ddcf294b482c62a3b72299e9b810e8a0c9dacfac` |
-| Bootstrap commit | `c20e1c55344f12e74d1c89f42ef290cda2a40e6b` |
-| Bootstrap SHA-256 | `06b0535fcc5d3b4e68ebace1044eaba51b565b5365103c389728e0ff38c57ca5` |
+| Bootstrap commit | `38e576ac1deb036d46ed53fcbed2f245540ccfcc` |
+| Bootstrap SHA-256 | `39b025849e446c4819de7d03fdff810ff9f6544c2700f93da33c3e00da6ae71d` |
 
 ## Candidate install command
 
@@ -44,9 +44,9 @@ bootstrap=/tmp/pihole-speedtest-v6-bootstrap.sh && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
   --output "$bootstrap" \
-  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/c20e1c55344f12e74d1c89f42ef290cda2a40e6b/release/pihole-speedtest-v6-bootstrap.sh && \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/38e576ac1deb036d46ed53fcbed2f245540ccfcc/release/pihole-speedtest-v6-bootstrap.sh && \
 printf '%s  %s\n' \
-  '06b0535fcc5d3b4e68ebace1044eaba51b565b5365103c389728e0ff38c57ca5' \
+  '39b025849e446c4819de7d03fdff810ff9f6544c2700f93da33c3e00da6ae71d' \
   "$bootstrap" | sha256sum --check --status - && \
 bash "$bootstrap" install
 ```
@@ -61,6 +61,10 @@ After the companion installation passes, use the already verified bootstrap:
 ```bash
 bash /tmp/pihole-speedtest-v6-bootstrap.sh install-adapter
 ```
+
+The adapter action verifies the companion commit recorded by the installed
+manifest.  It does not assume that the companion and bootstrap were published
+from the same source commit, and it does not upgrade the companion.
 
 Automatic origin detection is suitable for a typical HTTP installation opened
 by the Pi's primary address.  A hostname, HTTPS, reverse proxy, or nonstandard
