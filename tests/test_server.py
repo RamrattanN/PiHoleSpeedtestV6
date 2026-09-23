@@ -123,7 +123,7 @@ class ServerTests(unittest.TestCase):
         self.server = CompanionServer(
             ("127.0.0.1", 0),
             self.storage,
-            frame_ancestors=["http://192.168.2.14"],
+            frame_ancestors=["http://pihole.example.test"],
         )
         self.thread = threading.Thread(
             target=self.server.serve_forever, daemon=True
@@ -135,13 +135,13 @@ class ServerTests(unittest.TestCase):
         with urlopen(self.base_url + "/", timeout=2) as response:
             policy = response.headers["Content-Security-Policy"]
         self.assertIn(
-            "frame-ancestors 'self' http://192.168.2.14",
+            "frame-ancestors 'self' http://pihole.example.test",
             policy,
         )
 
     def test_frame_ancestor_rejects_non_origin_and_header_injection(self):
         for value in (
-            "http://192.168.2.14/admin",
+            "http://pihole.example.test/admin",
             "javascript:alert(1)",
             "http://example.test\r\nX-Test: unsafe",
         ):

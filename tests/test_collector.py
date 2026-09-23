@@ -88,7 +88,7 @@ class CollectorTests(unittest.TestCase):
         self, run, route_interface
     ):
         result = dict(VALID_RESULT)
-        result["interface"] = {"internalIp": "192.168.2.14"}
+        result["interface"] = {"internalIp": "192.0.2.14"}
         run.return_value = subprocess.CompletedProcess(
             args=["speedtest"],
             returncode=0,

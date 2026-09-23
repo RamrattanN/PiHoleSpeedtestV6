@@ -36,7 +36,7 @@ class AdapterTests(unittest.TestCase):
         return install_adapter(
             self.root,
             "v6.6",
-            "http://192.168.2.14:8765",
+            "http://pihole.example.test:8765",
             self.backups,
         )
 
@@ -80,7 +80,7 @@ class AdapterTests(unittest.TestCase):
             install_adapter(
                 self.root,
                 "v6.7",
-                "http://192.168.2.14:8765",
+                "http://pihole.example.test:8765",
                 self.backups,
             )
         self.assertEqual(self.sidebar.read_text(encoding="utf-8"), SIDEBAR)

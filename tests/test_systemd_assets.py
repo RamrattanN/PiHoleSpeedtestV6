@@ -144,12 +144,15 @@ class SystemdAssetTests(unittest.TestCase):
         self.assertIn("--expected-source-commit", installer)
         self.assertIn("--expected-installed-commit", installer)
         self.assertIn("83943cbdf5258fe43e819108a5135e070", installer)
-        self.assertIn("Web version is v6\\.6", installer)
-        self.assertIn("frame-ancestors 'self' http://192.168.2.14", installer)
+        self.assertIn("installed_web_version", installer)
+        self.assertIn('!= "v6.6"', installer)
+        self.assertIn("--pihole-origin", installer)
+        self.assertIn("frame-ancestors 'self' $pihole_origin", installer)
         self.assertIn("adapter-install", installer)
         self.assertIn("pihole_adapter_installed=true", installer)
         self.assertIn("pihole_adapter_manifest=", installer)
         self.assertIn("adapter-remove", installer)
+        self.assertNotIn("192.168.", installer)
 
     def test_adapter_removal_uses_verified_manifest_and_records_absence(self):
         remover = ADAPTER_REMOVER.read_text(encoding="utf-8")
