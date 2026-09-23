@@ -33,7 +33,9 @@ Pi-hole Web v6.6 sidebar adapter are running on the verified Raspberry Pi 3
 baseline.  Version `0.1.0.dev4` is the latest owner-approved build.  Guarded
 installation and upgrade paths exist.  Version `0.1.0.dev5` is the current
 checksum-verified curl workflow engineering candidate; it is not yet the live
-approved baseline.  Remaining Raspberry Pi acceptance is tracked in
+approved baseline.  Immutable candidate commands and checksums are documented
+in [Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  Remaining
+Raspberry Pi acceptance is tracked in
 [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
 
 ## Architecture

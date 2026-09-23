@@ -132,9 +132,8 @@ immutable-bootstrap renderer.  The bootstrap verifies the complete bundle
 before invoking `sudo`; it never pipes a mutable branch into a privileged
 shell.
 
-Public command syntax and the complete trust, preservation, rollback, and
-acceptance contract are maintained in
+Immutable candidate command syntax and the complete trust, preservation,
+rollback, and acceptance contract are maintained in
 [Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  The commands are
-not supported until the immutable assets are published and the Raspberry Pi 3
-acceptance sequence in
+not supported until the Raspberry Pi 3 acceptance sequence in
 [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) passes.
