@@ -29,9 +29,10 @@ The first adapter supports Pi-hole Web `v6.6` only.  Installation refuses:
 - pre-existing adapter page paths;
 - unsafe companion URLs.
 
-The installed Raspberry Pi layout passed disposable-copy validation against the
-official v6.6 structure.  The live checksum and version must be reconfirmed
-immediately before an approved live installation.
+The installed Raspberry Pi layout passed disposable-copy validation and guarded
+live installation against the official v6.6 structure.  Future installation or
+repair work must reconfirm the live checksum and version immediately before any
+change.
 
 ## Companion frame policy
 
@@ -129,7 +130,7 @@ Removal still refuses if Pi-hole or another process changed any installed
 adapter file after installation.  This avoids overwriting a later Pi-hole Web
 update with an older sidebar copy.
 
-## Live approval prerequisites
+## Live acceptance requirements
 
 Before touching the live Pi-hole web tree:
 
@@ -144,8 +145,12 @@ Before touching the live Pi-hole web tree:
 9. Create an additional recovery point.
 10. Obtain explicit approval for the live adapter installation.
 
-The remaining live work and its acceptance criteria are tracked in
-[issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2).
+These requirements were satisfied before the live installation.  The initial
+embedded-page defects in LCARS menu styling and Pi-hole `frame-src` policy were
+corrected through the same recovery-backed workflow.  The owner accepted the
+live Overview and Setup integration with version `0.1.0.dev4` on September 23,
+2026.  Companion upgrades preserve and verify the independently reversible
+adapter state.
 
 ## Verified device-copy rehearsal
 

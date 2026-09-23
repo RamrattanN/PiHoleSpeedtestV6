@@ -173,8 +173,8 @@ and verified.  Scheduled collection completed successfully through the official
 Ookla CLI while the dashboard continued running as the dedicated unprivileged
 service account.  The legacy root crontab remained empty.
 
-The owner-approved keyless dashboard and the later interface refinement were
-deployed through guarded upgrades.  The final verified application commit was:
+The owner-approved keyless dashboard and the first interface refinement were
+deployed through guarded upgrades.  That interface checkpoint used commit:
 
 ```text
 897e7d2a8e699f65e762ab6a8908f002443f2abb
@@ -190,11 +190,10 @@ stored at:
 /var/lib/pihole-speedtest-upgrade-recovery/20260923T034009Z
 ```
 
-All 52 automated tests and GitHub CI run 16 passed for the deployed application
+All 52 automated tests and GitHub CI run 16 passed for that deployed application
 revision.  The owner then completed visual testing and approved the result to
-specification.  The live Pi-hole sidebar adapter remains absent and is tracked
-separately in
-[issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2).
+specification.  The live Pi-hole sidebar adapter was still absent at that
+checkpoint.
 
 ## Interface-label follow-up
 
@@ -221,3 +220,30 @@ Manual measurement `98635` then recorded interface `eth0`, 325.08 Mbps
 download, 102.43 Mbps upload, 8.98 ms latency, and 0.71 ms jitter.  Dashboard
 and timer services were active and enabled, `/api/health` reported 98,635
 measurements, and Pi-hole DNS and blocking remained healthy.
+
+## Live sidebar and current approved baseline
+
+The version-gated Pi-hole Web v6.6 adapter was subsequently installed through
+the guarded, recovery-backed workflow.  The adapter added native `Speedtest`
+navigation with `Overview` and `Setup` while leaving collection, storage, and
+scheduling in the independent companion service.  Pi-hole's existing security
+header array and sidebar were archived for exact verified removal.
+
+The first live pass exposed LCARS text styling and cross-port framing defects.
+Both were corrected without changing Pi-hole DNS or FTL.  The installed
+adapter now uses the native LCARS menu classes, permits only the exact companion
+frame source, and is preserved and verified by later companion upgrades.
+
+On September 23, 2026, the owner accepted version `0.1.0.dev4` at commit:
+
+```text
+4bd209c0d41c70dd7235ace2b2640be27450c052
+```
+
+The accepted baseline includes embedded Ramrattan branding, manual collection,
+true timestamp spacing, labelled no-data gaps, fixed-y-axis zoom and pan,
+mouseover details, and adaptive layered bars.  Unequal paired values share one
+timestamp column without being added together; equal or nearly equal values
+render side by side.  All 61 automated tests and GitHub CI run 35 passed.  The
+dashboard service and 15-minute collection timer remain enabled for automatic
+startup, and the sidebar adapter remains independently reversible.

@@ -19,12 +19,16 @@ detailed acceptance criteria for active engineering work.
 - Complete a guarded live companion upgrade with 98,632 measurements preserved.
 - Deploy and verify the Linux default-route fallback when the Ookla JSON omits
   its interface name.  Live measurement `98635` recorded `eth0`.
+- Install, repair, and verify the live Pi-hole Web v6.6 sidebar integration,
+  including exact CSP recovery and independently reversible adapter state.
+- Rebaseline version `0.1.0.dev4` as the owner-approved live baseline with
+  embedded branding, manual testing, true timestamp gaps, and adaptive layered
+  bars.
 
 ## Ready next
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Live Pi-hole sidebar integration | [Issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2) | Fresh version, checksum, health, and recovery preflight plus explicit owner approval |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Agree release artifact, checksum, rollback, preservation, and purge contracts |
 
 ## Backlog
@@ -40,8 +44,8 @@ detailed acceptance criteria for active engineering work.
 
 ## Approval-gated
 
-- No live Pi-hole Web modification before the issue #2 preflight and explicit
-  owner approval.
+- No future Pi-hole Web modification without version, checksum, health,
+  recovery, and exact-removal verification plus explicit owner approval.
 - No curl command may be documented as supported until immutable-source and
   checksum verification, rollback, uninstall preservation, and Raspberry Pi 3
   acceptance pass.

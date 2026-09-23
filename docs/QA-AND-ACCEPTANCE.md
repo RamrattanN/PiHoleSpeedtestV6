@@ -19,16 +19,19 @@ No development build may modify the live Pi-hole until all preceding gates pass.
 - reset verifies a SQLite recovery copy before deleting active history;
 - CSV export preserves chronological order and measurement units;
 - chart zoom and pan affect only the time axis;
-- line and bar modes preserve the same fixed vertical scale.
+- line and bar modes preserve the same fixed vertical scale;
+- bar mode layers unequal paired values without adding them and separates
+  equal or nearly equal values so both series remain visible.
 
 ### Owner dashboard acceptance
 
 The owner visually accepted the branded dashboard and Setup experience on
 September 22, 2026, using the imported 98,627-measurement validation database.
-The owner approved the revised live interface on September 22, 2026 after
-verifying aligned navigation, permanently expanded Setup sections, and chart
-mouseover values in accordance with the approved specification.  GitHub CI
-run 16 and all 52 automated tests passed for the deployed revision.
+The owner approved the latest live interface on September 23, 2026 after
+verifying embedded branding, manual testing, permanently expanded Setup
+sections, chart mouseover values, true timestamp gaps, and adaptive layered
+bars in version `0.1.0.dev4`.  GitHub CI run 35 and all 61 automated tests
+passed for the accepted revision.
 The accepted interface is documented in
 [`APPROVED-DASHBOARD-BASELINE.md`](APPROVED-DASHBOARD-BASELINE.md).  Later UI
 changes must preserve its required behaviors or receive explicit owner
@@ -90,8 +93,9 @@ The collection timer, keyless dashboard controls, and guarded companion
 upgrade subsequently passed live verification.  Commit
 `897e7d2a8e699f65e762ab6a8908f002443f2abb` was deployed with 98,632
 measurements preserved, the timer active and enabled, and recovery evidence at
-`/var/lib/pihole-speedtest-upgrade-recovery/20260923T034009Z`.  The live sidebar
-adapter remains absent.  Reboot and full restore exercises remain open.
+`/var/lib/pihole-speedtest-upgrade-recovery/20260923T034009Z`.  The sidebar
+adapter was still absent at that checkpoint.  Reboot and full restore exercises
+remain open.
 
 The interface-label follow-up was deployed from commit
 `e06d6c7964acc5bdfb6000488dd7eea79d5ed615`.  All 54 Raspberry Pi tests passed,
@@ -115,9 +119,12 @@ stored at
 
 The disposable installed-tree rehearsal passed on September 22, 2026 local
 time.  Installation, checksum validation, exact removal, live-sidebar
-non-modification, FTL health, and blocking status all passed.  Live adapter
-installation remains separately approval-gated and is tracked in
-[issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2).
+non-modification, FTL health, and blocking status all passed.  The subsequent
+guarded live installation, CSP correction, LCARS navigation repair, embedded
+Overview and Setup verification, and owner visual acceptance also passed.
+Version `0.1.0.dev4` is the accepted live adapter baseline.  Pi-hole DNS, FTL,
+blocking, dashboard health, companion collection, and recovery controls
+remained operational.
 
 ## Gate 6: release acceptance
 

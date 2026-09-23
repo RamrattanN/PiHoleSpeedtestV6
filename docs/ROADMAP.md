@@ -2,7 +2,7 @@
 
 ## Foundation
 
-- [x] Recover the original product contract.
+- [x] Define the Pi-hole v6 product contract.
 - [x] Select the hybrid companion architecture.
 - [x] Define QA, acceptance, and stop conditions.
 - [x] Add official Ookla parsing, SQLite history, API, and local dashboard.
@@ -66,8 +66,10 @@
 - [x] Validate the adapter against a disposable copy of the installed Pi-hole
   v6.6 web tree.
 - [x] Prove exact adapter rollback against the installed-tree copy.
-- [ ] Install and verify the adapter against the live Pi-hole Web v6.6 tree
-  under the approval gate ([issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2)).
+- [x] Install and verify the adapter against the live Pi-hole Web v6.6 tree
+  under the recovery-backed approval gate.
+- [x] Complete owner acceptance of embedded branding, manual test controls,
+  true timestamp gaps, and adaptive layered bars in version `0.1.0.dev4`.
 - [ ] Prove Pi-hole update failure isolation on the live service boundary.
 
 ## Release

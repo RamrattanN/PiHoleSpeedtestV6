@@ -6,9 +6,10 @@ Pi-hole upgrade cannot erase data or disable scheduled tests.
 
 ## Current status
 
-This branch is an owner-approved development foundation, not a production
-release.  Its dashboard is the visual and interaction baseline for subsequent
-Pi-hole Speedtest work.  It provides:
+This branch records the owner-approved live development baseline, version
+`0.1.0.dev4`.  It is not yet a tagged production release.  Its dashboard and
+Pi-hole sidebar integration are the visual, interaction, and deployment
+baseline for subsequent Pi-hole Speedtest work.  It provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;
@@ -16,25 +17,23 @@ Pi-hole Speedtest work.  It provides:
 - a repeatable importer for valid legacy CSV history;
 - a local API and Ramrattan Network Tools dashboard;
 - local web assets with no CDN dependency;
-- line and bar charts with fixed-scale time-axis zoom and pan;
+- line and adaptive layered-bar charts with fixed-scale time-axis zoom and pan;
+- true timestamp spacing and labelled no-data gaps without fabricated values;
 - chart mouseover details for measurement time and values;
 - optional table visibility and complete-history CSV export;
 - dashboard controls for manual speed tests, collection-frequency changes,
   and reset;
 - a verified SQLite recovery backup before every reset;
 - unprivileged systemd service and schedule assets;
+- a version-gated, recovery-backed Pi-hole Web v6.6 sidebar adapter;
 - automated unit tests and pull-request CI.
 
-The approved companion service and 15-minute collection timer are running on
-the verified Raspberry Pi 3 baseline.  Guarded installation and upgrade paths
-exist, but a release-grade curl installer and data-preserving uninstaller are
-still tracked in [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
-A version-gated, reversible Pi-hole Web v6.6 adapter has passed disposable-copy
-validation and entered live acceptance testing.  The first live pass identified
-LCARS sidebar styling and Pi-hole `frame-src` compatibility defects.  Their
-recovery-backed correction remains tracked in
-[issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2) until owner
-acceptance is complete.
+The approved companion service, 15-minute collection timer, and reversible
+Pi-hole Web v6.6 sidebar adapter are running on the verified Raspberry Pi 3
+baseline.  Version `0.1.0.dev4` is the latest owner-approved build.  Guarded
+installation and upgrade paths exist, but a release-grade curl installer and
+data-preserving uninstaller remain tracked in
+[issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
 
 ## Architecture
 
@@ -102,8 +101,8 @@ Then open <http://127.0.0.1:8765/>.
 Development and automated tests run away from the live Pi-hole first.  The
 approved companion is installed on the owner's Pi-hole host only through guarded,
 recovery-backed gates.  The optional sidebar adapter is managed as a separate,
-reversible deployment phase and is still under live acceptance.  The verified
-device baseline is recorded in
+reversible deployment phase and has completed live owner acceptance.  The
+verified device baseline is recorded in
 [Verified Raspberry Pi Baseline](docs/VERIFIED-PI-BASELINE.md).
 
 ## License

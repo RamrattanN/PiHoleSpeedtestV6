@@ -118,13 +118,11 @@ installs the approved wheel, verifies dashboard health and required interface
 markers, and restores the timer.  Failure invokes rollback.  It does not modify
 the Pi-hole web tree.
 
-The live upgrade to commit
-`897e7d2a8e699f65e762ab6a8908f002443f2abb` passed with 98,632 measurements
-preserved.  Recovery evidence is stored at:
-
-```text
-/var/lib/pihole-speedtest-upgrade-recovery/20260923T034009Z
-```
+The accepted live installation has been upgraded through version
+`0.1.0.dev4`, commit `4bd209c0d41c70dd7235ace2b2640be27450c052`, with
+measurement history, the active collection schedule, and the installed Pi-hole
+adapter state preserved.  Each guarded upgrade retains timestamped recovery
+evidence under `/var/lib/pihole-speedtest-upgrade-recovery/`.
 
 ## Supported curl installation and removal
 
