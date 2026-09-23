@@ -38,7 +38,7 @@ case "$action" in
   *) echo "Unknown action: $action" >&2; usage >&2; exit 2 ;;
 esac
 
-for command in curl sha256sum tar sudo mktemp tr hostname awk; do
+for command in curl sha256sum tar sudo mktemp tr hostname awk sed; do
   if ! command -v "$command" >/dev/null 2>&1; then
     echo "STOP: Required command is unavailable: $command" >&2
     exit 1
@@ -96,9 +96,17 @@ case "$action" in
       pihole_origin="${pihole_origin:-http://${device_address}}"
       companion_url="${companion_url:-http://${device_address}:8765}"
     fi
+    installed_commit="$(
+      sudo sed -n 's/^source_commit=//p' \
+        /var/lib/pihole-speedtest/install-manifest.txt
+    )"
+    if ! [[ "$installed_commit" =~ ^[0-9a-f]{40}$ ]]; then
+      echo "STOP: Installed companion commit could not be verified." >&2
+      exit 1
+    fi
     sudo bash "$source_root/scripts/install_pihole_adapter.sh" \
       --expected-source-commit "$source_commit" \
-      --expected-installed-commit "$source_commit" \
+      --expected-installed-commit "$installed_commit" \
       --companion-url "$companion_url" \
       --pihole-origin "$pihole_origin"
     ;;
