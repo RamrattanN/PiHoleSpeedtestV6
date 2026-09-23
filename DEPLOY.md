@@ -1,7 +1,7 @@
 # Deployment status
 
-Production deployment is intentionally blocked during the companion-foundation
-phase.
+Production deployment remains intentionally blocked until the systemd assets
+pass isolated testing on the Raspberry Pi.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
@@ -21,7 +21,7 @@ python -m unittest discover -s tests -v
 pihole-speedtest serve --database ./data/speedtest.db --host 127.0.0.1 --port 8765
 ```
 
-## Planned production shape
+## Implemented service shape
 
 - application: `/opt/pihole-speedtest`
 - data: `/var/lib/pihole-speedtest/speedtest.db`
@@ -30,6 +30,20 @@ pihole-speedtest serve --database ./data/speedtest.db --host 127.0.0.1 --port 87
 - dashboard: independent HTTP service on a configurable LAN address and port
 - schedule: systemd timer
 - integration: optional and reversible Pi-hole v6 adapter
+
+Development systemd units now exist under `deploy/systemd/` for:
+
+- an always-on dashboard at LAN port `8765`;
+- a one-shot official Ookla collection service;
+- a persistent 30-minute collection timer;
+- an unprivileged `pihole-speedtest` service account;
+- process locking that refuses overlapping collections.
+
+Once installed and enabled by an administrator, the dashboard and collection
+schedule run without an interactive Terminal session.  These units are not yet
+approved for installation on the live Raspberry Pi.  The safe installer,
+upgrade, verification, and rollback procedures must be completed and reviewed
+first.
 
 The authoritative deployment gates are in
 [`docs/QA-AND-ACCEPTANCE.md`](docs/QA-AND-ACCEPTANCE.md).

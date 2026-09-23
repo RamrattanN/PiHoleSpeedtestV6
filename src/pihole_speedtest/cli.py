@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from .collector import CollectionError, collect
+from .locking import CollectionLockedError, collection_lock
 from .migration import LegacyImportError, import_legacy_csv
 from .server import serve
 from .storage import Storage
@@ -40,6 +41,7 @@ def parser() -> argparse.ArgumentParser:
     )
     collect_command.add_argument("--binary", default="speedtest")
     collect_command.add_argument("--timeout", type=int, default=180)
+    collect_command.add_argument("--lock-file", type=Path)
 
     import_command = commands.add_parser(
         "import-legacy-csv",
@@ -70,12 +72,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     if arguments.command == "collect":
         if arguments.timeout <= 0:
             parser().error("--timeout must be greater than zero")
+        lock_file = arguments.lock_file or Path(
+            f"{arguments.database}.collect.lock"
+        )
         try:
-            measurement = collect(arguments.binary, arguments.timeout)
-        except CollectionError as exc:
+            with collection_lock(lock_file):
+                measurement = collect(arguments.binary, arguments.timeout)
+                measurement_id = storage.insert(measurement)
+        except (CollectionError, CollectionLockedError) as exc:
             print(f"Collection failed: {exc}")
             return 1
-        measurement_id = storage.insert(measurement)
         print(
             json.dumps(
                 {"id": measurement_id, **measurement.to_dict()},

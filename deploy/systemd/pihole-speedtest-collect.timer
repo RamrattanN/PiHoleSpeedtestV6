@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Pi-hole Speedtest v6 every 30 minutes
+
+[Timer]
+OnCalendar=*:00/30
+RandomizedDelaySec=60
+Persistent=true
+Unit=pihole-speedtest-collect.service
+
+[Install]
+WantedBy=timers.target
