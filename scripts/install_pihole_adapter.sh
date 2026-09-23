@@ -47,15 +47,20 @@ fi
 
 source_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 source_commit="$(git -C "$source_root" rev-parse HEAD 2>/dev/null || true)"
+if [ -z "$source_commit" ] && [ -f "$source_root/release/SOURCE-COMMIT" ]; then
+  source_commit="$(tr -d '\r\n' < "$source_root/release/SOURCE-COMMIT")"
+fi
 if [ "$source_commit" != "$expected_source_commit" ]; then
   echo "STOP: Source commit does not match the approved commit." >&2
   exit 1
 fi
-if ! git -C "$source_root" diff --quiet -- ||
-  ! git -C "$source_root" diff --cached --quiet --
-then
-  echo "STOP: Source worktree has tracked changes." >&2
-  exit 1
+if [ -d "$source_root/.git" ]; then
+  if ! git -C "$source_root" diff --quiet -- ||
+    ! git -C "$source_root" diff --cached --quiet --
+  then
+    echo "STOP: Source worktree has tracked changes." >&2
+    exit 1
+  fi
 fi
 
 application_cli="/opt/pihole-speedtest/venv/bin/pihole-speedtest"
@@ -78,7 +83,7 @@ header_policy_attempted=0
 headers_before=""
 headers_installed=""
 
-for command in git python3 systemctl curl sha256sum pihole pihole-FTL stat; do
+for command in python3 systemctl curl sha256sum pihole pihole-FTL stat tr; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "STOP: Required command is unavailable: $command" >&2
     exit 1

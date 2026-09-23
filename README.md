@@ -31,8 +31,9 @@ baseline for subsequent Pi-hole Speedtest work.  It provides:
 The approved companion service, 15-minute collection timer, and reversible
 Pi-hole Web v6.6 sidebar adapter are running on the verified Raspberry Pi 3
 baseline.  Version `0.1.0.dev4` is the latest owner-approved build.  Guarded
-installation and upgrade paths exist, but a release-grade curl installer and
-data-preserving uninstaller remain tracked in
+installation and upgrade paths exist.  Version `0.1.0.dev5` is the current
+checksum-verified curl workflow engineering candidate; it is not yet the live
+approved baseline.  Remaining Raspberry Pi acceptance is tracked in
 [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
 
 ## Architecture
@@ -47,6 +48,7 @@ The product has two deliberately separate layers:
 See [Architecture](docs/ARCHITECTURE.md),
 [Approved Dashboard Baseline](docs/APPROVED-DASHBOARD-BASELINE.md),
 [Pi-hole v6 Adapter](docs/PIHOLE-V6-ADAPTER.md),
+[Checksum-verified curl workflow](docs/CURL-INSTALLATION.md),
 [QA and Acceptance](docs/QA-AND-ACCEPTANCE.md), and
 [Roadmap](docs/ROADMAP.md).  The repository documentation index is
 [Wiki](docs/WIKI.md), and active work is summarized in

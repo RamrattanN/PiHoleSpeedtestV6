@@ -138,6 +138,23 @@ remained operational.
 - Raspberry Pi 3 CPU, memory, disk, and temperature remain acceptable;
 - installation and rollback instructions match the accepted build.
 
+### Curl workflow acceptance
+
+- the bootstrap and bundle are fetched from immutable commit URLs;
+- the bootstrap is verified before it runs and the bundle is verified before
+  any privileged command;
+- unsupported architecture, Python, Pi-hole, Ookla CLI, layout, and preserved
+  data states fail before installation mutation;
+- partial installation and removal restore service state without deleting user
+  data;
+- default uninstall preserves history, settings, backups, manifests, logs, and
+  recovery evidence;
+- reinstall verifies and reuses the preserved database;
+- the separately invoked purge refuses an active installation and requires the
+  exact destructive confirmation;
+- clean install, adapter install and removal, uninstall, reinstall, reboot, and
+  disposable-data purge pass on Raspberry Pi 3 ARM64.
+
 ## Stop conditions
 
 Stop immediately if Pi-hole DNS health changes, the admin interface becomes

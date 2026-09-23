@@ -37,6 +37,27 @@ jobs:
         run: |
           bash -n mod
           bash -n test
-          bash -n scripts/mod.sh
-          bash -n scripts/speedtest.sh
-          bash -n scripts/install_dashboard.sh
+          bash -n scripts/*.sh
+          bash -n release/bootstrap.template.sh
+      - name: Verify deterministic release assets
+        run: |
+          commit="$(git rev-parse HEAD)"
+          first="$(mktemp -d)"
+          second="$(mktemp -d)"
+          scripts/build_release_assets.sh \
+            --source-commit "$commit" \
+            --output-directory "$first"
+          scripts/build_release_assets.sh \
+            --source-commit "$commit" \
+            --output-directory "$second"
+          cmp \
+            "$first/pihole-speedtest-v6-0.1.0.dev5.tar.gz" \
+            "$second/pihole-speedtest-v6-0.1.0.dev5.tar.gz"
+          bundle_sha="$(sha256sum "$first/pihole-speedtest-v6-0.1.0.dev5.tar.gz" | awk '{print $1}')"
+          scripts/render_release_bootstrap.sh \
+            --source-commit "$commit" \
+            --asset-commit "$commit" \
+            --bundle-sha256 "$bundle_sha" \
+            --output "$first/bootstrap.sh"
+          bash -n "$first/bootstrap.sh"
+          ! grep -q '@SOURCE_COMMIT@\|@ASSET_COMMIT@\|@BUNDLE_SHA256@' "$first/bootstrap.sh"

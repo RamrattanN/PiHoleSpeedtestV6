@@ -25,11 +25,11 @@ detailed acceptance criteria for active engineering work.
   embedded branding, manual testing, true timestamp gaps, and adaptive layered
   bars.
 
-## Ready next
+## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Agree release artifact, checksum, rollback, preservation, and purge contracts |
+| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Publish immutable candidate assets, then pass install, rollback, uninstall, reinstall, reboot, and purge acceptance on Raspberry Pi 3 |
 
 ## Backlog
 

@@ -124,14 +124,17 @@ measurement history, the active collection schedule, and the installed Pi-hole
 adapter state preserved.  Each guarded upgrade retains timestamped recovery
 evidence under `/var/lib/pihole-speedtest-upgrade-recovery/`.
 
-## Supported curl installation and removal
+## Checksum-verified curl installation and removal candidate
 
-A public curl-based install and uninstall workflow is planned but is not yet a
-supported deployment method.  Do not pipe a mutable GitHub branch directly to
-`sudo bash`.
+Version `0.1.0.dev5` contains the release installer, data-preserving
+uninstaller, separate purge command, deterministic bundle builder, and
+immutable-bootstrap renderer.  The bootstrap verifies the complete bundle
+before invoking `sudo`; it never pipes a mutable branch into a privileged
+shell.
 
-The supported design must download an immutable release bootstrap over HTTPS,
-verify published checksums before privileged execution, fail closed on an
-unsupported system, preserve user data during uninstall by default, and offer
-explicit recovery and purge contracts.  Engineering and acceptance are tracked
-in [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
+Public command syntax and the complete trust, preservation, rollback, and
+acceptance contract are maintained in
+[Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  The commands are
+not supported until the immutable assets are published and the Raspberry Pi 3
+acceptance sequence in
+[issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) passes.

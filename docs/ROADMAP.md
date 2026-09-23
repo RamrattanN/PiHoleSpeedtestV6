@@ -24,10 +24,14 @@
 - [x] Add collection-frequency configuration for the trusted LAN dashboard.
 - [ ] Add conservative retention.
 - [x] Build guarded staged installation and companion upgrade flows.
-- [ ] Build the supported release uninstaller, general backup, and restore
+- [x] Build the data-preserving release uninstaller and separate explicit purge
   flow.
-- [ ] Engineer checksum-verified curl install and uninstall entry points with
+- [ ] Complete checksum-verified curl install and uninstall entry points with
   GitHub-hosted instructions ([issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3)).
+- [x] Add deterministic release-bundle and immutable-bootstrap build tooling.
+- [ ] Publish immutable release assets and record both SHA-256 trust anchors.
+- [ ] Pass uninstall and reinstall acceptance with history and settings
+  preserved.
 - [x] Add a rollback-guarded dashboard-only staged installer.
 - [x] Add a data-preserving dashboard-only removal command.
 - [x] Pass the guarded dashboard-only staged installation on Raspberry Pi 3.
