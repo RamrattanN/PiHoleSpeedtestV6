@@ -85,6 +85,25 @@ function chartNote(records, timeline) {
   return gaps ? `${measurementText} - ${gaps} no-data ${gaps === 1 ? "gap" : "gaps"}` : measurementText;
 }
 
+function chartBarSpacing(timeline, xPositions) {
+  const spacings = [];
+  for (let index = 1; index < xPositions.length; index += 1) {
+    const previous = timeline.timestamps[index - 1];
+    const current = timeline.timestamps[index];
+    if (!Number.isFinite(previous) || !Number.isFinite(current)) continue;
+    const elapsed = current - previous;
+    if (elapsed <= 0 || elapsed > timeline.intervalMs * 1.5) continue;
+    const spacing = xPositions[index] - xPositions[index - 1];
+    if (spacing > 0) spacings.push(spacing);
+  }
+  if (spacings.length === 0) return 12;
+  spacings.sort((left, right) => left - right);
+  const middle = Math.floor(spacings.length / 2);
+  return spacings.length % 2
+    ? spacings[middle]
+    : (spacings[middle - 1] + spacings[middle]) / 2;
+}
+
 function drawChart(records, options) {
   const canvas = byId(options.canvasId);
   const ratio = window.devicePixelRatio || 1;
@@ -150,13 +169,23 @@ function drawChart(records, options) {
   context.textAlign = "start";
 
   if (chartMode === "bar") {
-    const groupWidth = Math.max(3, Math.min(36, chartWidth * timeline.intervalMs / timeline.duration));
-    const barWidth = Math.max(1, Math.min(16, groupWidth / options.series.length - 1));
+    const measuredSpacing = chartBarSpacing(timeline, xPositions);
+    const groupWidth = Math.max(1, Math.min(18, measuredSpacing * 0.76));
+    const seriesGap = options.series.length > 1
+      ? Math.min(2, Math.max(0.5, groupWidth * 0.08))
+      : 0;
+    const barWidth = Math.max(
+      0.1,
+      (groupWidth - seriesGap * (options.series.length - 1)) / options.series.length,
+    );
+    const renderedGroupWidth = barWidth * options.series.length
+      + seriesGap * (options.series.length - 1);
     options.series.forEach((series, seriesIndex) => {
       context.fillStyle = series.color;
       values[seriesIndex].forEach((value, index) => {
         const barHeight = chartHeight * value / maximum;
-        const left = xPositions[index] - barWidth * options.series.length / 2 + seriesIndex * barWidth;
+        const left = xPositions[index] - renderedGroupWidth / 2
+          + seriesIndex * (barWidth + seriesGap);
         context.fillRect(left, padding.top + chartHeight - barHeight, barWidth, barHeight);
       });
     });

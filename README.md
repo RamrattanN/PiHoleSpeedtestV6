@@ -4,11 +4,6 @@ Pi-hole Speedtest v6 is a resilient speed-test companion for Pi-hole v6.  It
 keeps collection, history, and the full dashboard independent from Pi-hole so a
 Pi-hole upgrade cannot erase data or disable scheduled tests.
 
-The project is a modernization of the MIT-licensed
-[`arevindh/pihole-speedtest`](https://github.com/arevindh/pihole-speedtest).
-The original product intent is preserved, while the implementation no longer
-replaces Pi-hole Core or its web interface.
-
 ## Current status
 
 This branch is an owner-approved development foundation, not a production
