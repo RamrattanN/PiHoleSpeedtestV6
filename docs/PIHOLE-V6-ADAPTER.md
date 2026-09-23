@@ -31,7 +31,7 @@ be enabled for the exact Pi-hole origin through
 `/etc/default/pihole-speedtest-v6`:
 
 ```text
-PIHOLE_SPEEDTEST_FRAME_ANCESTORS=http://192.168.2.14
+PIHOLE_SPEEDTEST_FRAME_ANCESTORS=http://pihole.example.test
 ```
 
 The value is an origin, not a URL path.  HTTPS Pi-hole pages cannot embed an
@@ -48,7 +48,7 @@ approval to run against the live `/var/www/html/admin` tree.
 pihole-speedtest adapter-install \
   --web-root /temporary/pihole-admin-copy \
   --web-version v6.6 \
-  --companion-url http://192.168.2.14:8765 \
+  --companion-url http://pihole.example.test:8765 \
   --backup-root /temporary/adapter-backups
 ```
 
@@ -82,8 +82,13 @@ low-level adapter commands directly:
 sudo bash ./scripts/install_pihole_adapter.sh \
   --expected-source-commit APPROVED_SOURCE_SHA \
   --expected-installed-commit INSTALLED_SOURCE_SHA \
-  --companion-url http://192.168.2.14:8765
+  --companion-url http://pihole.example.test:8765 \
+  --pihole-origin http://pihole.example.test
 ```
+
+Replace `pihole.example.test` with the hostname or IP address that resolves to
+the user's own Pi-hole.  The installer does not contain or assume a private
+network address.
 
 The installer fails closed unless the approved source and installed companion
 commits match, Pi-hole Web is exactly v6.6, the pristine sidebar checksum is

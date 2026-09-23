@@ -15,7 +15,7 @@
 
 ## Raspberry Pi development baseline
 
-- [x] Complete read-only preflight on `192.168.2.14`.
+- [x] Complete read-only preflight on the owner's Raspberry Pi.
 - [x] Archive the active legacy installation and pause its five-minute cron job.
 - [x] Validate the copied legacy CSV import into a temporary SQLite database.
 - [x] Add systemd service and timer units.

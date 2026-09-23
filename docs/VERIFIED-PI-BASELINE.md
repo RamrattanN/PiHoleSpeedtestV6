@@ -154,8 +154,8 @@ Independent post-install verification established:
 - SQLite `PRAGMA integrity_check` returned `ok`;
 - the migration recorded 98,627 inserted measurements, 187 rejected empty
   rows, and 28 preserved timestamp collisions;
-- the content security policy allowed framing only from `self` and
-  `http://192.168.2.14`;
+- the content security policy allowed framing only from `self` and the
+  explicitly configured Pi-hole origin;
 - no collection timer was installed or active;
 - the root crontab remained empty;
 - neither live adapter page existed;
