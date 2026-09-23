@@ -76,5 +76,5 @@ tar --sort=name \
   --owner=0 --group=0 --numeric-owner \
   -C "$work_dir" -cf - "$bundle_root" |
   gzip -n > "$output_directory/$bundle_name"
-sha256sum "$output_directory/$bundle_name" > "$output_directory/${bundle_name}.sha256"
+(cd "$output_directory" && sha256sum "$bundle_name" > "${bundle_name}.sha256")
 echo "$output_directory/$bundle_name"
