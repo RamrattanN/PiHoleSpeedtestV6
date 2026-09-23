@@ -64,7 +64,7 @@ then
   echo "STOP: Source worktree has tracked changes." >&2
   exit 1
 fi
-for command in python3 systemctl curl sha256sum runuser pihole git grep; do
+for command in python3 systemctl curl sha256sum runuser pihole git grep find; do
   if ! command -v "$command" >/dev/null 2>&1; then
     echo "STOP: Required command is unavailable: $command" >&2
     exit 1
@@ -87,7 +87,6 @@ collection_manifest="${data_dir}/collection-manifest.txt"
 recovery_root="/var/lib/pihole-speedtest-upgrade-recovery"
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 recovery_dir="${recovery_root}/${timestamp}"
-next_application="/opt/pihole-speedtest.next.${timestamp}"
 old_application_moved=0
 units_installed=0
 settings_changed=0
@@ -102,7 +101,7 @@ do
     exit 1
   fi
 done
-for path in "$collection_unit_path" "$timer_unit_path" "$collection_manifest" "$next_application"; do
+for path in "$collection_unit_path" "$timer_unit_path" "$collection_manifest"; do
   if [ -e "$path" ]; then
     echo "STOP: Collection or upgrade target already exists: $path" >&2
     exit 1
@@ -157,7 +156,6 @@ mv "$recovery_dir/application-before" "$application_dir"
   if [ -f "$recovery_dir/install-manifest.before.txt" ]; then
     cp -a "$recovery_dir/install-manifest.before.txt" "$install_manifest"
   fi
-  rm -rf -- "$next_application"
   systemctl daemon-reload >/dev/null 2>&1 || true
   systemctl start "$dashboard_unit" >/dev/null 2>&1 || true
   echo "Rollback finished.  Database backup and evidence: $recovery_dir" >&2
@@ -190,13 +188,23 @@ with sqlite3.connect(source_path) as source:
 PY
 sha256sum "$recovery_dir/speedtest.before.db" > "$recovery_dir/speedtest.before.db.sha256"
 
-python3 -m venv "$next_application/venv"
-"$next_application/venv/bin/python" -m pip install "$source_root"
+python3 -m venv "$recovery_dir/build-venv"
+"$recovery_dir/build-venv/bin/python" -m pip wheel \
+  --wheel-dir "$recovery_dir/wheels" \
+  "$source_root"
+wheel_path="$(find "$recovery_dir/wheels" -maxdepth 1 -type f -name 'pihole_speedtest_v6-*.whl' -print -quit)"
+if [ -z "$wheel_path" ] || [ ! -f "$wheel_path" ]; then
+  echo "STOP: The approved application wheel was not created." >&2
+  exit 1
+fi
 
 systemctl stop "$dashboard_unit"
 mv "$application_dir" "$recovery_dir/application-before"
 old_application_moved=1
-mv "$next_application" "$application_dir"
+install -d -m 0755 -o root -g root "$application_dir"
+python3 -m venv "$application_dir/venv"
+"$application_dir/venv/bin/python" -m pip install "$wheel_path"
+rm -rf -- "$recovery_dir/build-venv"
 
 settings_changed=1
 runuser -u pihole-speedtest -- \

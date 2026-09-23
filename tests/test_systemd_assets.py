@@ -87,6 +87,8 @@ class SystemdAssetTests(unittest.TestCase):
         self.assertIn("--expected-source-commit", upgrader)
         self.assertIn("--expected-installed-commit", upgrader)
         self.assertIn("speedtest.before.db", upgrader)
+        self.assertIn("-m pip wheel", upgrader)
+        self.assertNotIn("pihole-speedtest.next", upgrader)
         self.assertIn("PRAGMA integrity_check", upgrader)
         self.assertIn('"http://127.0.0.1:8765/api/collect"', upgrader)
         self.assertIn('systemctl enable --now "$timer_unit"', upgrader)
