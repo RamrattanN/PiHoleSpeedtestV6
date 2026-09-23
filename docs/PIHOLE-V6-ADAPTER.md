@@ -73,6 +73,35 @@ changed after installation.  A successful removal restores the original
 sidebar byte for byte, deletes only the two adapter-created pages, and writes a
 removal record.
 
+## Guarded live lifecycle
+
+The live Raspberry Pi uses the repository wrappers rather than invoking the
+low-level adapter commands directly:
+
+```bash
+sudo ./scripts/install_pihole_adapter.sh \
+  --expected-source-commit APPROVED_SOURCE_SHA \
+  --expected-installed-commit INSTALLED_SOURCE_SHA \
+  --companion-url http://192.168.2.14:8765
+```
+
+The installer fails closed unless the approved source and installed companion
+commits match, Pi-hole Web is exactly v6.6, the pristine sidebar checksum is
+recognized, the adapter targets are absent, both companion services are
+healthy, and the frame policy permits the exact Pi-hole origin.  It records the
+adapter recovery manifest in both deployment manifests so later companion
+upgrades can verify and preserve the installed adapter state.
+
+Verified live removal uses the recorded recovery manifest automatically:
+
+```bash
+sudo ./scripts/remove_pihole_adapter.sh
+```
+
+Removal still refuses if Pi-hole or another process changed any installed
+adapter file after installation.  This avoids overwriting a later Pi-hole Web
+update with an older sidebar copy.
+
 ## Live approval prerequisites
 
 Before touching the live Pi-hole web tree:
