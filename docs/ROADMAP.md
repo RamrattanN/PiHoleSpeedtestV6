@@ -22,6 +22,8 @@
 - [x] Add protected collection-frequency configuration.
 - [ ] Add conservative retention.
 - [ ] Build a safe installer, upgrader, uninstaller, backup, and restore flow.
+- [x] Add a rollback-guarded dashboard-only staged installer.
+- [x] Add a data-preserving dashboard-only removal command.
 - [ ] Pass isolated Raspberry Pi 3 testing on a temporary port and database.
 
 ## Product capability

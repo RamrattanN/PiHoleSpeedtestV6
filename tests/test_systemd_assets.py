@@ -4,6 +4,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SYSTEMD = ROOT / "deploy" / "systemd"
+INSTALLER = ROOT / "scripts" / "install_companion_dashboard.sh"
+REMOVER = ROOT / "scripts" / "remove_companion_dashboard.sh"
 
 
 class SystemdAssetTests(unittest.TestCase):
@@ -47,3 +49,28 @@ class SystemdAssetTests(unittest.TestCase):
 
         self.assertNotIn("/etc/pihole", combined)
         self.assertNotIn("/var/www/html", combined)
+
+    def test_dashboard_only_installer_preserves_phase_boundaries(self):
+        installer = INSTALLER.read_text(encoding="utf-8")
+
+        self.assertIn("--legacy-csv", installer)
+        self.assertIn("--expected-commit", installer)
+        self.assertIn("Source worktree has tracked changes", installer)
+        self.assertIn("PRAGMA integrity_check", installer)
+        self.assertIn("expected_count", installer)
+        self.assertIn("systemctl enable --now", installer)
+        self.assertNotIn("pihole-speedtest-collect.timer", installer)
+        self.assertNotIn("adapter-install", installer)
+        self.assertIn("Collection timer: disabled", installer)
+        self.assertIn("Pi-hole sidebar adapter: not installed", installer)
+
+    def test_dashboard_only_removal_preserves_data_and_phase_boundaries(self):
+        remover = REMOVER.read_text(encoding="utf-8")
+
+        self.assertIn("--expected-commit", remover)
+        self.assertIn('mv "$data_dir" "$recovery_dir/data"', remover)
+        self.assertIn("pihole-speedtest-collect.timer", remover)
+        self.assertIn("refuses to continue", remover)
+        self.assertNotIn("/var/www/html", remover)
+        self.assertNotIn("/etc/pihole", remover)
+        self.assertIn("Pi-hole web files were not modified", remover)

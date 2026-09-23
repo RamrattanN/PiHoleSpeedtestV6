@@ -56,3 +56,23 @@ The authoritative deployment gates are in
 The optional Pi-hole navigation integration is documented separately in
 [`docs/PIHOLE-V6-ADAPTER.md`](docs/PIHOLE-V6-ADAPTER.md).  It must not be
 installed before the companion service and isolated adapter validation pass.
+
+## Dashboard-only staged installation
+
+`scripts/install_companion_dashboard.sh` installs only the unprivileged
+companion dashboard.  It imports and reconciles the accepted legacy history,
+verifies SQLite integrity and the expected measurement counts, creates the
+administrator token, enables the dashboard service, and verifies its health.
+
+The script deliberately does not install the collection service or timer and
+does not modify the Pi-hole web tree.  A failed installation removes the new
+service and application, preserves failure evidence, and leaves Pi-hole files
+unchanged.  Use is approval-gated and requires all expected migration counts as
+explicit arguments.  It also requires the exact approved Git commit and refuses
+a source tree with tracked changes.
+
+`scripts/remove_companion_dashboard.sh` is the matching recovery command for
+this phase.  It refuses to run if a collection timer is present, stops the
+dashboard, preserves the complete data directory and deployment evidence under
+`/var/lib/pihole-speedtest-removal-recovery/`, and leaves the Pi-hole web tree
+unchanged.
