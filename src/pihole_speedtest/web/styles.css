@@ -53,6 +53,24 @@ h2 { margin-bottom: 0; font-size: 1.05rem; }
   height: auto;
   filter: drop-shadow(0 8px 14px rgb(0 0 0 / 28%));
 }
+.embedded-toolbar { display: none; }
+.embedded-brand { display: flex; align-items: center; gap: 10px; }
+.embedded-brand img {
+  display: block;
+  width: 42px;
+  height: auto;
+  filter: drop-shadow(0 5px 9px rgb(0 0 0 / 28%));
+}
+.embedded-brand span,
+.embedded-brand strong { display: block; }
+.embedded-brand span {
+  color: #66c2ff;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.embedded-brand strong { margin-top: 2px; font-size: 0.95rem; }
 .icon-button, .chart-controls button, .view-navigation button, button, .button-link {
   border: 1px solid #3b566d;
   border-radius: 9px;
@@ -294,6 +312,15 @@ body.embedded { background: transparent; }
 body.embedded main { width: 100%; padding: 0 0 24px; }
 body.embedded .brand-header,
 body.embedded .view-navigation { display: none; }
+body.embedded .embedded-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 8px 0 10px;
+  border-bottom: 1px solid #273747;
+}
 body.embedded .section-title { margin-top: 0; }
 body.embedded .setup-view { margin-top: 0; }
 table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
@@ -323,4 +350,6 @@ th {
   .view-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .view-navigation button { width: 100%; }
   .summary { grid-template-columns: 1fr; }
+  body.embedded .embedded-toolbar { align-items: stretch; flex-direction: column; }
+  body.embedded .embedded-toolbar button { width: 100%; }
 }

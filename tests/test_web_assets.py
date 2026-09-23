@@ -54,12 +54,18 @@ class WebAssetTests(unittest.TestCase):
         self.assertIn('id="help-dialog"', page)
         self.assertIn("Run speed test now", page)
         self.assertIn("data-run-speedtest", page)
-        self.assertEqual(page.count("data-run-speedtest"), 1)
+        self.assertEqual(page.count("data-run-speedtest"), 2)
         navigation = page.split('<nav class="view-navigation"', 1)[1].split(
             "</nav>", 1
         )[0]
         self.assertIn("data-run-speedtest", navigation)
         self.assertIn('class="run-speedtest-button"', navigation)
+        embedded_toolbar = page.split('<div class="embedded-toolbar"', 1)[1].split(
+            "</div>\n\n    <nav", 1
+        )[0]
+        self.assertIn('src="/ramrattan-logo.png"', embedded_toolbar)
+        self.assertIn("Ramrattan Network Tools", embedded_toolbar)
+        self.assertIn("data-run-speedtest", embedded_toolbar)
         self.assertNotIn("<details", page)
         self.assertNotIn("<summary", page)
         self.assertEqual(page.count('class="panel setup-panel'), 4)
@@ -84,6 +90,12 @@ class WebAssetTests(unittest.TestCase):
         self.assertIn('canvas.addEventListener("pointermove"', script)
         self.assertIn("showChartTooltip", script)
         self.assertIn("series.label", script)
+        self.assertIn("function chartTimeline(records)", script)
+        self.assertIn('context.fillText("No data"', script)
+        self.assertIn("current - previous > timeline.intervalMs * 1.5", script)
+        self.assertIn("xPositions.reduce", script)
+        self.assertIn("collectionIntervalMinutes = Number(settings.collection_interval_minutes)", script)
         self.assertIn('get("embed") === "1"', script)
         self.assertIn('window.location.hash === "#setup"', script)
         self.assertIn("body.embedded", web.joinpath("styles.css").read_text(encoding="utf-8"))
+        self.assertIn("body.embedded .embedded-toolbar", styles)

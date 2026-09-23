@@ -4,6 +4,7 @@ const byId = (id) => document.getElementById(id);
 let allRecords = [];
 let zoomStart = 0;
 let zoomEnd = 0;
+let collectionIntervalMinutes = 60;
 let chartMode = localStorage.getItem("pihole-speedtest-chart-mode") || "line";
 const chartStates = new Map();
 
@@ -48,6 +49,42 @@ function chartMaximum(records, series, minimum) {
   return Math.ceil(Math.max(minimum, ...values) * 1.1);
 }
 
+function chartTimeline(records) {
+  const intervalMs = collectionIntervalMinutes * 60 * 1000;
+  const timestamps = records.map((record) => Date.parse(record.recorded_at));
+  const valid = timestamps.filter(Number.isFinite);
+  const first = valid.length ? Math.min(...valid) : 0;
+  const last = valid.length ? Math.max(...valid) : first;
+  const start = records.length === 1 ? first - intervalMs / 2 : first;
+  const end = records.length === 1 ? last + intervalMs / 2 : last;
+  const gaps = [];
+  for (let index = 1; index < timestamps.length; index += 1) {
+    const previous = timestamps[index - 1];
+    const current = timestamps[index];
+    if (!Number.isFinite(previous) || !Number.isFinite(current)) continue;
+    const elapsed = current - previous;
+    if (elapsed > intervalMs * 1.5) {
+      gaps.push({
+        start: previous + intervalMs / 2,
+        end: current - intervalMs / 2,
+      });
+    }
+  }
+  return { timestamps, start, end, duration: Math.max(end - start, 1), intervalMs, gaps };
+}
+
+function formatAxisTime(timestamp) {
+  return new Date(timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function chartNote(records, timeline) {
+  const measurementText = records.length === allRecords.length
+    ? formatMeasurementCount(records.length)
+    : `${formatMeasurementCount(records.length)} shown of ${allRecords.length}`;
+  const gaps = timeline.gaps.length;
+  return gaps ? `${measurementText} - ${gaps} no-data ${gaps === 1 ? "gap" : "gaps"}` : measurementText;
+}
+
 function drawChart(records, options) {
   const canvas = byId(options.canvasId);
   const ratio = window.devicePixelRatio || 1;
@@ -65,15 +102,18 @@ function drawChart(records, options) {
     return;
   }
 
-  setText(options.noteId, records.length === allRecords.length
-    ? formatMeasurementCount(records.length)
-    : `${formatMeasurementCount(records.length)} shown of ${allRecords.length}`);
-  const padding = { top: 20, right: 16, bottom: 26, left: 46 };
+  const timeline = chartTimeline(records);
+  setText(options.noteId, chartNote(records, timeline));
+  const padding = { top: 20, right: 16, bottom: 34, left: 46 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const maximum = chartMaximum(allRecords, options.series, options.minimumMaximum);
   const values = options.series.map((series) => records.map((record) => Number(record[series.field]) || 0));
-  chartStates.set(options.canvasId, { records, options, padding, chartWidth, chartHeight });
+  const xForTimestamp = (timestamp) => padding.left + chartWidth * (timestamp - timeline.start) / timeline.duration;
+  const xPositions = timeline.timestamps.map((timestamp, index) => Number.isFinite(timestamp)
+    ? xForTimestamp(timestamp)
+    : padding.left + chartWidth * index / Math.max(records.length - 1, 1));
+  chartStates.set(options.canvasId, { records, options, padding, chartWidth, chartHeight, xPositions });
   context.strokeStyle = "#263747";
   context.fillStyle = "#8fa4b8";
   context.font = "12px system-ui";
@@ -84,14 +124,39 @@ function drawChart(records, options) {
     context.fillText((maximum - maximum * line / 4).toFixed(0), 7, y + 4);
   }
 
+  timeline.gaps.forEach((gap) => {
+    const left = xForTimestamp(gap.start);
+    const right = xForTimestamp(gap.end);
+    context.fillStyle = "rgb(255 138 138 / 9%)";
+    context.fillRect(left, padding.top, Math.max(1, right - left), chartHeight);
+    if (right - left >= 52) {
+      context.fillStyle = "#ff9b9b";
+      context.font = "11px system-ui";
+      context.textAlign = "center";
+      context.fillText("No data", (left + right) / 2, padding.top + 15);
+      context.textAlign = "start";
+    }
+  });
+
+  context.fillStyle = "#8fa4b8";
+  context.font = "11px system-ui";
+  for (let tick = 0; tick <= 4; tick += 1) {
+    const timestamp = timeline.start + timeline.duration * tick / 4;
+    const label = formatAxisTime(timestamp);
+    const x = padding.left + chartWidth * tick / 4;
+    context.textAlign = tick === 0 ? "start" : tick === 4 ? "right" : "center";
+    context.fillText(label, x, height - 7);
+  }
+  context.textAlign = "start";
+
   if (chartMode === "bar") {
-    const groupWidth = chartWidth / Math.max(records.length, 1);
+    const groupWidth = Math.max(3, Math.min(36, chartWidth * timeline.intervalMs / timeline.duration));
     const barWidth = Math.max(1, Math.min(16, groupWidth / options.series.length - 1));
     options.series.forEach((series, seriesIndex) => {
       context.fillStyle = series.color;
       values[seriesIndex].forEach((value, index) => {
         const barHeight = chartHeight * value / maximum;
-        const left = padding.left + index * groupWidth + (groupWidth - barWidth * options.series.length) / 2 + seriesIndex * barWidth;
+        const left = xPositions[index] - barWidth * options.series.length / 2 + seriesIndex * barWidth;
         context.fillRect(left, padding.top + chartHeight - barHeight, barWidth, barHeight);
       });
     });
@@ -102,9 +167,13 @@ function drawChart(records, options) {
     const points = [];
     context.strokeStyle = series.color; context.lineWidth = 2.5; context.beginPath();
     values[seriesIndex].forEach((value, index) => {
-      const x = padding.left + chartWidth * index / Math.max(records.length - 1, 1);
+      const x = xPositions[index];
       const y = padding.top + chartHeight - chartHeight * value / maximum;
-      points.push({ x, y }); index === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
+      const previous = index > 0 ? timeline.timestamps[index - 1] : null;
+      const current = timeline.timestamps[index];
+      const breaksLine = index === 0 || !Number.isFinite(previous) || !Number.isFinite(current)
+        || current - previous > timeline.intervalMs * 1.5;
+      points.push({ x, y }); breaksLine ? context.moveTo(x, y) : context.lineTo(x, y);
     });
     context.stroke(); context.fillStyle = series.color;
     points.forEach(({ x, y }) => { context.beginPath(); context.arc(x, y, 4, 0, Math.PI * 2); context.fill(); });
@@ -136,14 +205,15 @@ function showChartTooltip(event, canvas) {
   const bounds = canvas.getBoundingClientRect();
   const x = event.clientX - bounds.left;
   const y = event.clientY - bounds.top;
-  const { padding, chartWidth, chartHeight, records, options } = state;
+  const { padding, chartWidth, chartHeight, records, options, xPositions } = state;
   if (x < padding.left || x > padding.left + chartWidth || y < padding.top || y > padding.top + chartHeight) {
     hideChartTooltip(canvas);
     return;
   }
 
-  const position = Math.max(0, Math.min(1, (x - padding.left) / chartWidth));
-  const index = records.length === 1 ? 0 : Math.round(position * (records.length - 1));
+  const index = xPositions.reduce((nearest, position, candidate) => (
+    Math.abs(position - x) < Math.abs(xPositions[nearest] - x) ? candidate : nearest
+  ), 0);
   const record = records[index];
   const tooltip = byId(options.tooltipId);
   const title = document.createElement("strong");
@@ -307,6 +377,7 @@ async function load() {
     if (!healthResponse.ok || !resultsResponse.ok || !settingsResponse.ok) throw new Error("Dashboard API returned an error");
     const health = await healthResponse.json(); const results = await resultsResponse.json(); const settings = await settingsResponse.json();
     allRecords = Array.isArray(results.records) ? results.records : []; zoomStart = 0; zoomEnd = allRecords.length;
+    collectionIntervalMinutes = Number(settings.collection_interval_minutes) || 60;
     byId("collection-frequency").value = String(settings.collection_interval_minutes);
     const latest = allRecords[allRecords.length - 1];
     healthElement.textContent = `Healthy - ${formatMeasurementCount(health.measurements)}`; healthElement.className = "health ok";

@@ -7,6 +7,15 @@ Pi-hole sidebar.  Its submenu contains `Overview` and `Setup`.  Each destination
 uses Pi-hole's normal header, sidebar, content wrapper, theme, and footer while
 displaying an embedded view from the independent companion service.
 
+The embedded view keeps a compact Ramrattan identity and manual speed-test
+control while omitting the standalone dashboard's larger duplicate header and
+navigation.
+
+Charts retain their real time scale in the embedded view.  Missing scheduled
+measurements appear as labelled `No data` gaps, including historical periods
+when collection was disabled.  A gap indicates that no successful measurement
+was stored and does not, by itself, prove that the internet connection failed.
+
 The adapter does not move measurement data into Pi-hole, change FTL, change
 DNS, or make Pi-hole responsible for collection and scheduling.
 

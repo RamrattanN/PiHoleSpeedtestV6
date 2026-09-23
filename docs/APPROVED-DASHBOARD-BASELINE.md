@@ -34,6 +34,8 @@ Pi-hole navigation adapter remains outside this acceptance.
 - provide top-level `Overview` and `Setup` navigation;
 - align `Run speed test now` with the top-level navigation and keep it at the
   right edge on desktop widths;
+- retain a compact Ramrattan identity and `Run speed test now` control when the
+  dashboard is embedded in Pi-hole;
 - keep the connection summary and charts in Overview;
 - keep display, export, scheduling, and destructive controls in Setup;
 - keep every Setup section expanded and do not provide section-collapse
@@ -42,6 +44,12 @@ Pi-hole navigation adapter remains outside this acceptance.
   core experience.
 
 ## Required chart behavior
+
+- position measurements by their actual collection timestamps instead of by
+  equal record spacing;
+- leave expected but uncollected measurement intervals blank and label visible
+  gaps as `No data` rather than inventing or interpolating performance values;
+- break line charts across missing intervals so collection gaps remain visible;
 
 - provide separate download/upload and latency/jitter charts;
 - provide line and bar presentation modes;
