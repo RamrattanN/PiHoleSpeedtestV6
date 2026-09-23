@@ -10,6 +10,7 @@ from .collector import CollectionError, collect
 from .locking import CollectionLockedError, collection_lock
 from .migration import LegacyImportError, import_legacy_csv
 from .server import serve
+from .settings import load_settings
 from .storage import Storage
 
 
@@ -42,6 +43,8 @@ def parser() -> argparse.ArgumentParser:
     collect_command.add_argument("--binary", default="speedtest")
     collect_command.add_argument("--timeout", type=int, default=180)
     collect_command.add_argument("--lock-file", type=Path)
+    collect_command.add_argument("--settings-file", type=Path)
+    collect_command.add_argument("--respect-schedule", action="store_true")
 
     import_command = commands.add_parser(
         "import-legacy-csv",
@@ -61,6 +64,9 @@ def parser() -> argparse.ArgumentParser:
     )
     serve_command.add_argument("--host", default="127.0.0.1")
     serve_command.add_argument("--port", type=int, default=8765)
+    serve_command.add_argument("--settings-file", type=Path)
+    serve_command.add_argument("--admin-token-file", type=Path)
+    serve_command.add_argument("--backup-directory", type=Path)
 
     return root
 
@@ -75,6 +81,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         lock_file = arguments.lock_file or Path(
             f"{arguments.database}.collect.lock"
         )
+        if arguments.respect_schedule:
+            settings_file = arguments.settings_file or arguments.database.with_name(
+                "settings.json"
+            )
+            interval = load_settings(settings_file)["collection_interval_minutes"]
+            if not storage.collection_is_due(interval):
+                print(json.dumps({"status": "skipped", "reason": "not due"}))
+                return 0
         try:
             with collection_lock(lock_file):
                 measurement = collect(arguments.binary, arguments.timeout)
@@ -107,5 +121,12 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if not 1 <= arguments.port <= 65535:
         parser().error("--port must be between 1 and 65535")
-    serve(storage, arguments.host, arguments.port)
+    serve(
+        storage,
+        arguments.host,
+        arguments.port,
+        settings_file=arguments.settings_file,
+        admin_token_file=arguments.admin_token_file,
+        backup_directory=arguments.backup_directory,
+    )
     return 0

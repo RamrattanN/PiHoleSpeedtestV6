@@ -10,22 +10,28 @@
 </head>
 <body>
   <main>
-    <header>
-      <div>
-        <p class="eyebrow">Pi-hole v6 companion</p>
-        <h1>Connection history</h1>
+    <header class="brand-header">
+      <div class="brand-copy">
+        <img class="brand-logo" src="/ramrattan-logo.png" alt="Ramrattan" width="72" height="87">
+        <div>
+          <p class="eyebrow">Ramrattan Network Tools</p>
+          <h1>Pi-hole Speedtest</h1>
+          <p class="tagline">Clear, local visibility into your internet connection performance.</p>
+        </div>
       </div>
       <div class="header-status">
         <div id="health" class="health" role="status">Loading status</div>
-        <img
-          class="brand-logo"
-          src="/ramrattan-logo.png"
-          alt="Ramrattan"
-          width="58"
-          height="70"
-        >
+        <button id="open-help" class="icon-button" type="button" title="Help" aria-label="Help">?</button>
       </div>
     </header>
+
+    <nav class="view-navigation" aria-label="Speedtest sections">
+      <button type="button" class="active" data-view="overview">Overview</button>
+      <button type="button" data-view="setup">Setup</button>
+    </nav>
+
+    <div id="overview-view">
+    <h2 class="section-title">Connection history</h2>
 
     <section class="summary" aria-label="Latest measurement">
       <article><span>Download</span><strong id="latest-download">-</strong><small>Mbps</small></article>
@@ -44,6 +50,17 @@
         <span><i class="legend-dot upload" aria-hidden="true"></i>Upload</span>
       </div>
       <canvas id="history-chart" height="280">Speed history chart</canvas>
+      <div class="chart-controls" aria-label="Chart controls">
+        <div class="segmented" role="group" aria-label="Chart type">
+          <button type="button" data-chart-mode="line" class="active">Line</button>
+          <button type="button" data-chart-mode="bar">Bar</button>
+        </div>
+        <div class="zoom-controls" role="group" aria-label="Time axis zoom">
+          <button type="button" data-zoom="in" title="Zoom in on time axis">+</button>
+          <button type="button" data-zoom="out" title="Zoom out on time axis">-</button>
+          <button type="button" data-zoom="reset">Reset zoom</button>
+        </div>
+      </div>
     </section>
 
     <section class="panel">
@@ -58,7 +75,7 @@
       <canvas id="latency-chart" height="280">Latency and jitter history chart</canvas>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="measurement-table">
       <div class="panel-heading">
         <h2>Recent measurements</h2>
         <span>Newest first</span>
@@ -81,6 +98,71 @@
       </div>
       <p id="empty-state" class="empty">No successful measurements yet.</p>
     </section>
+    </div>
+
+    <section id="setup-view" class="setup-view" hidden>
+      <div class="section-heading">
+        <p class="eyebrow">Setup</p>
+        <h2>Speedtest configuration</h2>
+        <p>Manage display, export, collection frequency, and measurement history.</p>
+      </div>
+
+      <details class="panel" open>
+        <summary>Display and charts</summary>
+        <label class="setting-row">
+          <span><strong>Measurement table</strong><small>Show recent data beneath the charts.</small></span>
+          <input id="show-table" type="checkbox" checked>
+        </label>
+      </details>
+
+      <details class="panel">
+        <summary>Data and export</summary>
+        <p>Download the complete measurement history in chronological order.</p>
+        <a class="button-link" href="/api/export.csv" download>Export CSV</a>
+      </details>
+
+      <details class="panel">
+        <summary>Collection</summary>
+        <label for="collection-frequency">Capture frequency</label>
+        <select id="collection-frequency">
+          <option value="15">Every 15 minutes</option>
+          <option value="30">Every 30 minutes</option>
+          <option value="60">Every hour</option>
+          <option value="120">Every 2 hours</option>
+          <option value="240">Every 4 hours</option>
+          <option value="360">Every 6 hours</option>
+          <option value="720">Every 12 hours</option>
+          <option value="1440">Once a day</option>
+        </select>
+        <label for="admin-token">Administrator key</label>
+        <input id="admin-token" type="password" autocomplete="off">
+        <button id="save-frequency" type="button">Save frequency</button>
+        <p id="settings-message" class="form-message" role="status"></p>
+      </details>
+
+      <details class="panel danger-panel">
+        <summary>Reset data</summary>
+        <p>A verified database backup is created before measurement history is cleared.  Settings are preserved.</p>
+        <label class="setting-row">
+          <span>I understand that the active measurement history will be cleared.</span>
+          <input id="reset-acknowledgement" type="checkbox">
+        </label>
+        <label for="reset-confirmation">Type RESET to continue</label>
+        <input id="reset-confirmation" type="text" autocomplete="off">
+        <button id="reset-data" class="danger-button" type="button" disabled>Reset measurement history</button>
+        <p id="reset-message" class="form-message" role="status"></p>
+      </details>
+    </section>
+
+    <dialog id="help-dialog" aria-labelledby="help-title">
+      <div class="dialog-heading">
+        <h2 id="help-title">Pi-hole Speedtest help</h2>
+        <button id="close-help" class="icon-button" type="button" aria-label="Close help">&times;</button>
+      </div>
+      <p>Use Line or Bar to change the chart style.  Scroll over a chart or use the zoom buttons to inspect a shorter time range.  Drag horizontally to move through a zoomed range.</p>
+      <p>The y-axis remains fixed while you zoom so changes stay visually comparable.  Open Setup to control the table, export CSV data, change capture frequency, or reset history.</p>
+      <p>An administrator key is required to change the collection schedule or reset data.</p>
+    </dialog>
   </main>
 </body>
 </html>

@@ -38,3 +38,20 @@ class WebAssetTests(unittest.TestCase):
         self.assertIn('src="/ramrattan-logo.png"', page)
         self.assertIn('alt="Ramrattan"', page)
         self.assertTrue(logo.startswith(b"\x89PNG\r\n\x1a\n"))
+
+    def test_setup_and_chart_controls_are_present(self):
+        web = files("pihole_speedtest").joinpath("web")
+        page = web.joinpath("index.html").read_text(encoding="utf-8")
+        script = web.joinpath("app.js").read_text(encoding="utf-8")
+
+        self.assertIn('data-view="setup"', page)
+        self.assertIn('data-chart-mode="bar"', page)
+        self.assertIn('id="show-table"', page)
+        self.assertIn('href="/api/export.csv"', page)
+        self.assertIn("Every 15 minutes", page)
+        self.assertIn("Once a day", page)
+        self.assertIn('id="reset-confirmation"', page)
+        self.assertIn('id="help-dialog"', page)
+        self.assertIn('byId("open-help")', script)
+        self.assertIn("chartMaximum(allRecords", script)
+        self.assertIn('data-zoom', page)

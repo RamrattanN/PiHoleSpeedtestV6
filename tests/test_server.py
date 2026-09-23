@@ -27,7 +27,12 @@ class ServerTests(unittest.TestCase):
                 interface_name="eth0",
             )
         )
-        self.server = CompanionServer(("127.0.0.1", 0), self.storage)
+        self.token_file = Path(self.temporary.name) / "admin.token"
+        self.token_file.write_text("test-secret\n", encoding="utf-8")
+        self.server = CompanionServer(
+            ("127.0.0.1", 0), self.storage,
+            admin_token_file=self.token_file,
+        )
         self.thread = threading.Thread(
             target=self.server.serve_forever, daemon=True
         )
@@ -56,6 +61,45 @@ class ServerTests(unittest.TestCase):
         _, payload = self.get_json("/api/results?limit=10")
         self.assertEqual(len(payload["records"]), 1)
         self.assertEqual(payload["records"][0]["download_mbps"], 100.0)
+
+    def test_csv_export(self):
+        with urlopen(self.base_url + "/api/export.csv", timeout=2) as response:
+            body = response.read().decode("utf-8")
+        self.assertIn("attachment; filename=\"pihole-speedtest.csv\"", response.headers["Content-Disposition"])
+        self.assertIn("recorded_at,download_mbps", body)
+        self.assertIn("2026-09-22T18:00:00Z,100.0,20.0", body)
+
+    def post_json(self, path, payload, token="test-secret"):
+        request = Request(
+            self.base_url + path,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"},
+            method="POST",
+        )
+        with urlopen(request, timeout=2) as response:
+            return response, json.loads(response.read())
+
+    def test_settings_update_requires_token(self):
+        request = Request(
+            self.base_url + "/api/settings",
+            data=b'{"collection_interval_minutes":30}',
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with self.assertRaises(HTTPError) as raised:
+            urlopen(request, timeout=2)
+        self.assertEqual(raised.exception.code, 403)
+
+        _, payload = self.post_json(
+            "/api/settings", {"collection_interval_minutes": 30}
+        )
+        self.assertEqual(payload["collection_interval_minutes"], 30)
+
+    def test_reset_creates_backup_before_delete(self):
+        _, payload = self.post_json("/api/reset", {"confirmation": "RESET"})
+        self.assertEqual(payload["deleted"], 1)
+        self.assertEqual(self.storage.count(), 0)
+        self.assertTrue((Path(self.temporary.name) / "backups" / payload["backup"]).is_file())
 
     def test_assets_have_security_policy(self):
         with urlopen(self.base_url + "/", timeout=2) as response:

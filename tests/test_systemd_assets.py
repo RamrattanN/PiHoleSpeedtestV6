@@ -28,9 +28,12 @@ class SystemdAssetTests(unittest.TestCase):
     def test_timer_is_persistent_and_conservative(self):
         timer = self.read("pihole-speedtest-collect.timer")
 
-        self.assertIn("OnCalendar=*:00/30", timer)
+        self.assertIn("OnCalendar=*:00/15", timer)
         self.assertIn("RandomizedDelaySec=60", timer)
         self.assertIn("Persistent=true", timer)
+        service = self.read("pihole-speedtest-collect.service")
+        self.assertIn("--respect-schedule", service)
+        self.assertIn("--settings-file /var/lib/pihole-speedtest/settings.json", service)
 
     def test_units_do_not_modify_pihole_paths(self):
         combined = "\n".join(

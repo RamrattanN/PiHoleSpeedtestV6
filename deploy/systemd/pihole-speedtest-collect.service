@@ -10,7 +10,7 @@ User=pihole-speedtest
 Group=pihole-speedtest
 WorkingDirectory=/var/lib/pihole-speedtest
 Environment=HOME=/var/lib/pihole-speedtest
-ExecStart=/opt/pihole-speedtest/venv/bin/pihole-speedtest collect --database /var/lib/pihole-speedtest/speedtest.db --binary /usr/bin/speedtest --timeout 180 --lock-file /run/pihole-speedtest/collect.lock
+ExecStart=/opt/pihole-speedtest/venv/bin/pihole-speedtest collect --database /var/lib/pihole-speedtest/speedtest.db --binary /usr/bin/speedtest --timeout 180 --lock-file /run/pihole-speedtest/collect.lock --settings-file /var/lib/pihole-speedtest/settings.json --respect-schedule
 RuntimeDirectory=pihole-speedtest
 RuntimeDirectoryMode=0750
 UMask=0077

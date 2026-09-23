@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Union
 
@@ -116,3 +117,43 @@ class Storage:
                 """
             ).fetchone()
         return None if row is None else str(row["recorded_at"])
+
+    def collection_is_due(self, interval_minutes: int) -> bool:
+        last = self.last_recorded_at()
+        if last is None:
+            return True
+        recorded = datetime.fromisoformat(last.replace("Z", "+00:00"))
+        elapsed = datetime.now(timezone.utc) - recorded.astimezone(timezone.utc)
+        return elapsed.total_seconds() >= int(interval_minutes) * 60
+
+    def list_all(self) -> list[dict[str, object]]:
+        self.initialize()
+        with self.connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT recorded_at, download_mbps, upload_mbps,
+                       latency_ms, jitter_ms, server_name, server_id,
+                       interface_name
+                FROM measurements
+                ORDER BY recorded_at ASC, id ASC
+                """
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def backup_and_reset(self, backup_path: Union[str, Path]) -> int:
+        self.initialize()
+        destination_path = Path(backup_path).expanduser().resolve()
+        destination_path.parent.mkdir(parents=True, exist_ok=True)
+        with self.connect() as source:
+            total = int(
+                source.execute("SELECT COUNT(*) FROM measurements").fetchone()[0]
+            )
+            with sqlite3.connect(destination_path) as destination:
+                source.backup(destination)
+                integrity = destination.execute("PRAGMA integrity_check").fetchone()[0]
+                if integrity != "ok":
+                    raise sqlite3.DatabaseError(
+                        f"reset backup failed integrity check: {integrity}"
+                    )
+            source.execute("DELETE FROM measurements")
+        return total

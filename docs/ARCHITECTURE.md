@@ -28,7 +28,10 @@ repository, or depend on undocumented Pi-hole files for collection and history.
 ### Companion API and dashboard
 
 - uses a small standard-library HTTP service;
-- exposes read-only health and result endpoints in the foundation;
+- exposes read-only health, result, settings, and CSV export endpoints;
+- protects schedule changes and destructive reset operations with a dedicated
+  administrator token;
+- creates and verifies a SQLite recovery backup before clearing history;
 - serves local HTML, CSS, and JavaScript;
 - makes no CDN or third-party browser requests;
 - remains available independently of Pi-hole's admin interface.
@@ -60,8 +63,11 @@ version is recognized.  It is not part of the companion core and must have:
 - Upgrade and uninstall preserve the database unless the owner explicitly
   requests data deletion.
 
-## Initial network boundary
+## Network boundary
 
-The foundation server is read-only.  Manual test execution over HTTP is deferred
-until authentication and cross-site-request protections are designed.  Local
-CLI collection remains available for development and systemd execution.
+Measurement collection is not exposed over HTTP.  It remains a local CLI and
+systemd operation.  Read-only dashboard requests do not require the
+administrator token.  Configuration changes and data reset require a bearer
+token stored outside the application directory.  The service should be exposed
+only on a trusted LAN until an authenticated HTTPS deployment boundary is
+available.

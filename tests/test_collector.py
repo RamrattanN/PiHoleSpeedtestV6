@@ -1,6 +1,8 @@
 import json
 import subprocess
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from pihole_speedtest.collector import (
@@ -8,6 +10,9 @@ from pihole_speedtest.collector import (
     collect,
     parse_ookla_result,
 )
+from pihole_speedtest.cli import main
+from pihole_speedtest.models import Measurement
+from pihole_speedtest.storage import Storage
 
 
 VALID_RESULT = {
@@ -72,3 +77,25 @@ class CollectorTests(unittest.TestCase):
             timeout=45,
             check=False,
         )
+
+    @patch("pihole_speedtest.cli.collect")
+    def test_schedule_check_skips_collection_that_is_not_due(self, collect_mock):
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "speedtest.db"
+            Storage(database).insert(
+                Measurement(
+                    recorded_at="2999-01-01T00:00:00Z",
+                    download_mbps=100,
+                    upload_mbps=20,
+                    latency_ms=10,
+                    jitter_ms=1,
+                    server_name="Example",
+                    server_id="42",
+                    interface_name="eth0",
+                )
+            )
+            status = main([
+                "collect", "--database", str(database), "--respect-schedule"
+            ])
+        self.assertEqual(status, 0)
+        collect_mock.assert_not_called()

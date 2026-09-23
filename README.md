@@ -18,13 +18,17 @@ provides:
 - validated result parsing;
 - SQLite history;
 - a repeatable importer for valid legacy CSV history;
-- a read-only HTTP API and local dashboard;
+- a local API and Ramrattan Network Tools dashboard;
 - local web assets with no CDN dependency;
+- line and bar charts with fixed-scale time-axis zoom and pan;
+- optional table visibility and complete-history CSV export;
+- token-protected collection-frequency and reset controls;
+- a verified SQLite recovery backup before every reset;
+- unprivileged systemd service and schedule assets;
 - automated unit tests and pull-request CI.
 
-It does not yet install a service, schedule tests, modify the Pi-hole dashboard,
-or provide an uninstall workflow.  Do not run the legacy installer on a live
-Pi-hole.
+It does not yet provide the safe installer, uninstall workflow, or optional
+Pi-hole navigation adapter.  Do not run the legacy installer on a live Pi-hole.
 
 ## Architecture
 

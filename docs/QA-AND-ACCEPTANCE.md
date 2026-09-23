@@ -10,7 +10,13 @@ No development build may modify the live Pi-hole until all preceding gates pass.
 - shell syntax checks pass for retained shell files;
 - browser assets contain no external network references;
 - malformed CLI output and failed processes record no result;
-- SQLite schema creation and queries are repeatable.
+- SQLite schema creation and queries are repeatable;
+- unsupported collection intervals are rejected;
+- configuration and reset writes require an administrator token;
+- reset verifies a SQLite recovery copy before deleting active history;
+- CSV export preserves chronological order and measurement units;
+- chart zoom and pan affect only the time axis;
+- line and bar modes preserve the same fixed vertical scale.
 
 ## Gate 2: read-only Pi preflight
 

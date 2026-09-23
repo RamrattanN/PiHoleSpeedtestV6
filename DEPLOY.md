@@ -25,7 +25,9 @@ pihole-speedtest serve --database ./data/speedtest.db --host 127.0.0.1 --port 87
 
 - application: `/opt/pihole-speedtest`
 - data: `/var/lib/pihole-speedtest/speedtest.db`
-- configuration: `/etc/pihole-speedtest/config.toml`
+- configuration: `/var/lib/pihole-speedtest/settings.json`
+- dashboard administrator token: `/var/lib/pihole-speedtest/admin.token`
+- reset recovery backups: `/var/lib/pihole-speedtest/backups`
 - service account: dedicated unprivileged account
 - dashboard: independent HTTP service on a configurable LAN address and port
 - schedule: systemd timer
@@ -35,7 +37,9 @@ Development systemd units now exist under `deploy/systemd/` for:
 
 - an always-on dashboard at LAN port `8765`;
 - a one-shot official Ookla collection service;
-- a persistent 30-minute collection timer;
+- a persistent scheduler that checks every 15 minutes;
+- a user-selected capture frequency from 15 minutes through once a day, with a
+  60-minute default;
 - an unprivileged `pihole-speedtest` service account;
 - process locking that refuses overlapping collections.
 

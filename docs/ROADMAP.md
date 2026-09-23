@@ -18,23 +18,29 @@
 - [x] Add systemd service and timer units.
 - [x] Add concurrency locking.
 - [ ] Add structured journal messages.
-- [ ] Add configuration and conservative retention.
+- [x] Add protected collection-frequency configuration.
+- [ ] Add conservative retention.
 - [ ] Build a safe installer, upgrader, uninstaller, backup, and restore flow.
 - [ ] Pass isolated Raspberry Pi 3 testing on a temporary port and database.
 
 ## Product capability
 
 - [ ] Add authenticated manual test execution.
-- [ ] Add CSV export and date-range filtering.
+- [x] Add complete-history CSV export.
+- [ ] Add date-range filtering.
 - [ ] Add server selection with explicit validation.
 - [ ] Add status, logs, storage, and next-run information.
-- [ ] Add backup and restore controls.
-- [ ] Add responsive charts, table sorting, and accessible states.
+- [x] Add a verified recovery backup before protected reset.
+- [ ] Add general backup and restore controls.
+- [x] Add line and bar charts with fixed-scale time-axis zoom and pan.
+- [x] Add optional recent-results table visibility.
+- [ ] Add table sorting and complete accessible-state verification.
 
 ## Optional Pi-hole integration
 
 - [ ] Audit the exact installed Pi-hole v6 interface and supported paths.
 - [ ] Design a version-gated, reversible adapter.
+- [ ] Add the Speedtest Overview and Setup sidebar hierarchy.
 - [ ] Add dashboard status and companion link.
 - [ ] Prove update failure isolation and exact rollback.
 
