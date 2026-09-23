@@ -34,6 +34,8 @@
 - [x] Enable and verify the 15-minute systemd collection timer on Raspberry Pi
   3.
 - [x] Pass a guarded live companion upgrade with history preserved.
+- [x] Restore and verify Linux interface labels when Ookla omits the interface
+  name.
 - [ ] Pass restart and reboot acceptance with collection continuity.
 - [ ] Pass isolated Raspberry Pi 3 testing on a temporary port and database.
 
