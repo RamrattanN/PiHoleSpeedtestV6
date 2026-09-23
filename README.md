@@ -103,7 +103,7 @@ Then open <http://127.0.0.1:8765/>.
 ## Raspberry Pi safety boundary
 
 Development and automated tests run away from the live Pi-hole first.  The
-approved companion is installed on `192.168.2.14` only through guarded,
+approved companion is installed on the owner's Pi-hole host only through guarded,
 recovery-backed gates.  The optional sidebar adapter remains absent until its
 separate live gate is approved and completed.  The verified device baseline is
 recorded in
