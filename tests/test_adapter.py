@@ -1,4 +1,5 @@
 import json
+import stat
 import tempfile
 import unittest
 from pathlib import Path
@@ -54,6 +55,18 @@ class AdapterTests(unittest.TestCase):
             (self.root / "speedtest-setup.lp").read_text(encoding="utf-8"),
         )
         self.assertEqual(manifest["web_version"], "v6.6")
+        self.assertEqual(
+            stat.S_IMODE(self.sidebar.stat().st_mode),
+            0o644,
+        )
+        self.assertEqual(
+            stat.S_IMODE((self.root / "speedtest.lp").stat().st_mode),
+            0o644,
+        )
+        self.assertEqual(
+            stat.S_IMODE((self.root / "speedtest-setup.lp").stat().st_mode),
+            0o644,
+        )
 
         remove_adapter(manifest_path)
 
