@@ -39,6 +39,15 @@ HTTP companion because browsers block mixed content.  The verified device
 currently uses the HTTP origin shown above.  A future HTTPS deployment must
 provide the companion through HTTPS before enabling the adapter.
 
+Pi-hole's CSP may omit a `frame-src` directive.  In that case, `default-src`
+is the browser fallback and a companion service on another port is blocked.
+The guarded adapter installer preserves the existing policy and adds only the
+exact, validated companion origin as `frame-src`.  Before making the change,
+it archives Pi-hole's complete `webserver.headers` array.  Removal verifies
+that the installed array has not changed and then restores the archived array
+exactly.  It refuses to overwrite headers changed by an administrator after
+adapter installation.
+
 ## Isolated installation shape
 
 The command below is documentation of the intended isolated test.  It is not
@@ -58,6 +67,8 @@ The command creates a timestamped recovery directory containing:
 - SHA-256 checksums for the original and installed sidebar;
 - checksums for both created adapter pages;
 - the tested version, web root, and companion URL;
+- the exact Pi-hole web header array before and after the narrow `frame-src`
+  addition;
 - a manifest used for verified removal.
 
 ## Verified removal shape
@@ -93,9 +104,11 @@ network address.
 The installer fails closed unless the approved source and installed companion
 commits match, Pi-hole Web is exactly v6.6, the pristine sidebar checksum is
 recognized, the adapter targets are absent, both companion services are
-healthy, and the frame policy permits the exact Pi-hole origin.  It records the
-adapter recovery manifest in both deployment manifests so later companion
-upgrades can verify and preserve the installed adapter state.
+healthy, the companion frame policy permits the exact Pi-hole origin, and the
+Pi-hole header policy can be extended with the exact companion origin without
+replacing an existing `frame-src`.  It records the adapter recovery manifest in
+both deployment manifests so later companion upgrades can verify and preserve
+the installed adapter state.
 
 Verified live removal uses the recorded recovery manifest automatically:
 
@@ -117,7 +130,7 @@ Before touching the live Pi-hole web tree:
 4. Install and remove the adapter against that copy.
 5. Verify exact sidebar restoration and the absence of leftover pages.
 6. Run the companion on its final Pi address and temporary service port.
-7. Verify the CSP frame policy and both embedded pages from another LAN device.
+7. Verify both CSP directions and both embedded pages from another LAN device.
 8. Capture Pi-hole DNS, FTL, dashboard, and resource baselines.
 9. Create an additional recovery point.
 10. Obtain explicit approval for the live adapter installation.

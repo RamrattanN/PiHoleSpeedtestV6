@@ -59,6 +59,7 @@ then
 fi
 
 application_cli="/opt/pihole-speedtest/venv/bin/pihole-speedtest"
+application_python="/opt/pihole-speedtest/venv/bin/python"
 data_dir="/var/lib/pihole-speedtest"
 install_manifest="${data_dir}/install-manifest.txt"
 collection_manifest="${data_dir}/collection-manifest.txt"
@@ -73,8 +74,11 @@ timer_unit="pihole-speedtest-collect.timer"
 adapter_manifest=""
 adapter_installed=0
 state_updated=0
+header_policy_attempted=0
+headers_before=""
+headers_installed=""
 
-for command in git python3 systemctl curl sha256sum pihole stat; do
+for command in git python3 systemctl curl sha256sum pihole pihole-FTL stat; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "STOP: Required command is unavailable: $command" >&2
     exit 1
@@ -201,6 +205,9 @@ rollback() {
   trap - EXIT
   echo >&2
   echo "Sidebar adapter installation failed.  Restoring the prior state..." >&2
+  if [ "$header_policy_attempted" -eq 1 ] && [ -s "$headers_before" ]; then
+    pihole-FTL --config webserver.headers "$(cat "$headers_before")" >/dev/null 2>&1 || true
+  fi
   if [ "$adapter_installed" -eq 1 ] && [ -n "$adapter_manifest" ]; then
     "$application_cli" adapter-remove --manifest "$adapter_manifest" >/dev/null 2>&1 || true
   fi
@@ -229,6 +236,65 @@ adapter_installed=1
 recovery_dir="$(dirname "$adapter_manifest")"
 cp -a "$install_manifest" "$recovery_dir/install-manifest.before.txt"
 cp -a "$collection_manifest" "$recovery_dir/collection-manifest.before.txt"
+headers_before="$recovery_dir/pihole-web-headers.before.json"
+headers_installed="$recovery_dir/pihole-web-headers.installed.json"
+
+"$application_python" - \
+  /etc/pihole/pihole.toml \
+  "$companion_url" \
+  "$headers_before" \
+  "$headers_installed" <<'PY'
+import json
+import os
+import pathlib
+import sys
+import tomllib
+
+from pihole_speedtest.pihole_headers import allow_companion_frame
+
+
+config_path, companion_url, before_path, installed_path = sys.argv[1:]
+with open(config_path, "rb") as source:
+    headers = tomllib.load(source)["webserver"]["headers"]
+installed = allow_companion_frame(headers, companion_url)
+for path, value in ((before_path, headers), (installed_path, installed)):
+    target = pathlib.Path(path)
+    target.write_text(json.dumps(value, separators=(",", ":")) + "\n", encoding="utf-8")
+    os.chmod(target, 0o600)
+PY
+
+header_policy_attempted=1
+pihole-FTL --config webserver.headers "$(cat "$headers_installed")"
+
+"$application_python" - /etc/pihole/pihole.toml "$headers_installed" <<'PY'
+import json
+import sys
+import tomllib
+
+
+with open(sys.argv[1], "rb") as source:
+    actual = tomllib.load(source)["webserver"]["headers"]
+with open(sys.argv[2], encoding="utf-8") as source:
+    expected = json.load(source)
+if actual != expected:
+    raise SystemExit("Pi-hole web header configuration did not match the installed policy")
+PY
+
+policy_verified=0
+for _ in {1..20}; do
+  if curl -fsS -D - -o /dev/null "$pihole_origin/admin/speedtest" |
+    tr -d '\r' |
+    grep -Fq "frame-src $companion_url"
+  then
+    policy_verified=1
+    break
+  fi
+  sleep 1
+done
+if [ "$policy_verified" -ne 1 ]; then
+  echo "STOP: Pi-hole did not serve the installed companion frame policy." >&2
+  exit 1
+fi
 
 python3 - "$adapter_manifest" <<'PY'
 import hashlib
@@ -311,5 +377,6 @@ echo "=== LIVE PI-HOLE SIDEBAR ADAPTER INSTALLED ==="
 echo "Recovery manifest: $adapter_manifest"
 echo "Overview: $pihole_origin/admin/speedtest"
 echo "Setup: $pihole_origin/admin/speedtest-setup"
+echo "Pi-hole frame policy: exact prior value archived and companion origin allowed"
 echo "Companion dashboard and collection timer: active and enabled"
 echo "Pi-hole status: verified"

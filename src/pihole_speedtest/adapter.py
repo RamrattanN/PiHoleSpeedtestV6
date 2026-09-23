@@ -66,7 +66,7 @@ def _validated_url(value: str) -> str:
 def _sidebar_entry(companion_url: str) -> str:
     del companion_url
     return f"""{BEGIN_MARKER}
-                <li class="menu-speedtest treeview<? if startsWith(scriptname, 'speedtest') then ?> active<? end ?>">
+                <li class="menu-system menu-speedtest treeview<? if startsWith(scriptname, 'speedtest') then ?> active<? end ?>">
                     <a href="<?=webhome?>#">
                         <i class="fa fa-fw menu-icon fa-gauge-high"></i> <span>Speedtest</span>
                         <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>

@@ -47,6 +47,10 @@ class AdapterTests(unittest.TestCase):
         self.assertIn(BEGIN_MARKER, self.sidebar.read_text(encoding="utf-8"))
         self.assertIn("Speedtest", self.sidebar.read_text(encoding="utf-8"))
         self.assertIn(
+            'class="menu-system menu-speedtest treeview',
+            self.sidebar.read_text(encoding="utf-8"),
+        )
+        self.assertIn(
             "?embed=1#overview",
             (self.root / "speedtest.lp").read_text(encoding="utf-8"),
         )

@@ -56,7 +56,11 @@ version is recognized.  It is not part of the companion core and must have:
 The initial v6.6 adapter adds authenticated Pi-hole pages and a `Speedtest`
 sidebar group with `Overview` and `Setup`.  Those pages frame explicit embedded
 views from the companion service.  The companion permits framing only from a
-configured Pi-hole origin; its default remains self-only.
+configured Pi-hole origin; its default remains self-only.  Pi-hole's own CSP
+is preserved and extended with only the exact companion origin as `frame-src`.
+The adapter lifecycle archives, verifies, and restores the complete prior
+Pi-hole web header array, and refuses to overwrite a later administrator
+change.
 
 ## Failure boundaries
 

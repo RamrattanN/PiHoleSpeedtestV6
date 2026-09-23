@@ -35,8 +35,11 @@ the verified Raspberry Pi 3 baseline.  Guarded installation and upgrade paths
 exist, but a release-grade curl installer and data-preserving uninstaller are
 still tracked in [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
 A version-gated, reversible Pi-hole Web v6.6 adapter has passed disposable-copy
-validation.  Its live installation remains a separately approved gate tracked
-in [issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2).
+validation and entered live acceptance testing.  The first live pass identified
+LCARS sidebar styling and Pi-hole `frame-src` compatibility defects.  Their
+recovery-backed correction remains tracked in
+[issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2) until owner
+acceptance is complete.
 
 ## Architecture
 
@@ -104,9 +107,9 @@ Then open <http://127.0.0.1:8765/>.
 
 Development and automated tests run away from the live Pi-hole first.  The
 approved companion is installed on the owner's Pi-hole host only through guarded,
-recovery-backed gates.  The optional sidebar adapter remains absent until its
-separate live gate is approved and completed.  The verified device baseline is
-recorded in
+recovery-backed gates.  The optional sidebar adapter is managed as a separate,
+reversible deployment phase and is still under live acceptance.  The verified
+device baseline is recorded in
 [Verified Raspberry Pi Baseline](docs/VERIFIED-PI-BASELINE.md).
 
 ## License and attribution
