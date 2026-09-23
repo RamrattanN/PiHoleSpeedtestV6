@@ -99,6 +99,51 @@ if [ "$installed_commit" != "$expected_installed_commit" ]; then
   echo "Actual:   ${installed_commit:-unknown}" >&2
   exit 1
 fi
+adapter_installed="$(sed -n 's/^pihole_adapter_installed=//p' "$install_manifest")"
+adapter_manifest="$(sed -n 's/^pihole_adapter_manifest=//p' "$install_manifest")"
+case "$adapter_installed" in
+  true)
+    if [ -z "$adapter_manifest" ] || [ ! -f "$adapter_manifest" ]; then
+      echo "STOP: The installed adapter recovery manifest is missing." >&2
+      exit 1
+    fi
+    python3 - "$adapter_manifest" <<'PY'
+import hashlib
+import json
+import pathlib
+import sys
+
+
+def sha256(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+manifest_path = pathlib.Path(sys.argv[1])
+manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+sidebar = pathlib.Path(manifest["sidebar"]["path"])
+if sha256(sidebar) != manifest["sidebar"]["installed_sha256"]:
+    raise SystemExit("STOP: Installed adapter sidebar no longer matches its manifest.")
+for created in manifest["created"]:
+    path = pathlib.Path(created["path"])
+    if sha256(path) != created["sha256"]:
+        raise SystemExit(f"STOP: Installed adapter page no longer matches: {path}")
+PY
+    ;;
+  false)
+    if [ -n "$adapter_manifest" ]; then
+      echo "STOP: Adapter state is false but a recovery manifest is recorded." >&2
+      exit 1
+    fi
+    ;;
+  *)
+    echo "STOP: Installed adapter state is missing or invalid." >&2
+    exit 1
+    ;;
+esac
 for unit in "$dashboard_unit" "$timer_unit"; do
   if [ "$(systemctl is-active "$unit")" != "active" ] ||
     [ "$(systemctl is-enabled "$unit")" != "enabled" ]
@@ -266,7 +311,10 @@ PY
   echo "timer_unit_sha256=$(sha256sum "$timer_unit_path" | awk '{print $1}')"
   echo "collection_interval_minutes=$interval_minutes"
   echo "administrator_key_enabled=false"
-  echo "pihole_adapter_installed=false"
+  echo "pihole_adapter_installed=$adapter_installed"
+  if [ "$adapter_installed" = "true" ]; then
+    echo "pihole_adapter_manifest=$adapter_manifest"
+  fi
 } > "$install_manifest"
 chmod 0600 "$install_manifest"
 cp -a "$install_manifest" "$collection_manifest"
@@ -290,5 +338,9 @@ echo "Dashboard navigation: verified"
 echo "Chart mouseover details: verified"
 echo "Setup sections: permanently expanded"
 echo "Collection timer: active and enabled"
-echo "Pi-hole sidebar adapter: not installed"
+if [ "$adapter_installed" = "true" ]; then
+  echo "Pi-hole sidebar adapter: installed and verified"
+else
+  echo "Pi-hole sidebar adapter: not installed"
+fi
 echo "Recovery evidence: $recovery_dir"
