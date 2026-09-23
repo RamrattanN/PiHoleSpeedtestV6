@@ -93,6 +93,14 @@ measurements preserved, the timer active and enabled, and recovery evidence at
 `/var/lib/pihole-speedtest-upgrade-recovery/20260923T034009Z`.  The live sidebar
 adapter remains absent.  Reboot and full restore exercises remain open.
 
+The interface-label follow-up was deployed from commit
+`e06d6c7964acc5bdfb6000488dd7eea79d5ed615`.  All 54 Raspberry Pi tests passed,
+the guarded upgrade preserved 98,634 measurements, and manual measurement
+`98635` recorded `eth0`.  Dashboard and timer services remained active and
+enabled, while Pi-hole DNS and blocking remained healthy.  Recovery evidence is
+stored at
+`/var/lib/pihole-speedtest-upgrade-recovery/20260923T040754Z`.
+
 ## Gate 5: optional Pi-hole adapter
 
 - require a recognized Pi-hole version and file layout;
