@@ -39,6 +39,10 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertNotIn("curl |", bootstrap)
         self.assertNotIn("curl -s |", bootstrap)
         self.assertIn("release/SOURCE-COMMIT", bootstrap)
+        self.assertIn("hostname awk sed", bootstrap)
+        self.assertIn("/var/lib/pihole-speedtest/install-manifest.txt", bootstrap)
+        self.assertIn('--expected-installed-commit "$installed_commit"', bootstrap)
+        self.assertIn("Installed companion commit could not be verified", bootstrap)
 
     def test_install_fails_closed_and_keeps_adapter_separate(self):
         installer = self.read(INSTALLER)
