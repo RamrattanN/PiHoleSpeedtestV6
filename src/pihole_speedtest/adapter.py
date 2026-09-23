@@ -5,6 +5,7 @@ import html
 import json
 import os
 import shutil
+import stat
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,7 +31,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _write_atomic(path: Path, content: str) -> None:
+def _write_atomic(path: Path, content: str, mode: int = 0o600) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     temporary_path = Path(temporary)
@@ -39,6 +40,7 @@ def _write_atomic(path: Path, content: str) -> None:
             destination.write(content)
             destination.flush()
             os.fsync(destination.fileno())
+        temporary_path.chmod(mode)
         os.replace(temporary_path, path)
     finally:
         temporary_path.unlink(missing_ok=True)
@@ -132,6 +134,7 @@ def install_adapter(
     if not sidebar.is_file():
         raise AdapterError(f"sidebar not found: {sidebar}")
     original = sidebar.read_text(encoding="utf-8")
+    sidebar_mode = stat.S_IMODE(sidebar.stat().st_mode)
     if BEGIN_MARKER in original or END_MARKER in original:
         raise AdapterError("adapter markers already exist")
     if original.count(DONATE_ANCHOR) != 1 or 'class="sidebar-menu"' not in original:
@@ -154,9 +157,17 @@ def install_adapter(
     )
     manifest_path = recovery / "manifest.json"
     try:
-        _write_atomic(overview, _page("Speedtest Overview", companion_url, "overview"))
-        _write_atomic(setup, _page("Speedtest Setup", companion_url, "setup"))
-        _write_atomic(sidebar, patched)
+        _write_atomic(
+            overview,
+            _page("Speedtest Overview", companion_url, "overview"),
+            0o644,
+        )
+        _write_atomic(
+            setup,
+            _page("Speedtest Setup", companion_url, "setup"),
+            0o644,
+        )
+        _write_atomic(sidebar, patched, sidebar_mode)
         manifest: dict[str, Any] = {
             "schema": 1,
             "web_version": web_version,
