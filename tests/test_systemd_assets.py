@@ -9,6 +9,8 @@ REMOVER = ROOT / "scripts" / "remove_companion_dashboard.sh"
 COLLECTION_UPGRADER = ROOT / "scripts" / "upgrade_and_enable_collection.sh"
 KEYLESS_UPGRADER = ROOT / "scripts" / "upgrade_remove_administrator_key.sh"
 COMPANION_UPGRADER = ROOT / "scripts" / "upgrade_companion.sh"
+ADAPTER_INSTALLER = ROOT / "scripts" / "install_pihole_adapter.sh"
+ADAPTER_REMOVER = ROOT / "scripts" / "remove_pihole_adapter.sh"
 
 
 class SystemdAssetTests(unittest.TestCase):
@@ -120,7 +122,7 @@ class SystemdAssetTests(unittest.TestCase):
         self.assertNotIn("admin-token-file", unit)
         self.assertNotIn("admin.token", unit)
 
-    def test_companion_upgrade_preserves_data_schedule_and_phase_boundary(self):
+    def test_companion_upgrade_preserves_data_schedule_and_adapter_state(self):
         upgrader = COMPANION_UPGRADER.read_text(encoding="utf-8")
 
         self.assertIn("--expected-source-commit", upgrader)
@@ -133,3 +135,26 @@ class SystemdAssetTests(unittest.TestCase):
         self.assertIn("collapsible Setup markup is still present", upgrader)
         self.assertNotIn("adapter-install", upgrader)
         self.assertNotIn("/var/www/html", upgrader)
+        self.assertIn("pihole_adapter_manifest", upgrader)
+        self.assertIn("Installed adapter sidebar no longer matches", upgrader)
+
+    def test_adapter_installation_is_guarded_and_records_recovery_state(self):
+        installer = ADAPTER_INSTALLER.read_text(encoding="utf-8")
+
+        self.assertIn("--expected-source-commit", installer)
+        self.assertIn("--expected-installed-commit", installer)
+        self.assertIn("83943cbdf5258fe43e819108a5135e070", installer)
+        self.assertIn("Web version is v6\\.6", installer)
+        self.assertIn("frame-ancestors 'self' http://192.168.2.14", installer)
+        self.assertIn("adapter-install", installer)
+        self.assertIn("pihole_adapter_installed=true", installer)
+        self.assertIn("pihole_adapter_manifest=", installer)
+        self.assertIn("adapter-remove", installer)
+
+    def test_adapter_removal_uses_verified_manifest_and_records_absence(self):
+        remover = ADAPTER_REMOVER.read_text(encoding="utf-8")
+
+        self.assertIn("pihole_adapter_installed", remover)
+        self.assertIn("pihole_adapter_manifest", remover)
+        self.assertIn("adapter-remove", remover)
+        self.assertIn("pihole_adapter_installed=false", remover)
