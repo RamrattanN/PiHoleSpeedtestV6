@@ -18,14 +18,13 @@ detailed acceptance criteria for active engineering work.
 - Validate Pi-hole Web v6.6 adapter installation and exact removal against a
   disposable copy of the installed web tree.
 - Complete a guarded live companion upgrade with 98,632 measurements preserved.
-- Add a tested Linux default-route fallback when the Ookla JSON omits its
-  interface name.
+- Deploy and verify the Linux default-route fallback when the Ookla JSON omits
+  its interface name.  Live measurement `98635` recorded `eth0`.
 
 ## Ready next
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Deploy and verify interface-label fallback | Current feature branch | Guarded companion upgrade, then confirm a new Pi measurement records `eth0` |
 | Live Pi-hole sidebar integration | [Issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2) | Fresh version, checksum, health, and recovery preflight plus explicit owner approval |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Agree release artifact, checksum, rollback, preservation, and purge contracts |
 
