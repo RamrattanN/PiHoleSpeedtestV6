@@ -7,7 +7,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from pihole_speedtest.models import Measurement
-from pihole_speedtest.server import CompanionServer
+from pihole_speedtest.server import CompanionServer, validate_frame_ancestors
 from pihole_speedtest.storage import Storage
 
 
@@ -111,6 +111,39 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(response.status, 200)
             self.assertEqual(response.headers["Content-Type"], "image/png")
             self.assertTrue(response.read().startswith(b"\x89PNG\r\n\x1a\n"))
+
+    def test_explicit_frame_ancestor_is_added_to_security_policy(self):
+        self.server.shutdown()
+        self.server.server_close()
+        self.thread.join(timeout=2)
+        self.server = CompanionServer(
+            ("127.0.0.1", 0),
+            self.storage,
+            frame_ancestors=["http://192.168.2.14"],
+        )
+        self.thread = threading.Thread(
+            target=self.server.serve_forever, daemon=True
+        )
+        self.thread.start()
+        host, port = self.server.server_address
+        self.base_url = f"http://{host}:{port}"
+
+        with urlopen(self.base_url + "/", timeout=2) as response:
+            policy = response.headers["Content-Security-Policy"]
+        self.assertIn(
+            "frame-ancestors 'self' http://192.168.2.14",
+            policy,
+        )
+
+    def test_frame_ancestor_rejects_non_origin_and_header_injection(self):
+        for value in (
+            "http://192.168.2.14/admin",
+            "javascript:alert(1)",
+            "http://example.test\r\nX-Test: unsafe",
+        ):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    validate_frame_ancestors([value])
 
     def test_manual_http_execution_is_disabled(self):
         request = Request(

@@ -1,0 +1,88 @@
+# Pi-hole Web v6.6 adapter
+
+## Purpose
+
+The optional adapter places a native `Speedtest` group in the authenticated
+Pi-hole sidebar.  Its submenu contains `Overview` and `Setup`.  Each destination
+uses Pi-hole's normal header, sidebar, content wrapper, theme, and footer while
+displaying an embedded view from the independent companion service.
+
+The adapter does not move measurement data into Pi-hole, change FTL, change
+DNS, or make Pi-hole responsible for collection and scheduling.
+
+## Supported boundary
+
+The first adapter supports Pi-hole Web `v6.6` only.  Installation refuses:
+
+- any other declared Web version;
+- a missing or unrecognized `scripts/lua/sidebar.lp` layout;
+- existing adapter markers;
+- pre-existing adapter page paths;
+- unsafe companion URLs.
+
+The installed Raspberry Pi layout must still be checked against the official
+v6.6 structure before live installation is approved.
+
+## Companion frame policy
+
+The companion dashboard defaults to `frame-ancestors 'self'`.  Embedding must
+be enabled for the exact Pi-hole origin through
+`/etc/default/pihole-speedtest-v6`:
+
+```text
+PIHOLE_SPEEDTEST_FRAME_ANCESTORS=http://192.168.2.14
+```
+
+The value is an origin, not a URL path.  HTTPS Pi-hole pages cannot embed an
+HTTP companion because browsers block mixed content.  The verified device
+currently uses the HTTP origin shown above.  A future HTTPS deployment must
+provide the companion through HTTPS before enabling the adapter.
+
+## Isolated installation shape
+
+The command below is documentation of the intended isolated test.  It is not
+approval to run against the live `/var/www/html/admin` tree.
+
+```bash
+pihole-speedtest adapter-install \
+  --web-root /temporary/pihole-admin-copy \
+  --web-version v6.6 \
+  --companion-url http://192.168.2.14:8765 \
+  --backup-root /temporary/adapter-backups
+```
+
+The command creates a timestamped recovery directory containing:
+
+- the exact pre-install sidebar;
+- SHA-256 checksums for the original and installed sidebar;
+- checksums for both created adapter pages;
+- the tested version, web root, and companion URL;
+- a manifest used for verified removal.
+
+## Verified removal shape
+
+```bash
+pihole-speedtest adapter-remove \
+  --manifest /temporary/adapter-backups/TIMESTAMP/manifest.json
+```
+
+Removal first verifies that the installed sidebar, adapter pages, and recovery
+copy still match the recorded checksums.  It refuses restoration if any of them
+changed after installation.  A successful removal restores the original
+sidebar byte for byte, deletes only the two adapter-created pages, and writes a
+removal record.
+
+## Live approval prerequisites
+
+Before touching the live Pi-hole web tree:
+
+1. Confirm the installed Web version is still `v6.6`.
+2. Resolve the actual web root and sidebar path read-only.
+3. Copy the complete installed web tree to a disposable directory.
+4. Install and remove the adapter against that copy.
+5. Verify exact sidebar restoration and the absence of leftover pages.
+6. Run the companion on its final Pi address and temporary service port.
+7. Verify the CSP frame policy and both embedded pages from another LAN device.
+8. Capture Pi-hole DNS, FTL, dashboard, and resource baselines.
+9. Create an additional recovery point.
+10. Obtain explicit approval for the live adapter installation.

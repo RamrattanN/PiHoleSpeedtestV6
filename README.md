@@ -11,8 +11,9 @@ replaces Pi-hole Core or its web interface.
 
 ## Current status
 
-This branch is an early development foundation, not a production release.  It
-provides:
+This branch is an owner-approved development foundation, not a production
+release.  Its dashboard is the visual and interaction baseline for subsequent
+Pi-hole Speedtest work.  It provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;
@@ -28,7 +29,10 @@ provides:
 - automated unit tests and pull-request CI.
 
 It does not yet provide the safe installer, uninstall workflow, or optional
-Pi-hole navigation adapter.  Do not run the legacy installer on a live Pi-hole.
+Pi-hole adapter deployment approval.  A version-gated, reversible Pi-hole Web
+v6.6 adapter is implemented for isolated validation.  Do not run the legacy
+installer or the new adapter against a live Pi-hole without completing the
+documented gates.
 
 ## Architecture
 
@@ -40,6 +44,8 @@ The product has two deliberately separate layers:
    Pi-hole update breaks the adapter, the companion core continues to work.
 
 See [Architecture](docs/ARCHITECTURE.md),
+[Approved Dashboard Baseline](docs/APPROVED-DASHBOARD-BASELINE.md),
+[Pi-hole v6 Adapter](docs/PIHOLE-V6-ADAPTER.md),
 [Origin and v6 Gap Analysis](docs/ORIGIN-AND-V6-GAP-ANALYSIS.md),
 [QA and Acceptance](docs/QA-AND-ACCEPTANCE.md), and
 [Roadmap](docs/ROADMAP.md).

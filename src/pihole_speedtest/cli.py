@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
+from .adapter import AdapterError, install_adapter, remove_adapter
 from .collector import CollectionError, collect
 from .locking import CollectionLockedError, collection_lock
 from .migration import LegacyImportError, import_legacy_csv
@@ -25,6 +26,12 @@ def default_database() -> Path:
         / "pihole-speedtest"
         / "speedtest.db"
     )
+
+
+def default_frame_ancestors() -> List[str]:
+    return os.environ.get(
+        "PIHOLE_SPEEDTEST_FRAME_ANCESTORS", ""
+    ).split()
 
 
 def parser() -> argparse.ArgumentParser:
@@ -67,12 +74,57 @@ def parser() -> argparse.ArgumentParser:
     serve_command.add_argument("--settings-file", type=Path)
     serve_command.add_argument("--admin-token-file", type=Path)
     serve_command.add_argument("--backup-directory", type=Path)
+    serve_command.add_argument(
+        "--frame-ancestor",
+        action="append",
+        default=default_frame_ancestors(),
+        help="Trusted origin allowed to embed the dashboard",
+    )
+
+    adapter_install = commands.add_parser(
+        "adapter-install",
+        help="Install the version-gated Pi-hole sidebar adapter",
+    )
+    adapter_install.add_argument("--web-root", type=Path, required=True)
+    adapter_install.add_argument("--web-version", required=True)
+    adapter_install.add_argument("--companion-url", required=True)
+    adapter_install.add_argument("--backup-root", type=Path, required=True)
+
+    adapter_remove = commands.add_parser(
+        "adapter-remove",
+        help="Remove an adapter using its verified recovery manifest",
+    )
+    adapter_remove.add_argument("--manifest", type=Path, required=True)
 
     return root
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     arguments = parser().parse_args(argv)
+
+    if arguments.command == "adapter-install":
+        try:
+            manifest = install_adapter(
+                arguments.web_root,
+                arguments.web_version,
+                arguments.companion_url,
+                arguments.backup_root,
+            )
+        except AdapterError as exc:
+            print(f"Adapter installation refused: {exc}")
+            return 1
+        print(json.dumps({"status": "installed", "manifest": str(manifest)}))
+        return 0
+
+    if arguments.command == "adapter-remove":
+        try:
+            remove_adapter(arguments.manifest)
+        except AdapterError as exc:
+            print(f"Adapter removal refused: {exc}")
+            return 1
+        print(json.dumps({"status": "removed"}))
+        return 0
+
     storage = Storage(arguments.database)
 
     if arguments.command == "collect":
@@ -128,5 +180,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         settings_file=arguments.settings_file,
         admin_token_file=arguments.admin_token_file,
         backup_directory=arguments.backup_directory,
+        frame_ancestors=arguments.frame_ancestor,
     )
     return 0

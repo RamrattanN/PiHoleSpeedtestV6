@@ -54,6 +54,11 @@ version is recognized.  It is not part of the companion core and must have:
 - restoration verification;
 - no ownership of speed-test data or scheduling.
 
+The initial v6.6 adapter adds authenticated Pi-hole pages and a `Speedtest`
+sidebar group with `Overview` and `Setup`.  Those pages frame explicit embedded
+views from the companion service.  The companion permits framing only from a
+configured Pi-hole origin; its default remains self-only.
+
 ## Failure boundaries
 
 - A failed speed test records no misleading zero result.

@@ -18,6 +18,15 @@ No development build may modify the live Pi-hole until all preceding gates pass.
 - chart zoom and pan affect only the time axis;
 - line and bar modes preserve the same fixed vertical scale.
 
+### Owner dashboard acceptance
+
+The owner visually accepted the branded dashboard and Setup experience on
+September 22, 2026, using the imported 98,627-measurement validation database.
+The accepted interface is documented in
+[`APPROVED-DASHBOARD-BASELINE.md`](APPROVED-DASHBOARD-BASELINE.md).  Later UI
+changes must preserve its required behaviors or receive explicit owner
+approval for a revised baseline.
+
 ## Gate 2: read-only Pi preflight
 
 Capture without modifying the Raspberry Pi:
@@ -68,7 +77,9 @@ checksum, and approved legacy-schedule pause are recorded in
 - require a recognized Pi-hole version and file layout;
 - record checksums and back up exact target files;
 - install the adapter idempotently;
-- display current results and link to the full dashboard;
+- add native Pi-hole `Speedtest` navigation with `Overview` and `Setup`;
+- display the companion views inside authenticated Pi-hole pages;
+- permit framing only from the explicitly configured Pi-hole origin;
 - verify all existing Pi-hole pages and controls;
 - remove the adapter and prove exact restoration;
 - simulate an unknown Pi-hole layout and confirm refusal.

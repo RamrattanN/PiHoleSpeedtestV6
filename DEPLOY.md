@@ -26,6 +26,7 @@ pihole-speedtest serve --database ./data/speedtest.db --host 127.0.0.1 --port 87
 - application: `/opt/pihole-speedtest`
 - data: `/var/lib/pihole-speedtest/speedtest.db`
 - configuration: `/var/lib/pihole-speedtest/settings.json`
+- service environment: `/etc/default/pihole-speedtest-v6`
 - dashboard administrator token: `/var/lib/pihole-speedtest/admin.token`
 - reset recovery backups: `/var/lib/pihole-speedtest/backups`
 - service account: dedicated unprivileged account
@@ -51,3 +52,7 @@ first.
 
 The authoritative deployment gates are in
 [`docs/QA-AND-ACCEPTANCE.md`](docs/QA-AND-ACCEPTANCE.md).
+
+The optional Pi-hole navigation integration is documented separately in
+[`docs/PIHOLE-V6-ADAPTER.md`](docs/PIHOLE-V6-ADAPTER.md).  It must not be
+installed before the companion service and isolated adapter validation pass.

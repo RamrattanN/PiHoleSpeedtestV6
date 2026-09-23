@@ -55,3 +55,6 @@ class WebAssetTests(unittest.TestCase):
         self.assertIn('byId("open-help")', script)
         self.assertIn("chartMaximum(allRecords", script)
         self.assertIn('data-zoom', page)
+        self.assertIn('get("embed") === "1"', script)
+        self.assertIn('window.location.hash === "#setup"', script)
+        self.assertIn("body.embedded", web.joinpath("styles.css").read_text(encoding="utf-8"))

@@ -175,6 +175,12 @@ dialog::backdrop { background: rgb(3 8 13 / 72%); }
 dialog p { color: #c7d5e1; line-height: 1.55; }
 dialog p:last-child { margin-bottom: 0; }
 .table-wrap { overflow-x: auto; }
+body.embedded { background: transparent; }
+body.embedded main { width: 100%; padding: 0 0 24px; }
+body.embedded .brand-header,
+body.embedded .view-navigation { display: none; }
+body.embedded .section-title { margin-top: 0; }
+body.embedded .setup-view { margin-top: 0; }
 table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 th, td {
   padding: 11px 10px;

@@ -17,6 +17,10 @@ class SystemdAssetTests(unittest.TestCase):
         self.assertIn("--host 0.0.0.0 --port 8765", unit)
         self.assertIn("Restart=on-failure", unit)
         self.assertIn("NoNewPrivileges=true", unit)
+        self.assertIn(
+            "EnvironmentFile=-/etc/default/pihole-speedtest-v6",
+            unit,
+        )
 
     def test_collection_uses_official_cli_and_lock(self):
         unit = self.read("pihole-speedtest-collect.service")

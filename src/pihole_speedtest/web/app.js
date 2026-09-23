@@ -6,6 +6,18 @@ let zoomStart = 0;
 let zoomEnd = 0;
 let chartMode = localStorage.getItem("pihole-speedtest-chart-mode") || "line";
 
+function requestedView() {
+  return window.location.hash === "#setup" ? "setup" : "overview";
+}
+
+function showView(name, updateHash = false) {
+  const setup = name === "setup";
+  byId("overview-view").hidden = setup;
+  byId("setup-view").hidden = !setup;
+  document.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("active", item.dataset.view === name));
+  if (updateHash && window.location.hash !== `#${name}`) window.location.hash = name;
+}
+
 function formatNumber(value) { const n = Number(value); return Number.isFinite(n) ? n.toFixed(2) : "-"; }
 function formatTime(value) { const d = new Date(value); return Number.isNaN(d.valueOf()) ? value : d.toLocaleString(); }
 function formatMeasurementCount(count) { return `${count} ${count === 1 ? "measurement" : "measurements"}`; }
@@ -128,6 +140,9 @@ async function authorizedPost(path, payload) {
 }
 
 function installControls() {
+  if (new URLSearchParams(window.location.search).get("embed") === "1") document.body.classList.add("embedded");
+  showView(requestedView());
+  window.addEventListener("hashchange", () => showView(requestedView()));
   const helpDialog = byId("help-dialog");
   byId("open-help").addEventListener("click", () => helpDialog.showModal());
   byId("close-help").addEventListener("click", () => helpDialog.close());
@@ -135,9 +150,7 @@ function installControls() {
     if (event.target === helpDialog) helpDialog.close();
   });
   document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
-    const setup = button.dataset.view === "setup";
-    byId("overview-view").hidden = setup; byId("setup-view").hidden = !setup;
-    document.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("active", item === button));
+    showView(button.dataset.view, true);
   }));
   document.querySelectorAll("[data-chart-mode]").forEach((button) => {
     button.classList.toggle("active", button.dataset.chartMode === chartMode);

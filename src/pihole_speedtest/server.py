@@ -26,6 +26,27 @@ ASSETS = {
 }
 
 
+def validate_frame_ancestors(values: list[str]) -> tuple[str, ...]:
+    validated = []
+    for value in values:
+        parsed = urlparse(value)
+        if (
+            parsed.scheme not in ("http", "https")
+            or not parsed.hostname
+            or parsed.username
+            or parsed.password
+            or parsed.path not in ("", "/")
+            or parsed.params
+            or parsed.query
+            or parsed.fragment
+            or "\r" in value
+            or "\n" in value
+        ):
+            raise ValueError(f"invalid frame ancestor origin: {value}")
+        validated.append(value.rstrip("/"))
+    return tuple(validated)
+
+
 class CompanionServer(ThreadingHTTPServer):
     def __init__(
         self,
@@ -34,12 +55,14 @@ class CompanionServer(ThreadingHTTPServer):
         settings_file: Optional[Path] = None,
         admin_token_file: Optional[Path] = None,
         backup_directory: Optional[Path] = None,
+        frame_ancestors: Optional[list[str]] = None,
     ):
         super().__init__(address, CompanionHandler)
         self.storage = storage
         self.settings_file = settings_file or storage.path.with_name("settings.json")
         self.admin_token_file = admin_token_file
         self.backup_directory = backup_directory or storage.path.parent / "backups"
+        self.frame_ancestors = validate_frame_ancestors(frame_ancestors or [])
 
 
 class CompanionHandler(BaseHTTPRequestHandler):
@@ -58,6 +81,9 @@ class CompanionHandler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
+        frame_ancestors = " ".join(
+            ("'self'", *self.server.frame_ancestors)
+        )
         self.send_header(
             "Content-Security-Policy",
             "default-src 'self'; "
@@ -67,7 +93,7 @@ class CompanionHandler(BaseHTTPRequestHandler):
             "connect-src 'self'; "
             "object-src 'none'; "
             "base-uri 'none'; "
-            "frame-ancestors 'self'",
+            f"frame-ancestors {frame_ancestors}",
         )
         for name, value in (extra_headers or {}).items():
             self.send_header(name, value)
@@ -253,10 +279,12 @@ def serve(
     settings_file: Optional[Path] = None,
     admin_token_file: Optional[Path] = None,
     backup_directory: Optional[Path] = None,
+    frame_ancestors: Optional[list[str]] = None,
 ) -> None:
     storage.initialize()
     server = CompanionServer(
-        (host, port), storage, settings_file, admin_token_file, backup_directory
+        (host, port), storage, settings_file, admin_token_file,
+        backup_directory, frame_ancestors,
     )
     try:
         server.serve_forever()

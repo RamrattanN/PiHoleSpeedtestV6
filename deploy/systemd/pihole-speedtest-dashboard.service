@@ -10,6 +10,7 @@ User=pihole-speedtest
 Group=pihole-speedtest
 WorkingDirectory=/var/lib/pihole-speedtest
 Environment=HOME=/var/lib/pihole-speedtest
+EnvironmentFile=-/etc/default/pihole-speedtest-v6
 ExecStart=/opt/pihole-speedtest/venv/bin/pihole-speedtest serve --database /var/lib/pihole-speedtest/speedtest.db --host 0.0.0.0 --port 8765 --settings-file /var/lib/pihole-speedtest/settings.json --admin-token-file /var/lib/pihole-speedtest/admin.token --backup-directory /var/lib/pihole-speedtest/backups
 Restart=on-failure
 RestartSec=5s

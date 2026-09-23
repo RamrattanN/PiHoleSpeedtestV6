@@ -8,7 +8,8 @@
 - [x] Add official Ookla parsing, SQLite history, API, and local dashboard.
 - [x] Add automated tests and pull-request CI.
 - [x] Add repeatable legacy CSV migration with rejected-row reporting.
-- [ ] Complete owner review of the foundation branch.
+- [x] Complete owner visual review of the dashboard foundation.
+- [x] Establish the approved dashboard as the go-to interface baseline.
 
 ## Raspberry Pi development baseline
 
@@ -38,10 +39,12 @@
 
 ## Optional Pi-hole integration
 
-- [ ] Audit the exact installed Pi-hole v6 interface and supported paths.
-- [ ] Design a version-gated, reversible adapter.
-- [ ] Add the Speedtest Overview and Setup sidebar hierarchy.
+- [x] Audit the official Pi-hole Web v6.6 interface and supported paths.
+- [x] Design and implement a version-gated, reversible adapter.
+- [x] Add the Speedtest Overview and Setup sidebar hierarchy.
 - [ ] Add dashboard status and companion link.
+- [ ] Validate the adapter against a disposable copy of the installed Pi-hole
+  v6.6 web tree.
 - [ ] Prove update failure isolation and exact rollback.
 
 ## Release
