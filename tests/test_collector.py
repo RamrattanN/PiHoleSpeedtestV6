@@ -8,6 +8,7 @@ from unittest.mock import patch
 from pihole_speedtest.collector import (
     CollectionError,
     collect,
+    default_route_interface,
     parse_ookla_result,
 )
 from pihole_speedtest.cli import main
@@ -77,6 +78,39 @@ class CollectorTests(unittest.TestCase):
             timeout=45,
             check=False,
         )
+
+    @patch(
+        "pihole_speedtest.collector.default_route_interface",
+        return_value="eth0",
+    )
+    @patch("pihole_speedtest.collector.subprocess.run")
+    def test_collect_uses_default_route_when_ookla_omits_interface(
+        self, run, route_interface
+    ):
+        result = dict(VALID_RESULT)
+        result["interface"] = {"internalIp": "192.168.2.14"}
+        run.return_value = subprocess.CompletedProcess(
+            args=["speedtest"],
+            returncode=0,
+            stdout=json.dumps(result),
+            stderr="",
+        )
+
+        measurement = collect()
+
+        self.assertEqual(measurement.interface_name, "eth0")
+        route_interface.assert_called_once_with()
+
+    def test_default_route_interface_reads_linux_route_table(self):
+        route_table = """Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT
+eth0 00000000 0102A8C0 0003 0 0 100 00000000 0 0 0
+eth0 0002A8C0 00000000 0001 0 0 100 00FFFFFF 0 0 0
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            route_path = Path(directory) / "route"
+            route_path.write_text(route_table, encoding="utf-8")
+
+            self.assertEqual(default_route_interface(route_path), "eth0")
 
     @patch("pihole_speedtest.cli.collect")
     def test_schedule_check_skips_collection_that_is_not_due(self, collect_mock):
