@@ -25,8 +25,12 @@ FTL, configuration, or data.
 ## Required navigation and views
 
 - provide top-level `Overview` and `Setup` navigation;
+- align `Run speed test now` with the top-level navigation and keep it at the
+  right edge on desktop widths;
 - keep the connection summary and charts in Overview;
 - keep display, export, scheduling, and destructive controls in Setup;
+- keep every Setup section expanded and do not provide section-collapse
+  controls;
 - avoid modifying or replacing the native Pi-hole dashboard for the companion
   core experience.
 
@@ -37,6 +41,8 @@ FTL, configuration, or data.
 - apply horizontal time-axis zoom without rescaling the y-axis;
 - support zoom controls, mouse-wheel zoom, and horizontal drag navigation;
 - keep series names and colors identifiable through local legends;
+- show the measurement time and chart-series values when a user points to a
+  chart measurement;
 - render a visible point when only one measurement exists.
 
 ## Required data controls

@@ -8,6 +8,7 @@ INSTALLER = ROOT / "scripts" / "install_companion_dashboard.sh"
 REMOVER = ROOT / "scripts" / "remove_companion_dashboard.sh"
 COLLECTION_UPGRADER = ROOT / "scripts" / "upgrade_and_enable_collection.sh"
 KEYLESS_UPGRADER = ROOT / "scripts" / "upgrade_remove_administrator_key.sh"
+COMPANION_UPGRADER = ROOT / "scripts" / "upgrade_companion.sh"
 
 
 class SystemdAssetTests(unittest.TestCase):
@@ -118,3 +119,17 @@ class SystemdAssetTests(unittest.TestCase):
 
         self.assertNotIn("admin-token-file", unit)
         self.assertNotIn("admin.token", unit)
+
+    def test_companion_upgrade_preserves_data_schedule_and_phase_boundary(self):
+        upgrader = COMPANION_UPGRADER.read_text(encoding="utf-8")
+
+        self.assertIn("--expected-source-commit", upgrader)
+        self.assertIn("--expected-installed-commit", upgrader)
+        self.assertIn("speedtest.before.db", upgrader)
+        self.assertIn("PRAGMA integrity_check", upgrader)
+        self.assertIn('systemctl stop "$timer_unit"', upgrader)
+        self.assertIn('systemctl start "$timer_unit"', upgrader)
+        self.assertIn('id=\"history-tooltip\"', upgrader)
+        self.assertIn("collapsible Setup markup is still present", upgrader)
+        self.assertNotIn("adapter-install", upgrader)
+        self.assertNotIn("/var/www/html", upgrader)

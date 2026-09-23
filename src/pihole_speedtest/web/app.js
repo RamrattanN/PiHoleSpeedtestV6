@@ -5,6 +5,7 @@ let allRecords = [];
 let zoomStart = 0;
 let zoomEnd = 0;
 let chartMode = localStorage.getItem("pihole-speedtest-chart-mode") || "line";
+const chartStates = new Map();
 
 function requestedView() {
   return window.location.hash === "#setup" ? "setup" : "overview";
@@ -57,7 +58,12 @@ function drawChart(records, options) {
   const context = canvas.getContext("2d");
   context.scale(ratio, ratio);
   context.clearRect(0, 0, width, height);
-  if (records.length === 0) { setText(options.noteId, "No measurements"); return; }
+  if (records.length === 0) {
+    setText(options.noteId, "No measurements");
+    chartStates.delete(options.canvasId);
+    byId(options.tooltipId).hidden = true;
+    return;
+  }
 
   setText(options.noteId, records.length === allRecords.length
     ? formatMeasurementCount(records.length)
@@ -67,6 +73,7 @@ function drawChart(records, options) {
   const chartHeight = height - padding.top - padding.bottom;
   const maximum = chartMaximum(allRecords, options.series, options.minimumMaximum);
   const values = options.series.map((series) => records.map((record) => Number(record[series.field]) || 0));
+  chartStates.set(options.canvasId, { records, options, padding, chartWidth, chartHeight });
   context.strokeStyle = "#263747";
   context.fillStyle = "#8fa4b8";
   context.font = "12px system-ui";
@@ -106,10 +113,52 @@ function drawChart(records, options) {
 
 function renderCharts() {
   const records = visibleRecords();
-  drawChart(records, { canvasId: "history-chart", noteId: "chart-note", minimumMaximum: 10,
-    series: [{ field: "download_mbps", color: "#66c2ff" }, { field: "upload_mbps", color: "#62d49d" }] });
-  drawChart(records, { canvasId: "latency-chart", noteId: "latency-chart-note", minimumMaximum: 10,
-    series: [{ field: "latency_ms", color: "#ffb86b" }, { field: "jitter_ms", color: "#c792ea" }] });
+  drawChart(records, { canvasId: "history-chart", tooltipId: "history-tooltip", noteId: "chart-note", minimumMaximum: 10,
+    series: [
+      { field: "download_mbps", label: "Download", unit: "Mbps", color: "#66c2ff" },
+      { field: "upload_mbps", label: "Upload", unit: "Mbps", color: "#62d49d" },
+    ] });
+  drawChart(records, { canvasId: "latency-chart", tooltipId: "latency-tooltip", noteId: "latency-chart-note", minimumMaximum: 10,
+    series: [
+      { field: "latency_ms", label: "Latency", unit: "ms", color: "#ffb86b" },
+      { field: "jitter_ms", label: "Jitter", unit: "ms", color: "#c792ea" },
+    ] });
+}
+
+function hideChartTooltip(canvas) {
+  const state = chartStates.get(canvas.id);
+  if (state) byId(state.options.tooltipId).hidden = true;
+}
+
+function showChartTooltip(event, canvas) {
+  const state = chartStates.get(canvas.id);
+  if (!state || state.records.length === 0) return;
+  const bounds = canvas.getBoundingClientRect();
+  const x = event.clientX - bounds.left;
+  const y = event.clientY - bounds.top;
+  const { padding, chartWidth, chartHeight, records, options } = state;
+  if (x < padding.left || x > padding.left + chartWidth || y < padding.top || y > padding.top + chartHeight) {
+    hideChartTooltip(canvas);
+    return;
+  }
+
+  const position = Math.max(0, Math.min(1, (x - padding.left) / chartWidth));
+  const index = records.length === 1 ? 0 : Math.round(position * (records.length - 1));
+  const record = records[index];
+  const tooltip = byId(options.tooltipId);
+  const title = document.createElement("strong");
+  title.textContent = formatTime(record.recorded_at);
+  const rows = options.series.map((series) => {
+    const row = document.createElement("span");
+    const swatch = document.createElement("i");
+    swatch.style.background = series.color;
+    row.append(swatch, `${series.label}: ${formatNumber(record[series.field])} ${series.unit}`);
+    return row;
+  });
+  tooltip.replaceChildren(title, ...rows);
+  tooltip.style.left = `${Math.max(105, Math.min(bounds.width - 105, x))}px`;
+  tooltip.style.top = `${Math.max(96, y)}px`;
+  tooltip.hidden = false;
 }
 
 function changeZoom(action) {
@@ -204,17 +253,23 @@ function installControls() {
   });
   document.querySelectorAll("[data-zoom]").forEach((button) => button.addEventListener("click", () => changeZoom(button.dataset.zoom)));
   document.querySelectorAll("canvas").forEach((canvas) => {
+    let dragStart = null;
+    canvas.addEventListener("pointermove", (event) => {
+      if (dragStart === null) showChartTooltip(event, canvas);
+    });
+    canvas.addEventListener("pointerleave", () => hideChartTooltip(canvas));
     canvas.addEventListener("wheel", (event) => {
       event.preventDefault(); changeZoom(event.deltaY < 0 ? "in" : "out");
     }, { passive: false });
-    let dragStart = null;
     canvas.addEventListener("pointerdown", (event) => {
+      hideChartTooltip(canvas);
       dragStart = event.clientX; canvas.setPointerCapture(event.pointerId);
     });
     canvas.addEventListener("pointerup", (event) => {
       if (dragStart !== null) panZoom(event.clientX - dragStart, canvas.clientWidth);
       dragStart = null;
     });
+    canvas.addEventListener("pointercancel", () => { dragStart = null; });
   });
 
   const showTable = byId("show-table");
