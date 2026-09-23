@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-import hmac
 import io
 import json
 import sqlite3
@@ -57,7 +56,6 @@ class CompanionServer(ThreadingHTTPServer):
         address: tuple[str, int],
         storage: Storage,
         settings_file: Optional[Path] = None,
-        admin_token_file: Optional[Path] = None,
         backup_directory: Optional[Path] = None,
         frame_ancestors: Optional[list[str]] = None,
         collection_binary: Optional[str] = None,
@@ -67,7 +65,6 @@ class CompanionServer(ThreadingHTTPServer):
         super().__init__(address, CompanionHandler)
         self.storage = storage
         self.settings_file = settings_file or storage.path.with_name("settings.json")
-        self.admin_token_file = admin_token_file
         self.backup_directory = backup_directory or storage.path.parent / "backups"
         self.frame_ancestors = validate_frame_ancestors(frame_ancestors or [])
         self.collection_binary = collection_binary
@@ -269,10 +266,11 @@ class CompanionHandler(BaseHTTPRequestHandler):
             )
             return
 
-        if not self._authorized():
+        content_type = self.headers.get("Content-Type", "")
+        if content_type.split(";", 1)[0].strip().lower() != "application/json":
             self._send_json(
-                {"error": "administrator authorization required"},
-                HTTPStatus.FORBIDDEN,
+                {"error": "Content-Type must be application/json"},
+                HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
             )
             return
 
@@ -327,16 +325,6 @@ class CompanionHandler(BaseHTTPRequestHandler):
             {"status": "reset", "deleted": deleted, "backup": backup.name}
         )
 
-    def _authorized(self) -> bool:
-        token_file = self.server.admin_token_file
-        if token_file is None or not token_file.is_file():
-            return False
-        expected = token_file.read_text(encoding="utf-8").strip()
-        supplied = self.headers.get("Authorization", "")
-        if not supplied.startswith("Bearer "):
-            return False
-        return bool(expected) and hmac.compare_digest(supplied[7:], expected)
-
     def _read_json(self) -> Optional[dict[str, object]]:
         try:
             length = int(self.headers.get("Content-Length", "0"))
@@ -370,7 +358,6 @@ def serve(
     host: str = "127.0.0.1",
     port: int = 8765,
     settings_file: Optional[Path] = None,
-    admin_token_file: Optional[Path] = None,
     backup_directory: Optional[Path] = None,
     frame_ancestors: Optional[list[str]] = None,
     collection_binary: Optional[str] = None,
@@ -379,7 +366,7 @@ def serve(
 ) -> None:
     storage.initialize()
     server = CompanionServer(
-        (host, port), storage, settings_file, admin_token_file,
+        (host, port), storage, settings_file,
         backup_directory, frame_ancestors, collection_binary,
         collection_lock_file, collection_timeout,
     )

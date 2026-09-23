@@ -7,6 +7,7 @@ SYSTEMD = ROOT / "deploy" / "systemd"
 INSTALLER = ROOT / "scripts" / "install_companion_dashboard.sh"
 REMOVER = ROOT / "scripts" / "remove_companion_dashboard.sh"
 COLLECTION_UPGRADER = ROOT / "scripts" / "upgrade_and_enable_collection.sh"
+KEYLESS_UPGRADER = ROOT / "scripts" / "upgrade_remove_administrator_key.sh"
 
 
 class SystemdAssetTests(unittest.TestCase):
@@ -95,3 +96,25 @@ class SystemdAssetTests(unittest.TestCase):
         self.assertIn("Any successfully completed measurement", upgrader)
         self.assertNotIn("adapter-install", upgrader)
         self.assertNotIn("/var/www/html", upgrader)
+
+    def test_keyless_upgrade_is_guarded_and_preserves_collection(self):
+        upgrader = KEYLESS_UPGRADER.read_text(encoding="utf-8")
+
+        self.assertIn("--expected-source-commit", upgrader)
+        self.assertIn("--expected-installed-commit", upgrader)
+        self.assertIn("speedtest.before.db", upgrader)
+        self.assertIn("PRAGMA integrity_check", upgrader)
+        self.assertIn("admin.token.before", upgrader)
+        self.assertIn('rm -f -- "$token_path"', upgrader)
+        self.assertIn('systemctl stop "$timer_unit"', upgrader)
+        self.assertIn('systemctl start "$timer_unit"', upgrader)
+        self.assertIn('"http://127.0.0.1:8765/api/collect"', upgrader)
+        self.assertNotIn("Authorization", upgrader)
+        self.assertNotIn("adapter-install", upgrader)
+        self.assertNotIn("/var/www/html", upgrader)
+
+    def test_dashboard_service_does_not_require_administrator_token(self):
+        unit = self.read("pihole-speedtest-dashboard.service")
+
+        self.assertNotIn("admin-token-file", unit)
+        self.assertNotIn("admin.token", unit)

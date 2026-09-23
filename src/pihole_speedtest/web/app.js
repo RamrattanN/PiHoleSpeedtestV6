@@ -134,14 +134,13 @@ function panZoom(deltaPixels, width) {
   zoomStart = nextStart; zoomEnd = nextStart + visible; renderCharts();
 }
 
-async function authorizedPost(path, payload) {
-  return fetch(path, { method: "POST", headers: { "Content-Type": "application/json",
-    "Authorization": `Bearer ${byId("admin-token").value.trim()}` }, body: JSON.stringify(payload) });
+async function postJson(path, payload) {
+  return fetch(path, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload) });
 }
 
 function setCollectionMessage(value) {
   setText("collection-message", value);
-  setText("collection-setup-message", value);
 }
 
 function setCollectionButtonsDisabled(disabled) {
@@ -164,16 +163,10 @@ async function waitForCollection() {
 }
 
 async function runSpeedtest() {
-  if (!byId("admin-token").value.trim()) {
-    showView("setup", true);
-    setCollectionMessage("Enter the administrator key, then run the speed test again.");
-    byId("admin-token").focus();
-    return;
-  }
   setCollectionButtonsDisabled(true);
   setCollectionMessage("Starting an official Ookla speed test.");
   try {
-    const response = await authorizedPost("/api/collect", {});
+    const response = await postJson("/api/collect", {});
     const result = await response.json();
     if (!response.ok) {
       setCollectionButtonsDisabled(false);
@@ -232,7 +225,7 @@ function installControls() {
     byId("measurement-table").hidden = !showTable.checked;
   });
   byId("save-frequency").addEventListener("click", async () => {
-    const response = await authorizedPost("/api/settings", { collection_interval_minutes: Number(byId("collection-frequency").value) });
+    const response = await postJson("/api/settings", { collection_interval_minutes: Number(byId("collection-frequency").value) });
     const result = await response.json(); setText("settings-message", response.ok ? "Capture frequency saved." : result.error);
   });
   document.querySelectorAll("[data-run-speedtest]").forEach((button) => {
@@ -242,7 +235,7 @@ function installControls() {
   byId("reset-acknowledgement").addEventListener("change", updateResetButton);
   byId("reset-confirmation").addEventListener("input", updateResetButton);
   byId("reset-data").addEventListener("click", async () => {
-    const response = await authorizedPost("/api/reset", { confirmation: "RESET" });
+    const response = await postJson("/api/reset", { confirmation: "RESET" });
     const result = await response.json();
     setText("reset-message", response.ok ? `History reset. Recovery backup: ${result.backup}` : result.error);
     if (response.ok) await load();

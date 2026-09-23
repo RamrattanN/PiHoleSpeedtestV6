@@ -1,8 +1,8 @@
 # Deployment status
 
-The dashboard-only companion service passed its approval-gated staged
-installation on the Raspberry Pi.  Automated collection, the collection timer,
-and the live Pi-hole navigation adapter remain blocked behind separate gates.
+The dashboard companion service and 15-minute automated collection passed
+their approval-gated installation and live verification on the Raspberry Pi.
+The live Pi-hole navigation adapter remains blocked behind its separate gate.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
@@ -28,7 +28,6 @@ pihole-speedtest serve --database ./data/speedtest.db --host 127.0.0.1 --port 87
 - data: `/var/lib/pihole-speedtest/speedtest.db`
 - configuration: `/var/lib/pihole-speedtest/settings.json`
 - service environment: `/etc/default/pihole-speedtest-v6`
-- dashboard administrator token: `/var/lib/pihole-speedtest/admin.token`
 - reset recovery backups: `/var/lib/pihole-speedtest/backups`
 - service account: dedicated unprivileged account
 - dashboard: independent HTTP service on a configurable LAN address and port
@@ -45,10 +44,9 @@ Development systemd units now exist under `deploy/systemd/` for:
 - an unprivileged `pihole-speedtest` service account;
 - process locking that refuses overlapping collections.
 
-The dashboard now runs without an interactive Terminal session.  The collection
-service and timer are implemented but have not been installed or enabled on the
-live Raspberry Pi.  Upgrade, complete uninstall, backup, and restore procedures
-still require release-level acceptance.
+The dashboard and collection timer now run without an interactive Terminal
+session.  Complete uninstall, general backup, and restore procedures still
+require release-level acceptance.
 
 The authoritative deployment gates are in
 [`docs/QA-AND-ACCEPTANCE.md`](docs/QA-AND-ACCEPTANCE.md).
@@ -61,8 +59,8 @@ installed before the companion service and isolated adapter validation pass.
 
 `scripts/install_companion_dashboard.sh` installs only the unprivileged
 companion dashboard.  It imports and reconciles the accepted legacy history,
-verifies SQLite integrity and the expected measurement counts, creates the
-administrator token, enables the dashboard service, and verifies its health.
+verifies SQLite integrity and the expected measurement counts, enables the
+dashboard service, and verifies its health.
 
 The script deliberately does not install the collection service or timer and
 does not modify the Pi-hole web tree.  A failed installation removes the new
@@ -89,12 +87,21 @@ remained empty, and the Pi-hole sidebar checksum remained unchanged.
 `scripts/upgrade_and_enable_collection.sh` upgrades the staged application from
 an explicitly named installed commit to an explicitly named approved source
 commit.  It creates and verifies a SQLite recovery backup, retains the complete
-prior application, updates the dashboard for authenticated manual speed tests,
+prior application, updates the dashboard for manual speed tests,
 and installs the schedule-aware collection service and timer.
 
-Before enabling the timer, the script invokes the protected manual collection
+Before enabling the timer, the script invokes the manual collection
 API and requires one valid measurement, a one-row count increase, and a clean
 SQLite integrity check.  Failure restores the prior application, dashboard
 unit, and settings while deliberately preserving any valid measurement that
 completed before a later check failed.  The Pi-hole web tree is outside this
 workflow.
+
+## Keyless dashboard upgrade
+
+`scripts/upgrade_remove_administrator_key.sh` upgrades an existing scheduled
+installation to the owner-approved keyless dashboard.  It pauses the timer,
+waits for any active collection to finish, verifies a SQLite recovery backup,
+retains the prior application and deployment files, removes the obsolete token,
+and proves the keyless manual-test API with one measurement before restoring
+the timer.  It does not modify the Pi-hole web tree or install the adapter.

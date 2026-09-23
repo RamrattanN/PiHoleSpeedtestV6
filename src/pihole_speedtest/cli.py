@@ -72,7 +72,6 @@ def parser() -> argparse.ArgumentParser:
     serve_command.add_argument("--host", default="127.0.0.1")
     serve_command.add_argument("--port", type=int, default=8765)
     serve_command.add_argument("--settings-file", type=Path)
-    serve_command.add_argument("--admin-token-file", type=Path)
     serve_command.add_argument("--backup-directory", type=Path)
     serve_command.add_argument(
         "--frame-ancestor",
@@ -183,7 +182,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         arguments.host,
         arguments.port,
         settings_file=arguments.settings_file,
-        admin_token_file=arguments.admin_token_file,
         backup_directory=arguments.backup_directory,
         frame_ancestors=arguments.frame_ancestor,
         collection_binary=arguments.collection_binary,

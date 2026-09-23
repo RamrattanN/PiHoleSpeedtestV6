@@ -19,7 +19,7 @@
 - [x] Add systemd service and timer units.
 - [x] Add concurrency locking.
 - [ ] Add structured journal messages.
-- [x] Add protected collection-frequency configuration.
+- [x] Add collection-frequency configuration for the trusted LAN dashboard.
 - [ ] Add conservative retention.
 - [ ] Build a safe installer, upgrader, uninstaller, backup, and restore flow.
 - [x] Add a rollback-guarded dashboard-only staged installer.
@@ -29,13 +29,17 @@
 
 ## Product capability
 
-- [x] Add authenticated manual test execution.
+- [x] Add keyless manual test execution directly from Overview.
 - [x] Add complete-history CSV export.
 - [ ] Add date-range filtering.
 - [ ] Add server selection with explicit validation.
 - [ ] Add status, logs, storage, and next-run information.
+- [ ] Add chart ranges for 24 hours, 7 days, 30 days, 90 days, and all history.
+- [ ] Add an optional preferred-server selector while retaining automatic
+  selection as the default.
 - [x] Add a verified recovery backup before protected reset.
 - [ ] Add general backup and restore controls.
+- [ ] Add a user-triggered verified backup and safe backup download.
 - [x] Add line and bar charts with fixed-scale time-axis zoom and pan.
 - [x] Add optional recent-results table visibility.
 - [ ] Add table sorting and complete accessible-state verification.

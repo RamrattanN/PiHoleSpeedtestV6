@@ -29,12 +29,7 @@ class ServerTests(unittest.TestCase):
                 interface_name="eth0",
             )
         )
-        self.token_file = Path(self.temporary.name) / "admin.token"
-        self.token_file.write_text("test-secret\n", encoding="utf-8")
-        self.server = CompanionServer(
-            ("127.0.0.1", 0), self.storage,
-            admin_token_file=self.token_file,
-        )
+        self.server = CompanionServer(("127.0.0.1", 0), self.storage)
         self.thread = threading.Thread(
             target=self.server.serve_forever, daemon=True
         )
@@ -71,31 +66,38 @@ class ServerTests(unittest.TestCase):
         self.assertIn("recorded_at,download_mbps", body)
         self.assertIn("2026-09-22T18:00:00Z,100.0,20.0", body)
 
-    def post_json(self, path, payload, token="test-secret"):
+    def post_json(self, path, payload):
         request = Request(
             self.base_url + path,
             data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"},
+            headers={"Content-Type": "application/json"},
             method="POST",
         )
         with urlopen(request, timeout=2) as response:
             return response, json.loads(response.read())
 
-    def test_settings_update_requires_token(self):
-        request = Request(
-            self.base_url + "/api/settings",
-            data=b'{"collection_interval_minutes":30}',
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        with self.assertRaises(HTTPError) as raised:
-            urlopen(request, timeout=2)
-        self.assertEqual(raised.exception.code, 403)
-
+    def test_settings_update_does_not_require_token(self):
         _, payload = self.post_json(
             "/api/settings", {"collection_interval_minutes": 30}
         )
         self.assertEqual(payload["collection_interval_minutes"], 30)
+
+    def test_writes_require_json_content_type(self):
+        for path, body in (
+            ("/api/settings", b'{"collection_interval_minutes":30}'),
+            ("/api/reset", b'{"confirmation":"RESET"}'),
+            ("/api/collect", b"{}"),
+        ):
+            with self.subTest(path=path):
+                request = Request(
+                    self.base_url + path,
+                    data=body,
+                    headers={"Content-Type": "text/plain"},
+                    method="POST",
+                )
+                with self.assertRaises(HTTPError) as raised:
+                    urlopen(request, timeout=2)
+                self.assertEqual(raised.exception.code, 415)
 
     def test_reset_creates_backup_before_delete(self):
         _, payload = self.post_json("/api/reset", {"confirmation": "RESET"})
@@ -146,14 +148,6 @@ class ServerTests(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(ValueError):
                     validate_frame_ancestors([value])
-
-    def test_manual_collection_requires_token(self):
-        request = Request(
-            self.base_url + "/api/collect", data=b"{}", method="POST"
-        )
-        with self.assertRaises(HTTPError) as raised:
-            urlopen(request, timeout=2)
-        self.assertEqual(raised.exception.code, 403)
 
     @patch("pihole_speedtest.server.collect")
     def test_manual_collection_runs_asynchronously_and_stores_result(self, run):

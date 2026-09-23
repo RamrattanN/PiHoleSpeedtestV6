@@ -106,7 +106,7 @@ if id "$service_user" >/dev/null 2>&1; then
   exit 1
 fi
 
-for command in python3 systemctl curl openssl sha256sum runuser; do
+for command in python3 systemctl curl sha256sum runuser; do
   if ! command -v "$command" >/dev/null 2>&1; then
     echo "STOP: Required command is unavailable: $command" >&2
     exit 1
@@ -228,9 +228,6 @@ PY
 chown -R "$service_user:$service_user" "$data_dir"
 chmod 0600 "$data_dir/speedtest.db" "$data_dir/migration/import-report.json"
 
-umask 0077
-openssl rand -hex 32 > "$data_dir/admin.token"
-chown "$service_user:$service_user" "$data_dir/admin.token"
 printf '{"collection_interval_minutes":60}\n' > "$data_dir/settings.json"
 chown "$service_user:$service_user" "$data_dir/settings.json"
 

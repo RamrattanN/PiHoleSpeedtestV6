@@ -23,8 +23,8 @@ Pi-hole Speedtest work.  It provides:
 - local web assets with no CDN dependency;
 - line and bar charts with fixed-scale time-axis zoom and pan;
 - optional table visibility and complete-history CSV export;
-- token-protected manual speed tests, collection-frequency changes, and reset
-  controls;
+- dashboard controls for manual speed tests, collection-frequency changes,
+  and reset;
 - a verified SQLite recovery backup before every reset;
 - unprivileged systemd service and schedule assets;
 - automated unit tests and pull-request CI.

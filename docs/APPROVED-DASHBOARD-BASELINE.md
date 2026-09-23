@@ -46,8 +46,8 @@ FTL, configuration, or data.
 - allow capture intervals of 15, 30, 60, 120, 240, 360, 720, or 1,440
   minutes;
 - use 60 minutes as the default capture interval;
-- require the administrator token for schedule changes;
-- provide an administrator-token-protected `Run speed test now` control;
+- allow schedule changes directly from Setup without a separate key;
+- provide a `Run speed test now` control directly on Overview;
 - show manual-test progress and refresh the dashboard after success;
 - refuse overlapping manual and scheduled speed tests through one shared lock;
 - require acknowledgement and the exact text `RESET` before reset;

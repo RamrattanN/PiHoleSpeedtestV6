@@ -29,8 +29,7 @@ repository, or depend on undocumented Pi-hole files for collection and history.
 
 - uses a small standard-library HTTP service;
 - exposes read-only health, result, settings, and CSV export endpoints;
-- protects schedule changes and destructive reset operations with a dedicated
-  administrator token;
+- exposes configuration controls only on the trusted LAN deployment boundary;
 - creates and verifies a SQLite recovery backup before clearing history;
 - serves local HTML, CSS, and JavaScript;
 - makes no CDN or third-party browser requests;
@@ -70,9 +69,9 @@ configured Pi-hole origin; its default remains self-only.
 
 ## Network boundary
 
-Measurement collection is not exposed over HTTP.  It remains a local CLI and
-systemd operation.  Read-only dashboard requests do not require the
-administrator token.  Configuration changes and data reset require a bearer
-token stored outside the application directory.  The service should be exposed
-only on a trusted LAN until an authenticated HTTPS deployment boundary is
-available.
+Scheduled measurement collection remains a local CLI and systemd operation.
+The dashboard also exposes an asynchronous manual-collection endpoint and
+configuration controls without a separate application key, by owner decision.
+Reset still requires acknowledgement and the exact `RESET` confirmation, and
+creates a verified backup first.  The service must remain on a trusted LAN and
+must not be forwarded to the public internet.

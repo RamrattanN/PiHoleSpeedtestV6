@@ -12,9 +12,10 @@ No development build may modify the live Pi-hole until all preceding gates pass.
 - malformed CLI output and failed processes record no result;
 - SQLite schema creation and queries are repeatable;
 - unsupported collection intervals are rejected;
-- configuration and reset writes require an administrator token;
-- manual HTTP collection requires an administrator token, runs asynchronously,
-  and shares the scheduled collector lock;
+- configuration writes are available without a separate application key on
+  the trusted LAN;
+- manual HTTP collection runs asynchronously and shares the scheduled
+  collector lock;
 - reset verifies a SQLite recovery copy before deleting active history;
 - CSV export preserves chronological order and measurement units;
 - chart zoom and pan affect only the time axis;
