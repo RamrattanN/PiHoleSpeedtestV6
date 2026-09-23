@@ -80,6 +80,9 @@ def parser() -> argparse.ArgumentParser:
         default=default_frame_ancestors(),
         help="Trusted origin allowed to embed the dashboard",
     )
+    serve_command.add_argument("--collection-binary")
+    serve_command.add_argument("--collection-lock-file", type=Path)
+    serve_command.add_argument("--collection-timeout", type=int, default=180)
 
     adapter_install = commands.add_parser(
         "adapter-install",
@@ -173,6 +176,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if not 1 <= arguments.port <= 65535:
         parser().error("--port must be between 1 and 65535")
+    if arguments.collection_timeout <= 0:
+        parser().error("--collection-timeout must be greater than zero")
     serve(
         storage,
         arguments.host,
@@ -181,5 +186,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         admin_token_file=arguments.admin_token_file,
         backup_directory=arguments.backup_directory,
         frame_ancestors=arguments.frame_ancestor,
+        collection_binary=arguments.collection_binary,
+        collection_lock_file=arguments.collection_lock_file,
+        collection_timeout=arguments.collection_timeout,
     )
     return 0

@@ -1,10 +1,12 @@
 import json
 import tempfile
 import threading
+import time
 import unittest
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
+from unittest.mock import patch
 
 from pihole_speedtest.models import Measurement
 from pihole_speedtest.server import CompanionServer, validate_frame_ancestors
@@ -145,10 +147,47 @@ class ServerTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     validate_frame_ancestors([value])
 
-    def test_manual_http_execution_is_disabled(self):
+    def test_manual_collection_requires_token(self):
         request = Request(
-            self.base_url + "/api/run", data=b"{}", method="POST"
+            self.base_url + "/api/collect", data=b"{}", method="POST"
         )
         with self.assertRaises(HTTPError) as raised:
             urlopen(request, timeout=2)
-        self.assertEqual(raised.exception.code, 405)
+        self.assertEqual(raised.exception.code, 403)
+
+    @patch("pihole_speedtest.server.collect")
+    def test_manual_collection_runs_asynchronously_and_stores_result(self, run):
+        run.return_value = Measurement(
+            recorded_at="2026-09-23T02:15:00Z",
+            download_mbps=320.0,
+            upload_mbps=100.0,
+            latency_ms=8.0,
+            jitter_ms=1.5,
+            server_name="Example",
+            server_id="99",
+            interface_name="eth0",
+        )
+        self.server.collection_binary = "/usr/bin/speedtest"
+        _, started = self.post_json("/api/collect", {})
+        self.assertEqual(started["state"], "running")
+
+        deadline = time.monotonic() + 2
+        while time.monotonic() < deadline:
+            _, status = self.get_json("/api/collection-status")
+            if status["state"] != "running":
+                break
+            time.sleep(0.01)
+
+        self.assertEqual(status["state"], "succeeded")
+        self.assertEqual(self.storage.count(), 2)
+        run.assert_called_once_with("/usr/bin/speedtest", 180)
+
+    def test_manual_collection_refuses_overlap(self):
+        self.server.collection_binary = "/usr/bin/speedtest"
+        self.server.collection_status = {
+            "state": "running",
+            "message": "Running an official Ookla speed test.",
+        }
+        with self.assertRaises(HTTPError) as raised:
+            self.post_json("/api/collect", {})
+        self.assertEqual(raised.exception.code, 409)

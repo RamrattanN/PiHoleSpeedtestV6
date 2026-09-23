@@ -31,13 +31,29 @@
     </nav>
 
     <div id="overview-view">
-    <h2 class="section-title">Connection history</h2>
+    <div class="overview-heading">
+      <h2 class="section-title">Connection history</h2>
+      <button type="button" data-run-speedtest>Run speed test now</button>
+    </div>
+    <p id="collection-message" class="form-message" role="status"></p>
 
     <section class="summary" aria-label="Latest measurement">
-      <article><span>Download</span><strong id="latest-download">-</strong><small>Mbps</small></article>
-      <article><span>Upload</span><strong id="latest-upload">-</strong><small>Mbps</small></article>
-      <article><span>Latency</span><strong id="latest-latency">-</strong><small>ms</small></article>
-      <article><span>Jitter</span><strong id="latest-jitter">-</strong><small>ms</small></article>
+      <article class="metric-card metric-download">
+        <i class="metric-icon" aria-hidden="true">&darr;</i>
+        <div><span>Download</span><strong id="latest-download">-</strong><small>Mbps</small></div>
+      </article>
+      <article class="metric-card metric-upload">
+        <i class="metric-icon" aria-hidden="true">&uarr;</i>
+        <div><span>Upload</span><strong id="latest-upload">-</strong><small>Mbps</small></div>
+      </article>
+      <article class="metric-card metric-latency">
+        <i class="metric-icon metric-clock" aria-hidden="true"></i>
+        <div><span>Latency</span><strong id="latest-latency">-</strong><small>ms</small></div>
+      </article>
+      <article class="metric-card metric-jitter">
+        <i class="metric-icon metric-wave" aria-hidden="true">&#8767;</i>
+        <div><span>Jitter</span><strong id="latest-jitter">-</strong><small>ms</small></div>
+      </article>
     </section>
 
     <section class="panel">
@@ -137,7 +153,9 @@
         <label for="admin-token">Administrator key</label>
         <input id="admin-token" type="password" autocomplete="off">
         <button id="save-frequency" type="button">Save frequency</button>
+        <button type="button" data-run-speedtest>Run speed test now</button>
         <p id="settings-message" class="form-message" role="status"></p>
+        <p id="collection-setup-message" class="form-message" role="status"></p>
       </details>
 
       <details class="panel danger-panel">
@@ -161,7 +179,7 @@
       </div>
       <p>Use Line or Bar to change the chart style.  Scroll over a chart or use the zoom buttons to inspect a shorter time range.  Drag horizontally to move through a zoomed range.</p>
       <p>The y-axis remains fixed while you zoom so changes stay visually comparable.  Open Setup to control the table, export CSV data, change capture frequency, or reset history.</p>
-      <p>An administrator key is required to change the collection schedule or reset data.</p>
+      <p>An administrator key is required to run a speed test, change the collection schedule, or reset data.</p>
     </dialog>
   </main>
 </body>

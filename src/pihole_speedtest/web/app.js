@@ -139,6 +139,55 @@ async function authorizedPost(path, payload) {
     "Authorization": `Bearer ${byId("admin-token").value.trim()}` }, body: JSON.stringify(payload) });
 }
 
+function setCollectionMessage(value) {
+  setText("collection-message", value);
+  setText("collection-setup-message", value);
+}
+
+function setCollectionButtonsDisabled(disabled) {
+  document.querySelectorAll("[data-run-speedtest]").forEach((button) => { button.disabled = disabled; });
+}
+
+async function waitForCollection() {
+  for (let attempt = 0; attempt < 190; attempt += 1) {
+    await new Promise((resolve) => window.setTimeout(resolve, 1000));
+    const response = await fetch("/api/collection-status", { cache: "no-store" });
+    const status = await response.json();
+    if (status.state === "running") { setCollectionMessage(status.message); continue; }
+    setCollectionButtonsDisabled(false);
+    setCollectionMessage(status.message || "Speed test finished.");
+    if (status.state === "succeeded") await load();
+    return;
+  }
+  setCollectionButtonsDisabled(false);
+  setCollectionMessage("The speed test is still running. Check status again shortly.");
+}
+
+async function runSpeedtest() {
+  if (!byId("admin-token").value.trim()) {
+    showView("setup", true);
+    setCollectionMessage("Enter the administrator key, then run the speed test again.");
+    byId("admin-token").focus();
+    return;
+  }
+  setCollectionButtonsDisabled(true);
+  setCollectionMessage("Starting an official Ookla speed test.");
+  try {
+    const response = await authorizedPost("/api/collect", {});
+    const result = await response.json();
+    if (!response.ok) {
+      setCollectionButtonsDisabled(false);
+      setCollectionMessage(result.error || "The speed test could not be started.");
+      return;
+    }
+    setCollectionMessage(result.message);
+    await waitForCollection();
+  } catch (error) {
+    setCollectionButtonsDisabled(false);
+    setCollectionMessage("The dashboard could not start the speed test.");
+  }
+}
+
 function installControls() {
   if (new URLSearchParams(window.location.search).get("embed") === "1") document.body.classList.add("embedded");
   showView(requestedView());
@@ -185,6 +234,9 @@ function installControls() {
   byId("save-frequency").addEventListener("click", async () => {
     const response = await authorizedPost("/api/settings", { collection_interval_minutes: Number(byId("collection-frequency").value) });
     const result = await response.json(); setText("settings-message", response.ok ? "Capture frequency saved." : result.error);
+  });
+  document.querySelectorAll("[data-run-speedtest]").forEach((button) => {
+    button.addEventListener("click", runSpeedtest);
   });
   const updateResetButton = () => { byId("reset-data").disabled = !byId("reset-acknowledgement").checked || byId("reset-confirmation").value !== "RESET"; };
   byId("reset-acknowledgement").addEventListener("change", updateResetButton);

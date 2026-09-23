@@ -1,7 +1,8 @@
 # Deployment status
 
-Production deployment remains intentionally blocked until the systemd assets
-pass isolated testing on the Raspberry Pi.
+The dashboard-only companion service passed its approval-gated staged
+installation on the Raspberry Pi.  Automated collection, the collection timer,
+and the live Pi-hole navigation adapter remain blocked behind separate gates.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
@@ -44,11 +45,10 @@ Development systemd units now exist under `deploy/systemd/` for:
 - an unprivileged `pihole-speedtest` service account;
 - process locking that refuses overlapping collections.
 
-Once installed and enabled by an administrator, the dashboard and collection
-schedule run without an interactive Terminal session.  These units are not yet
-approved for installation on the live Raspberry Pi.  The safe installer,
-upgrade, verification, and rollback procedures must be completed and reviewed
-first.
+The dashboard now runs without an interactive Terminal session.  The collection
+service and timer are implemented but have not been installed or enabled on the
+live Raspberry Pi.  Upgrade, complete uninstall, backup, and restore procedures
+still require release-level acceptance.
 
 The authoritative deployment gates are in
 [`docs/QA-AND-ACCEPTANCE.md`](docs/QA-AND-ACCEPTANCE.md).
@@ -76,3 +76,25 @@ this phase.  It refuses to run if a collection timer is present, stops the
 dashboard, preserves the complete data directory and deployment evidence under
 `/var/lib/pihole-speedtest-removal-recovery/`, and leaves the Pi-hole web tree
 unchanged.
+
+The staged installation from commit
+`62fbcc88fc09b9f4d209a8fcec753a895665f7e0` passed on September 22, 2026 local
+time.  The service started as `pihole-speedtest`, the health endpoint reported
+98,627 measurements, SQLite integrity was `ok`, and all accepted migration
+counts matched.  The collection timer remained absent, the root crontab
+remained empty, and the Pi-hole sidebar checksum remained unchanged.
+
+## Guarded collection upgrade
+
+`scripts/upgrade_and_enable_collection.sh` upgrades the staged application from
+an explicitly named installed commit to an explicitly named approved source
+commit.  It creates and verifies a SQLite recovery backup, retains the complete
+prior application, updates the dashboard for authenticated manual speed tests,
+and installs the schedule-aware collection service and timer.
+
+Before enabling the timer, the script invokes the protected manual collection
+API and requires one valid measurement, a one-row count increase, and a clean
+SQLite integrity check.  Failure restores the prior application, dashboard
+unit, and settings while deliberately preserving any valid measurement that
+completed before a later check failed.  The Pi-hole web tree is outside this
+workflow.

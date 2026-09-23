@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SYSTEMD = ROOT / "deploy" / "systemd"
 INSTALLER = ROOT / "scripts" / "install_companion_dashboard.sh"
 REMOVER = ROOT / "scripts" / "remove_companion_dashboard.sh"
+COLLECTION_UPGRADER = ROOT / "scripts" / "upgrade_and_enable_collection.sh"
 
 
 class SystemdAssetTests(unittest.TestCase):
@@ -23,12 +24,17 @@ class SystemdAssetTests(unittest.TestCase):
             "EnvironmentFile=-/etc/default/pihole-speedtest-v6",
             unit,
         )
+        self.assertIn("--collection-binary /usr/bin/speedtest", unit)
+        self.assertIn(
+            "--collection-lock-file /var/lib/pihole-speedtest/collect.lock",
+            unit,
+        )
 
     def test_collection_uses_official_cli_and_lock(self):
         unit = self.read("pihole-speedtest-collect.service")
 
         self.assertIn("--binary /usr/bin/speedtest", unit)
-        self.assertIn("--lock-file /run/pihole-speedtest/collect.lock", unit)
+        self.assertIn("--lock-file /var/lib/pihole-speedtest/collect.lock", unit)
         self.assertIn("User=pihole-speedtest", unit)
 
     def test_timer_is_persistent_and_conservative(self):
@@ -74,3 +80,16 @@ class SystemdAssetTests(unittest.TestCase):
         self.assertNotIn("/var/www/html", remover)
         self.assertNotIn("/etc/pihole", remover)
         self.assertIn("Pi-hole web files were not modified", remover)
+
+    def test_collection_upgrade_is_guarded_and_keeps_adapter_disabled(self):
+        upgrader = COLLECTION_UPGRADER.read_text(encoding="utf-8")
+
+        self.assertIn("--expected-source-commit", upgrader)
+        self.assertIn("--expected-installed-commit", upgrader)
+        self.assertIn("speedtest.before.db", upgrader)
+        self.assertIn("PRAGMA integrity_check", upgrader)
+        self.assertIn('"http://127.0.0.1:8765/api/collect"', upgrader)
+        self.assertIn('systemctl enable --now "$timer_unit"', upgrader)
+        self.assertIn("Any successfully completed measurement", upgrader)
+        self.assertNotIn("adapter-install", upgrader)
+        self.assertNotIn("/var/www/html", upgrader)

@@ -17,6 +17,8 @@ FTL, configuration, or data.
 - use the `Ramrattan Network Tools` product-family label;
 - use `Pi-hole Speedtest` as the application title;
 - retain the dark blue branded header and dark dashboard surface;
+- use blue, green, amber, and red metric cards for download, upload, latency,
+  and jitter respectively;
 - retain a clear health indicator and functional Help control;
 - remain usable on desktop and narrow browser widths.
 
@@ -45,6 +47,9 @@ FTL, configuration, or data.
   minutes;
 - use 60 minutes as the default capture interval;
 - require the administrator token for schedule changes;
+- provide an administrator-token-protected `Run speed test now` control;
+- show manual-test progress and refresh the dashboard after success;
+- refuse overlapping manual and scheduled speed tests through one shared lock;
 - require acknowledgement and the exact text `RESET` before reset;
 - create and verify a recovery database before clearing active history.
 
@@ -57,9 +62,8 @@ this document is revised.
 
 ## Remaining deployment boundary
 
-The accepted dashboard currently runs as a local development service.  Before
-it becomes the unattended Raspberry Pi service, the project still requires a
-safe installer, recovery and uninstall procedures, isolated Raspberry Pi 3
-validation, resource checks, reboot testing, and explicit deployment approval.
-The optional Pi-hole navigation adapter remains a separate, reversible
-checkpoint.
+The accepted dashboard is now an unattended Raspberry Pi service.  Automated
+collection, reboot testing, upgrade and restore testing, and complete release
+acceptance remain open.  The owner approved a 15-minute initial collection
+interval, subject to the guarded collector upgrade and live verification.  The
+optional Pi-hole navigation adapter remains a separate, reversible checkpoint.

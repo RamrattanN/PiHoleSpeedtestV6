@@ -4,6 +4,8 @@ import csv
 import hmac
 import io
 import json
+import sqlite3
+import threading
 from datetime import datetime, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -13,6 +15,8 @@ from typing import Optional
 from urllib.parse import parse_qs, urlparse
 
 from . import __version__
+from .collector import CollectionError, collect
+from .locking import CollectionLockedError, collection_lock
 from .storage import Storage
 from .settings import SettingsError, load_settings, save_settings
 
@@ -56,6 +60,9 @@ class CompanionServer(ThreadingHTTPServer):
         admin_token_file: Optional[Path] = None,
         backup_directory: Optional[Path] = None,
         frame_ancestors: Optional[list[str]] = None,
+        collection_binary: Optional[str] = None,
+        collection_lock_file: Optional[Path] = None,
+        collection_timeout: int = 180,
     ):
         super().__init__(address, CompanionHandler)
         self.storage = storage
@@ -63,6 +70,65 @@ class CompanionServer(ThreadingHTTPServer):
         self.admin_token_file = admin_token_file
         self.backup_directory = backup_directory or storage.path.parent / "backups"
         self.frame_ancestors = validate_frame_ancestors(frame_ancestors or [])
+        self.collection_binary = collection_binary
+        self.collection_lock_file = collection_lock_file or storage.path.with_name(
+            "collect.lock"
+        )
+        self.collection_timeout = collection_timeout
+        self.collection_guard = threading.Lock()
+        self.collection_status: dict[str, object] = {
+            "state": "idle" if collection_binary else "unavailable",
+            "message": (
+                "Ready to run a speed test."
+                if collection_binary
+                else "Manual speed tests are not configured."
+            ),
+        }
+
+    def start_collection(self) -> bool:
+        with self.collection_guard:
+            if self.collection_status["state"] == "running":
+                return False
+            if not self.collection_binary:
+                return False
+            self.collection_status = {
+                "state": "running",
+                "message": "Running an official Ookla speed test.",
+            }
+        threading.Thread(target=self._collect_once, daemon=True).start()
+        return True
+
+    def _collect_once(self) -> None:
+        try:
+            with collection_lock(self.collection_lock_file):
+                measurement = collect(
+                    self.collection_binary or "speedtest",
+                    self.collection_timeout,
+                )
+                measurement_id = self.storage.insert(measurement)
+        except (
+            CollectionError,
+            CollectionLockedError,
+            OSError,
+            sqlite3.Error,
+        ) as exc:
+            with self.collection_guard:
+                self.collection_status = {
+                    "state": "failed",
+                    "message": str(exc),
+                }
+            return
+        with self.collection_guard:
+            self.collection_status = {
+                "state": "succeeded",
+                "message": "Speed test completed successfully.",
+                "measurement_id": measurement_id,
+                "recorded_at": measurement.recorded_at,
+            }
+
+    def get_collection_status(self) -> dict[str, object]:
+        with self.collection_guard:
+            return dict(self.collection_status)
 
 
 class CompanionHandler(BaseHTTPRequestHandler):
@@ -157,6 +223,10 @@ class CompanionHandler(BaseHTTPRequestHandler):
                 )
             return
 
+        if parsed.path == "/api/collection-status":
+            self._send_json(self.server.get_collection_status())
+            return
+
         if parsed.path == "/api/export.csv":
             output = io.StringIO(newline="")
             columns = (
@@ -192,7 +262,7 @@ class CompanionHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
-        if parsed.path not in ("/api/settings", "/api/reset"):
+        if parsed.path not in ("/api/settings", "/api/reset", "/api/collect"):
             self._send_json(
                 {"error": "manual HTTP execution is not enabled"},
                 HTTPStatus.METHOD_NOT_ALLOWED,
@@ -205,6 +275,29 @@ class CompanionHandler(BaseHTTPRequestHandler):
                 HTTPStatus.FORBIDDEN,
             )
             return
+
+        if parsed.path == "/api/collect":
+            if not self.server.collection_binary:
+                self._send_json(
+                    {"error": "manual speed tests are not configured"},
+                    HTTPStatus.SERVICE_UNAVAILABLE,
+                )
+                return
+            if not self.server.start_collection():
+                self._send_json(
+                    {"error": "a speed test is already running"},
+                    HTTPStatus.CONFLICT,
+                )
+                return
+            self._send_json(
+                {
+                    "state": "running",
+                    "message": "Running an official Ookla speed test.",
+                },
+                HTTPStatus.ACCEPTED,
+            )
+            return
+
         payload = self._read_json()
         if payload is None:
             return
@@ -280,11 +373,15 @@ def serve(
     admin_token_file: Optional[Path] = None,
     backup_directory: Optional[Path] = None,
     frame_ancestors: Optional[list[str]] = None,
+    collection_binary: Optional[str] = None,
+    collection_lock_file: Optional[Path] = None,
+    collection_timeout: int = 180,
 ) -> None:
     storage.initialize()
     server = CompanionServer(
         (host, port), storage, settings_file, admin_token_file,
-        backup_directory, frame_ancestors,
+        backup_directory, frame_ancestors, collection_binary,
+        collection_lock_file, collection_timeout,
     )
     try:
         server.serve_forever()

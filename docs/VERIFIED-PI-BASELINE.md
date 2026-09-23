@@ -132,3 +132,36 @@ Evidence directory on the Raspberry Pi:
 ```text
 /home/Nilesh/pihole-speedtest-adapter-rehearsal-20260923T014511Z
 ```
+
+## Dashboard-only staged installation
+
+On September 22, 2026 local time, commit
+`62fbcc88fc09b9f4d209a8fcec753a895665f7e0` was installed through the guarded
+dashboard-only installer.  The installer preserved evidence at:
+
+```text
+/var/lib/pihole-speedtest-install-recovery/20260923T020244Z
+```
+
+Independent post-install verification established:
+
+- `pihole-speedtest-dashboard.service` was active and enabled with zero
+  restarts;
+- the process ran as the dedicated `pihole-speedtest` user and group;
+- the service listened on `0.0.0.0:8765`;
+- `/api/health` reported version `0.1.0.dev0`, 98,627 measurements, and the
+  expected final legacy timestamp;
+- SQLite `PRAGMA integrity_check` returned `ok`;
+- the migration recorded 98,627 inserted measurements, 187 rejected empty
+  rows, and 28 preserved timestamp collisions;
+- the content security policy allowed framing only from `self` and
+  `http://192.168.2.14`;
+- no collection timer was installed or active;
+- the root crontab remained empty;
+- neither live adapter page existed;
+- the live sidebar retained SHA-256
+  `83943cbdf5258fe43e819108a5135e070d6742e273753ba398a8d28e1a008fdb`;
+- Pi-hole FTL remained listening on port 53 and blocking remained enabled.
+
+The collection schedule and live sidebar adapter remain separately
+approval-gated.

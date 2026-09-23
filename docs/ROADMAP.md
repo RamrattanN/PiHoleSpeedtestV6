@@ -24,11 +24,12 @@
 - [ ] Build a safe installer, upgrader, uninstaller, backup, and restore flow.
 - [x] Add a rollback-guarded dashboard-only staged installer.
 - [x] Add a data-preserving dashboard-only removal command.
+- [x] Pass the guarded dashboard-only staged installation on Raspberry Pi 3.
 - [ ] Pass isolated Raspberry Pi 3 testing on a temporary port and database.
 
 ## Product capability
 
-- [ ] Add authenticated manual test execution.
+- [x] Add authenticated manual test execution.
 - [x] Add complete-history CSV export.
 - [ ] Add date-range filtering.
 - [ ] Add server selection with explicit validation.

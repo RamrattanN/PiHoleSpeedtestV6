@@ -11,7 +11,7 @@ Group=pihole-speedtest
 WorkingDirectory=/var/lib/pihole-speedtest
 Environment=HOME=/var/lib/pihole-speedtest
 EnvironmentFile=-/etc/default/pihole-speedtest-v6
-ExecStart=/opt/pihole-speedtest/venv/bin/pihole-speedtest serve --database /var/lib/pihole-speedtest/speedtest.db --host 0.0.0.0 --port 8765 --settings-file /var/lib/pihole-speedtest/settings.json --admin-token-file /var/lib/pihole-speedtest/admin.token --backup-directory /var/lib/pihole-speedtest/backups
+ExecStart=/opt/pihole-speedtest/venv/bin/pihole-speedtest serve --database /var/lib/pihole-speedtest/speedtest.db --host 0.0.0.0 --port 8765 --settings-file /var/lib/pihole-speedtest/settings.json --admin-token-file /var/lib/pihole-speedtest/admin.token --backup-directory /var/lib/pihole-speedtest/backups --collection-binary /usr/bin/speedtest --collection-lock-file /var/lib/pihole-speedtest/collect.lock --collection-timeout 180
 Restart=on-failure
 RestartSec=5s
 UMask=0077

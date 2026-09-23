@@ -13,6 +13,8 @@ No development build may modify the live Pi-hole until all preceding gates pass.
 - SQLite schema creation and queries are repeatable;
 - unsupported collection intervals are rejected;
 - configuration and reset writes require an administrator token;
+- manual HTTP collection requires an administrator token, runs asynchronously,
+  and shares the scheduled collector lock;
 - reset verifies a SQLite recovery copy before deleting active history;
 - CSV export preserves chronological order and measurement units;
 - chart zoom and pan affect only the time axis;
@@ -71,6 +73,14 @@ checksum, and approved legacy-schedule pause are recorded in
 - enable a conservative schedule;
 - verify that overlapping runs cannot occur;
 - confirm history survives an application upgrade.
+
+The dashboard-only portion of Gate 4 passed on September 22, 2026 local time.
+The exact approved commit installed under an unprivileged service account,
+started automatically through systemd, and served all 98,627 migrated
+measurements on port 8765.  Independent verification confirmed zero service
+restarts, correct security headers, SQLite integrity, stable Pi-hole health,
+and the absence of both the collection timer and live sidebar adapter.  Timer,
+reboot, collection, upgrade, and history-survival checks remain open.
 
 ## Gate 5: optional Pi-hole adapter
 
