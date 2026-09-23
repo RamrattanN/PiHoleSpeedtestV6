@@ -195,3 +195,17 @@ revision.  The owner then completed visual testing and approved the result to
 specification.  The live Pi-hole sidebar adapter remains absent and is tracked
 separately in
 [issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2).
+
+## Interface-label follow-up
+
+The first measurements created by the systemd collector preserved all speed,
+latency, jitter, server, and timestamp values, but the installed Ookla Linux CLI
+did not include an interface name in its JSON result.  Those rows therefore
+display `Not available`; this is a metadata omission, not a failed speed test.
+
+The collector now falls back to the interface carrying Linux's active IPv4
+default route when Ookla omits the name.  Automated coverage verifies both the
+fallback and `/proc/net/route` parsing.  Existing historical rows are left
+unchanged to preserve source fidelity.  Live acceptance remains pending a
+guarded companion upgrade and one new Raspberry Pi measurement that records
+`eth0`.
