@@ -1,10 +1,10 @@
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-IGNORED_PARTS = {".git", ".venv", "__pycache__", "build"}
 PRIVATE_IPV4 = re.compile(
     r"\b(?:"
     r"10(?:\.\d{1,3}){3}|"
@@ -17,9 +17,16 @@ PRIVATE_IPV4 = re.compile(
 class RepositoryHygieneTests(unittest.TestCase):
     def test_repository_does_not_publish_private_ipv4_addresses(self):
         findings = []
-        for path in ROOT.rglob("*"):
-            if not path.is_file() or any(part in IGNORED_PARTS for part in path.parts):
+        tracked_files = subprocess.run(
+            ["git", "ls-files", "-z"],
+            cwd=ROOT,
+            check=True,
+            stdout=subprocess.PIPE,
+        ).stdout.split(b"\0")
+        for relative_path in tracked_files:
+            if not relative_path:
                 continue
+            path = ROOT / relative_path.decode("utf-8")
             try:
                 content = path.read_text(encoding="utf-8")
             except (UnicodeDecodeError, OSError):
