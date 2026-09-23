@@ -6,8 +6,9 @@ The live Pi-hole navigation adapter remains blocked behind its separate gate.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
-retained only as historical source while the safe installer, systemd units,
-upgrade process, and rollback process are built.
+retained only as historical source.  Guarded companion installation and upgrade
+workflows now exist, while the supported release installer, uninstaller,
+backup, and restore contract remains open.
 
 Do not run `./mod`, `scripts/mod.sh`, or `scripts/install_dashboard.sh` on a
 live Pi-hole from this development branch.
@@ -45,8 +46,9 @@ Development systemd units now exist under `deploy/systemd/` for:
 - process locking that refuses overlapping collections.
 
 The dashboard and collection timer now run without an interactive Terminal
-session.  Complete uninstall, general backup, and restore procedures still
-require release-level acceptance.
+session.  The live companion is owner-approved at commit
+`897e7d2a8e699f65e762ab6a8908f002443f2abb`.  Complete uninstall, general
+backup, restore, and reboot procedures still require release-level acceptance.
 
 The authoritative deployment gates are in
 [`docs/QA-AND-ACCEPTANCE.md`](docs/QA-AND-ACCEPTANCE.md).
@@ -105,3 +107,33 @@ waits for any active collection to finish, verifies a SQLite recovery backup,
 retains the prior application and deployment files, removes the obsolete token,
 and proves the keyless manual-test API with one measurement before restoring
 the timer.  It does not modify the Pi-hole web tree or install the adapter.
+
+## Guarded companion upgrade
+
+`scripts/upgrade_companion.sh` is the current guarded updater for an installed
+keyless companion.  It requires the exact installed and source commits, pauses
+the timer, waits for any active collection, creates and verifies an online
+SQLite recovery copy, retains the prior application and deployment files,
+installs the approved wheel, verifies dashboard health and required interface
+markers, and restores the timer.  Failure invokes rollback.  It does not modify
+the Pi-hole web tree.
+
+The live upgrade to commit
+`897e7d2a8e699f65e762ab6a8908f002443f2abb` passed with 98,632 measurements
+preserved.  Recovery evidence is stored at:
+
+```text
+/var/lib/pihole-speedtest-upgrade-recovery/20260923T034009Z
+```
+
+## Supported curl installation and removal
+
+A public curl-based install and uninstall workflow is planned but is not yet a
+supported deployment method.  Do not pipe a mutable GitHub branch directly to
+`sudo bash`.
+
+The supported design must download an immutable release bootstrap over HTTPS,
+verify published checksums before privileged execution, fail closed on an
+unsupported system, preserve user data during uninstall by default, and offer
+explicit recovery and purge contracts.  Engineering and acceptance are tracked
+in [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).

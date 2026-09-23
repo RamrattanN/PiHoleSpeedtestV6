@@ -37,9 +37,9 @@ repository, or depend on undocumented Pi-hole files for collection and history.
 
 ### Scheduler and service
 
-The production implementation will use systemd service and timer units.  Cron
-is not the target because systemd provides explicit state, logs, concurrency
-control, missed-run behavior, and cleaner uninstall semantics.
+The deployed implementation uses systemd service and timer units.  Cron is not
+the target because systemd provides explicit state, logs, concurrency control,
+missed-run behavior, and cleaner uninstall semantics.
 
 ### Optional Pi-hole adapter
 

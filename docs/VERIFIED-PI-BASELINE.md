@@ -163,5 +163,35 @@ Independent post-install verification established:
   `83943cbdf5258fe43e819108a5135e070d6742e273753ba398a8d28e1a008fdb`;
 - Pi-hole FTL remained listening on port 53 and blocking remained enabled.
 
-The collection schedule and live sidebar adapter remain separately
-approval-gated.
+The collection schedule and live sidebar adapter were initially kept behind
+separate approval gates.
+
+## Scheduled collection and approved companion upgrades
+
+The 15-minute systemd collection timer was subsequently installed, enabled,
+and verified.  Scheduled collection completed successfully through the official
+Ookla CLI while the dashboard continued running as the dedicated unprivileged
+service account.  The legacy root crontab remained empty.
+
+The owner-approved keyless dashboard and the later interface refinement were
+deployed through guarded upgrades.  The final verified application commit was:
+
+```text
+897e7d2a8e699f65e762ab6a8908f002443f2abb
+```
+
+The interface refinement aligned `Run speed test now` with the primary
+navigation, kept all Setup sections permanently expanded, and added measurement
+tooltips to both charts.  Post-upgrade health reported 98,632 preserved
+measurements and the collection timer active and enabled.  Recovery evidence is
+stored at:
+
+```text
+/var/lib/pihole-speedtest-upgrade-recovery/20260923T034009Z
+```
+
+All 52 automated tests and GitHub CI run 16 passed for the deployed application
+revision.  The owner then completed visual testing and approved the result to
+specification.  The live Pi-hole sidebar adapter remains absent and is tracked
+separately in
+[issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2).

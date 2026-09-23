@@ -20,8 +20,9 @@ The first adapter supports Pi-hole Web `v6.6` only.  Installation refuses:
 - pre-existing adapter page paths;
 - unsafe companion URLs.
 
-The installed Raspberry Pi layout must still be checked against the official
-v6.6 structure before live installation is approved.
+The installed Raspberry Pi layout passed disposable-copy validation against the
+official v6.6 structure.  The live checksum and version must be reconfirmed
+immediately before an approved live installation.
 
 ## Companion frame policy
 
@@ -86,6 +87,9 @@ Before touching the live Pi-hole web tree:
 8. Capture Pi-hole DNS, FTL, dashboard, and resource baselines.
 9. Create an additional recovery point.
 10. Obtain explicit approval for the live adapter installation.
+
+The remaining live work and its acceptance criteria are tracked in
+[issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2).
 
 ## Verified device-copy rehearsal
 

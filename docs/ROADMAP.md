@@ -10,6 +10,8 @@
 - [x] Add repeatable legacy CSV migration with rejected-row reporting.
 - [x] Complete owner visual review of the dashboard foundation.
 - [x] Establish the approved dashboard as the go-to interface baseline.
+- [x] Approve chart mouseover details, aligned navigation actions, and
+  permanently expanded Setup sections on the live Raspberry Pi.
 
 ## Raspberry Pi development baseline
 
@@ -21,10 +23,18 @@
 - [ ] Add structured journal messages.
 - [x] Add collection-frequency configuration for the trusted LAN dashboard.
 - [ ] Add conservative retention.
-- [ ] Build a safe installer, upgrader, uninstaller, backup, and restore flow.
+- [x] Build guarded staged installation and companion upgrade flows.
+- [ ] Build the supported release uninstaller, general backup, and restore
+  flow.
+- [ ] Engineer checksum-verified curl install and uninstall entry points with
+  GitHub-hosted instructions ([issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3)).
 - [x] Add a rollback-guarded dashboard-only staged installer.
 - [x] Add a data-preserving dashboard-only removal command.
 - [x] Pass the guarded dashboard-only staged installation on Raspberry Pi 3.
+- [x] Enable and verify the 15-minute systemd collection timer on Raspberry Pi
+  3.
+- [x] Pass a guarded live companion upgrade with history preserved.
+- [ ] Pass restart and reboot acceptance with collection continuity.
 - [ ] Pass isolated Raspberry Pi 3 testing on a temporary port and database.
 
 ## Product capability
@@ -41,6 +51,7 @@
 - [ ] Add general backup and restore controls.
 - [ ] Add a user-triggered verified backup and safe backup download.
 - [x] Add line and bar charts with fixed-scale time-axis zoom and pan.
+- [x] Add mouseover measurement details to both charts.
 - [x] Add optional recent-results table visibility.
 - [ ] Add table sorting and complete accessible-state verification.
 
@@ -53,10 +64,13 @@
 - [x] Validate the adapter against a disposable copy of the installed Pi-hole
   v6.6 web tree.
 - [x] Prove exact adapter rollback against the installed-tree copy.
+- [ ] Install and verify the adapter against the live Pi-hole Web v6.6 tree
+  under the approval gate ([issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2)).
 - [ ] Prove Pi-hole update failure isolation on the live service boundary.
 
 ## Release
 
 - [ ] Pass the complete acceptance plan on Raspberry Pi 3.
-- [ ] Reconcile documentation with the accepted implementation.
+- [x] Reconcile repository documentation and Wiki navigation with the accepted
+  live implementation.
 - [ ] Tag the first supported v6 release.

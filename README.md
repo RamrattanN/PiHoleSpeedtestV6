@@ -22,6 +22,7 @@ Pi-hole Speedtest work.  It provides:
 - a local API and Ramrattan Network Tools dashboard;
 - local web assets with no CDN dependency;
 - line and bar charts with fixed-scale time-axis zoom and pan;
+- chart mouseover details for measurement time and values;
 - optional table visibility and complete-history CSV export;
 - dashboard controls for manual speed tests, collection-frequency changes,
   and reset;
@@ -29,11 +30,13 @@ Pi-hole Speedtest work.  It provides:
 - unprivileged systemd service and schedule assets;
 - automated unit tests and pull-request CI.
 
-It does not yet provide the safe installer, uninstall workflow, or optional
-Pi-hole adapter deployment approval.  A version-gated, reversible Pi-hole Web
-v6.6 adapter is implemented for isolated validation.  Do not run the legacy
-installer or the new adapter against a live Pi-hole without completing the
-documented gates.
+The approved companion service and 15-minute collection timer are running on
+the verified Raspberry Pi 3 baseline.  Guarded installation and upgrade paths
+exist, but a release-grade curl installer and data-preserving uninstaller are
+still tracked in [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
+A version-gated, reversible Pi-hole Web v6.6 adapter has passed disposable-copy
+validation.  Its live installation remains a separately approved gate tracked
+in [issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2).
 
 ## Architecture
 
@@ -49,7 +52,9 @@ See [Architecture](docs/ARCHITECTURE.md),
 [Pi-hole v6 Adapter](docs/PIHOLE-V6-ADAPTER.md),
 [Origin and v6 Gap Analysis](docs/ORIGIN-AND-V6-GAP-ANALYSIS.md),
 [QA and Acceptance](docs/QA-AND-ACCEPTANCE.md), and
-[Roadmap](docs/ROADMAP.md).
+[Roadmap](docs/ROADMAP.md).  The repository documentation index is
+[Wiki](docs/WIKI.md), and active work is summarized in
+[Kanban](docs/KANBAN.md).
 
 ## Developer quick start
 
@@ -98,9 +103,10 @@ Then open <http://127.0.0.1:8765/>.
 ## Raspberry Pi safety boundary
 
 Development and automated tests run away from the live Pi-hole first.  The
-project will not be installed on `192.168.2.14` until the documented preflight,
-backup, isolated collection, dashboard, rollback, and acceptance gates pass.
-The verified device baseline is recorded in
+approved companion is installed on `192.168.2.14` only through guarded,
+recovery-backed gates.  The optional sidebar adapter remains absent until its
+separate live gate is approved and completed.  The verified device baseline is
+recorded in
 [Verified Raspberry Pi Baseline](docs/VERIFIED-PI-BASELINE.md).
 
 ## License and attribution

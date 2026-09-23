@@ -108,7 +108,8 @@ adapter remains absent.  Reboot and full restore exercises remain open.
 The disposable installed-tree rehearsal passed on September 22, 2026 local
 time.  Installation, checksum validation, exact removal, live-sidebar
 non-modification, FTL health, and blocking status all passed.  Live adapter
-installation remains separately approval-gated.
+installation remains separately approval-gated and is tracked in
+[issue #2](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/2).
 
 ## Gate 6: release acceptance
 
