@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import subprocess
+from dataclasses import replace
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Optional
 
 from .models import Measurement
@@ -10,6 +12,28 @@ from .models import Measurement
 
 class CollectionError(RuntimeError):
     """Raised when a speed test cannot produce a trustworthy measurement."""
+
+
+def default_route_interface(
+    route_path: Path = Path("/proc/net/route"),
+) -> Optional[str]:
+    """Return the interface for Linux's active IPv4 default route."""
+    try:
+        lines = route_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+
+    for line in lines[1:]:
+        fields = line.split()
+        if len(fields) < 4 or fields[1] != "00000000":
+            continue
+        try:
+            flags = int(fields[3], 16)
+        except ValueError:
+            continue
+        if flags & 0x1:
+            return fields[0]
+    return None
 
 
 def _mapping(parent: dict[str, Any], key: str) -> dict[str, Any]:
@@ -100,4 +124,12 @@ def collect(
     if not completed.stdout.strip():
         raise CollectionError("Speedtest produced no JSON output")
 
-    return parse_ookla_result(completed.stdout)
+    measurement = parse_ookla_result(completed.stdout)
+    if measurement.interface_name == "Not available":
+        interface_name = default_route_interface()
+        if interface_name:
+            measurement = replace(
+                measurement,
+                interface_name=interface_name,
+            )
+    return measurement
