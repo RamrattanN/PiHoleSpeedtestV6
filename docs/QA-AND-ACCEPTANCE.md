@@ -25,6 +25,10 @@ No development build may modify the live Pi-hole until all preceding gates pass.
 
 The owner visually accepted the branded dashboard and Setup experience on
 September 22, 2026, using the imported 98,627-measurement validation database.
+The owner approved the revised live interface on September 22, 2026 after
+verifying aligned navigation, permanently expanded Setup sections, and chart
+mouseover values in accordance with the approved specification.  GitHub CI
+run 16 and all 52 automated tests passed for the deployed revision.
 The accepted interface is documented in
 [`APPROVED-DASHBOARD-BASELINE.md`](APPROVED-DASHBOARD-BASELINE.md).  Later UI
 changes must preserve its required behaviors or receive explicit owner
@@ -79,9 +83,15 @@ The dashboard-only portion of Gate 4 passed on September 22, 2026 local time.
 The exact approved commit installed under an unprivileged service account,
 started automatically through systemd, and served all 98,627 migrated
 measurements on port 8765.  Independent verification confirmed zero service
-restarts, correct security headers, SQLite integrity, stable Pi-hole health,
-and the absence of both the collection timer and live sidebar adapter.  Timer,
-reboot, collection, upgrade, and history-survival checks remain open.
+restarts, correct security headers, SQLite integrity, and stable Pi-hole
+health.
+
+The collection timer, keyless dashboard controls, and guarded companion
+upgrade subsequently passed live verification.  Commit
+`897e7d2a8e699f65e762ab6a8908f002443f2abb` was deployed with 98,632
+measurements preserved, the timer active and enabled, and recovery evidence at
+`/var/lib/pihole-speedtest-upgrade-recovery/20260923T034009Z`.  The live sidebar
+adapter remains absent.  Reboot and full restore exercises remain open.
 
 ## Gate 5: optional Pi-hole adapter
 

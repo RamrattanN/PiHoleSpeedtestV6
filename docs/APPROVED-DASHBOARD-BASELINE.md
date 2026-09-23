@@ -4,12 +4,19 @@
 
 The Pi-hole Speedtest dashboard presented on September 22, 2026 is the
 owner-approved visual and interaction baseline for continued development.
-Approval was completed against the local validation service with 98,627
-imported legacy measurements and a one-hour collection interval.
+Initial approval was completed against the local validation service with
+98,627 imported legacy measurements and a one-hour collection interval.
+
+The owner approved the revised baseline on September 22, 2026 after live
+Raspberry Pi verification of commit
+`897e7d2a8e699f65e762ab6a8908f002443f2abb`.  The revision aligns the manual
+test action with the primary navigation, removes Setup section collapsing, and
+adds measurement tooltips to both charts.  Live verification reported 98,632
+preserved measurements and an active, enabled collection timer.
 
 This acceptance establishes the go-to interface.  It does not authorize
-production installation on the Raspberry Pi or changes to Pi-hole Core, Web,
-FTL, configuration, or data.
+changes to Pi-hole Core, Web, FTL, configuration, or data.  The optional
+Pi-hole navigation adapter remains outside this acceptance.
 
 ## Required visual identity
 
@@ -69,7 +76,8 @@ this document is revised.
 ## Remaining deployment boundary
 
 The accepted dashboard is now an unattended Raspberry Pi service.  Automated
-collection, reboot testing, upgrade and restore testing, and complete release
-acceptance remain open.  The owner approved a 15-minute initial collection
-interval, subject to the guarded collector upgrade and live verification.  The
-optional Pi-hole navigation adapter remains a separate, reversible checkpoint.
+collection and a guarded application upgrade have passed live verification
+with history preserved.  Reboot testing, restore testing, and complete release
+acceptance remain open.  The approved 15-minute collection interval is active.
+The optional Pi-hole navigation adapter remains a separate, reversible
+checkpoint.
