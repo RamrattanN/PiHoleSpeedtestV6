@@ -1,8 +1,9 @@
 # Project Wiki
 
-This folder is the maintained project Wiki and the source of truth for design,
-deployment, testing, and delivery status.  Update these pages with every
-material release or acceptance decision.
+This folder is the version-controlled documentation source for design,
+deployment, testing, and delivery status.  The separate GitHub Wiki must be
+published from these maintained pages so the repository's Wiki tab remains a
+useful entry point rather than an independent source of truth.
 
 ## Start here
 
