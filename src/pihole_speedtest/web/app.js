@@ -104,6 +104,39 @@ function chartBarSpacing(timeline, xPositions) {
     : (spacings[middle - 1] + spacings[middle]) / 2;
 }
 
+function drawBarGroup(context, x, chartBottom, bars, groupWidth) {
+  const heights = bars.map((bar) => bar.height);
+  const nearlyEqual = Math.max(...heights) - Math.min(...heights) <= 3;
+  if (nearlyEqual) {
+    const seriesGap = bars.length > 1
+      ? Math.min(2, Math.max(0.5, groupWidth * 0.08))
+      : 0;
+    const barWidth = Math.max(
+      0.1,
+      (groupWidth - seriesGap * (bars.length - 1)) / bars.length,
+    );
+    const renderedGroupWidth = barWidth * bars.length + seriesGap * (bars.length - 1);
+    bars.forEach((bar, index) => {
+      context.fillStyle = bar.color;
+      context.fillRect(
+        x - renderedGroupWidth / 2 + index * (barWidth + seriesGap),
+        chartBottom - bar.height,
+        barWidth,
+        bar.height,
+      );
+    });
+    return;
+  }
+
+  bars.slice().sort((left, right) => right.height - left.height).forEach((bar, index) => {
+    const layerWidth = index === 0
+      ? groupWidth
+      : Math.max(0.1, groupWidth * Math.max(0.42, 0.68 - (index - 1) * 0.12));
+    context.fillStyle = bar.color;
+    context.fillRect(x - layerWidth / 2, chartBottom - bar.height, layerWidth, bar.height);
+  });
+}
+
 function drawChart(records, options) {
   const canvas = byId(options.canvasId);
   const ratio = window.devicePixelRatio || 1;
@@ -171,23 +204,18 @@ function drawChart(records, options) {
   if (chartMode === "bar") {
     const measuredSpacing = chartBarSpacing(timeline, xPositions);
     const groupWidth = Math.max(1, Math.min(18, measuredSpacing * 0.76));
-    const seriesGap = options.series.length > 1
-      ? Math.min(2, Math.max(0.5, groupWidth * 0.08))
-      : 0;
-    const barWidth = Math.max(
-      0.1,
-      (groupWidth - seriesGap * (options.series.length - 1)) / options.series.length,
-    );
-    const renderedGroupWidth = barWidth * options.series.length
-      + seriesGap * (options.series.length - 1);
-    options.series.forEach((series, seriesIndex) => {
-      context.fillStyle = series.color;
-      values[seriesIndex].forEach((value, index) => {
-        const barHeight = chartHeight * value / maximum;
-        const left = xPositions[index] - renderedGroupWidth / 2
-          + seriesIndex * (barWidth + seriesGap);
-        context.fillRect(left, padding.top + chartHeight - barHeight, barWidth, barHeight);
-      });
+    records.forEach((record, index) => {
+      const bars = options.series.map((series, seriesIndex) => ({
+        color: series.color,
+        height: chartHeight * values[seriesIndex][index] / maximum,
+      }));
+      drawBarGroup(
+        context,
+        xPositions[index],
+        padding.top + chartHeight,
+        bars,
+        groupWidth,
+      );
     });
     return;
   }

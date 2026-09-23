@@ -48,7 +48,6 @@ The product has two deliberately separate layers:
 See [Architecture](docs/ARCHITECTURE.md),
 [Approved Dashboard Baseline](docs/APPROVED-DASHBOARD-BASELINE.md),
 [Pi-hole v6 Adapter](docs/PIHOLE-V6-ADAPTER.md),
-[Origin and v6 Gap Analysis](docs/ORIGIN-AND-V6-GAP-ANALYSIS.md),
 [QA and Acceptance](docs/QA-AND-ACCEPTANCE.md), and
 [Roadmap](docs/ROADMAP.md).  The repository documentation index is
 [Wiki](docs/WIKI.md), and active work is summarized in
@@ -107,7 +106,6 @@ reversible deployment phase and is still under live acceptance.  The verified
 device baseline is recorded in
 [Verified Raspberry Pi Baseline](docs/VERIFIED-PI-BASELINE.md).
 
-## License and attribution
+## License
 
-MIT licensed.  See [LICENSE](LICENSE).  The original project and its
-contributors remain credited in the provenance documentation.
+MIT licensed.  See [LICENSE](LICENSE).

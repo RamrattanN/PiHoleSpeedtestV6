@@ -5,8 +5,7 @@ detailed acceptance criteria for active engineering work.
 
 ## Done
 
-- Recover the original project contract and select the independent companion
-  architecture.
+- Select and document the independent companion architecture.
 - Archive and pause the legacy five-minute cron collector.
 - Reconcile and import 98,627 valid legacy measurements.
 - Deploy the unprivileged companion dashboard on Raspberry Pi 3.

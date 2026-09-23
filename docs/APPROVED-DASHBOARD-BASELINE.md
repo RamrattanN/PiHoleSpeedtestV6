@@ -53,6 +53,9 @@ Pi-hole navigation adapter remains outside this acceptance.
 
 - provide separate download/upload and latency/jitter charts;
 - provide line and bar presentation modes;
+- layer paired bars on a shared timestamp, with the taller value behind and a
+  narrower shorter value in front, while showing equal or nearly equal values
+  side by side so neither series is hidden;
 - apply horizontal time-axis zoom without rescaling the y-axis;
 - support zoom controls, mouse-wheel zoom, and horizontal drag navigation;
 - keep series names and colors identifiable through local legends;

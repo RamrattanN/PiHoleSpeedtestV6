@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pihole-speedtest-v6"
-version = "0.1.0.dev3"
+version = "0.1.0.dev4"
 description = "Independent speed-test companion for Pi-hole v6"
 readme = "README.md"
 requires-python = ">=3.9"

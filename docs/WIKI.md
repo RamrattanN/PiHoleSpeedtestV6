@@ -13,12 +13,10 @@ useful entry point rather than an independent source of truth.
 - [Roadmap](ROADMAP.md) - capability and release backlog.
 - [Deployment](../DEPLOY.md) - supported and approval-gated deployment paths.
 
-## Design and provenance
+## Design
 
 - [Architecture](ARCHITECTURE.md) - companion, storage, scheduler, adapter, and
   failure boundaries.
-- [Origin and v6 Gap Analysis](ORIGIN-AND-V6-GAP-ANALYSIS.md) - original project
-  contract and the Pi-hole v6 modernization decisions.
 - [Approved Dashboard Baseline](APPROVED-DASHBOARD-BASELINE.md) - required
   branding and interaction behavior.
 
