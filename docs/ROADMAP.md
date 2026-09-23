@@ -43,9 +43,10 @@
 - [x] Design and implement a version-gated, reversible adapter.
 - [x] Add the Speedtest Overview and Setup sidebar hierarchy.
 - [ ] Add dashboard status and companion link.
-- [ ] Validate the adapter against a disposable copy of the installed Pi-hole
+- [x] Validate the adapter against a disposable copy of the installed Pi-hole
   v6.6 web tree.
-- [ ] Prove update failure isolation and exact rollback.
+- [x] Prove exact adapter rollback against the installed-tree copy.
+- [ ] Prove Pi-hole update failure isolation on the live service boundary.
 
 ## Release
 

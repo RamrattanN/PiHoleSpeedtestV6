@@ -111,3 +111,24 @@ measurements, reported 28 timestamp collisions, and rejected only the 187
 empty rows.  The second pass inserted zero rows, recognized all 98,627
 measurements as duplicates, reported no new collisions, and left the database
 count unchanged at 98,627.
+
+## Pi-hole Web v6.6 adapter rehearsal
+
+On September 22, 2026 local time, the version-gated sidebar adapter was tested
+against a disposable copy of `/var/www/html/admin`.  The installed sidebar
+matched the official Pi-hole Web v6.6 SHA-256 checksum:
+
+```text
+83943cbdf5258fe43e819108a5135e070d6742e273753ba398a8d28e1a008fdb
+```
+
+The adapter installed into the copy, created its two wrapper pages and recovery
+manifest, and then removed successfully.  Removal restored the copied sidebar
+byte for byte and removed both created pages.  The live web tree was unchanged,
+FTL remained listening on port 53, and Pi-hole blocking remained enabled.
+
+Evidence directory on the Raspberry Pi:
+
+```text
+/home/Nilesh/pihole-speedtest-adapter-rehearsal-20260923T014511Z
+```

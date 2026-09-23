@@ -84,6 +84,11 @@ checksum, and approved legacy-schedule pause are recorded in
 - remove the adapter and prove exact restoration;
 - simulate an unknown Pi-hole layout and confirm refusal.
 
+The disposable installed-tree rehearsal passed on September 22, 2026 local
+time.  Installation, checksum validation, exact removal, live-sidebar
+non-modification, FTL health, and blocking status all passed.  Live adapter
+installation remains separately approval-gated.
+
 ## Gate 6: release acceptance
 
 - Pi-hole DNS and admin health remain unaffected;

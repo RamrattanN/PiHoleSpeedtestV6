@@ -86,3 +86,25 @@ Before touching the live Pi-hole web tree:
 8. Capture Pi-hole DNS, FTL, dashboard, and resource baselines.
 9. Create an additional recovery point.
 10. Obtain explicit approval for the live adapter installation.
+
+## Verified device-copy rehearsal
+
+The install and removal workflow passed against a disposable copy of the
+installed Pi-hole Web v6.6 tree on September 22, 2026 local time.  Evidence is
+preserved on the Raspberry Pi at:
+
+```text
+/home/Nilesh/pihole-speedtest-adapter-rehearsal-20260923T014511Z
+```
+
+Verified outcomes:
+
+- the live and copied `sidebar.lp` matched the official v6.6 SHA-256 checksum
+  `83943cbdf5258fe43e819108a5135e070d6742e273753ba398a8d28e1a008fdb`;
+- the adapter installed only in the disposable web tree;
+- both `Overview` and `Setup` page targets were created;
+- the recovery manifest was created and accepted by verified removal;
+- removal restored `sidebar.lp` byte for byte;
+- both created pages were removed;
+- the live sidebar checksum remained unchanged;
+- FTL continued listening on port 53 and Pi-hole blocking remained enabled.
