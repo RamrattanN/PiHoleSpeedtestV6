@@ -14,6 +14,9 @@ class VersionTests(unittest.TestCase):
         template = (ROOT / "release" / "bootstrap.template.sh").read_text(
             encoding="utf-8"
         )
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
+            encoding="utf-8"
+        )
         project_version = re.search(
             r'^version = "([^"]+)"$', project, flags=re.MULTILINE
         ).group(1)
@@ -25,6 +28,8 @@ class VersionTests(unittest.TestCase):
         self.assertEqual(project_version, __version__)
         self.assertEqual(release_version, __version__)
         self.assertNotIn("dev", __version__.lower())
+        self.assertNotRegex(workflow, r"\.dev\d+")
+        self.assertIn('bundle_name="pihole-speedtest-v6-${version}.tar.gz"', workflow)
 
 
 if __name__ == "__main__":

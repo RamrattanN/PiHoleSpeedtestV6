@@ -50,10 +50,10 @@ jobs:
           scripts/build_release_assets.sh \
             --source-commit "$commit" \
             --output-directory "$second"
-          cmp \
-            "$first/pihole-speedtest-v6-0.1.0.dev5.tar.gz" \
-            "$second/pihole-speedtest-v6-0.1.0.dev5.tar.gz"
-          bundle_sha="$(sha256sum "$first/pihole-speedtest-v6-0.1.0.dev5.tar.gz" | awk '{print $1}')"
+          version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' pyproject.toml)"
+          bundle_name="pihole-speedtest-v6-${version}.tar.gz"
+          cmp "$first/$bundle_name" "$second/$bundle_name"
+          bundle_sha="$(sha256sum "$first/$bundle_name" | awk '{print $1}')"
           scripts/render_release_bootstrap.sh \
             --source-commit "$commit" \
             --asset-commit "$commit" \
