@@ -22,6 +22,18 @@ class DockerDeferralTests(unittest.TestCase):
         )
         self.assertIn("EXPERIMENTAL", workflow)
 
+    def test_no_workflow_runs_when_a_github_release_is_published(self):
+        workflows = sorted((ROOT / ".github" / "workflows").glob("*.y*ml"))
+
+        self.assertTrue(workflows)
+        for path in workflows:
+            with self.subTest(workflow=path.name):
+                text = path.read_text(encoding="utf-8")
+                trigger = text.split("\non:", 1)[1].split("\njobs:", 1)[0]
+                self.assertNotRegex(trigger, r"(?m)^\s*release\s*:")
+                self.assertNotRegex(trigger, r"(?m)^\s*-?\s*release\s*$")
+                self.assertNotRegex(trigger, r"\[[^\]]*\brelease\b[^\]]*\]")
+
 
 if __name__ == "__main__":
     unittest.main()
