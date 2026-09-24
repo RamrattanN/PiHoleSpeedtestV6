@@ -43,10 +43,12 @@ sawtooth lines, substantial outages remain visible as blank time spans, and
 SQLite history, health counts, the measurement table, and CSV exports remain
 unchanged before owner visual acceptance and live upgrade.
 
-Version `1.0.4` must additionally prove that each bar group is sized against
-its nearest real neighbor, mixed five-minute and fifteen-minute history retains
-a consistent two-pixel gap between neighboring timestamp columns, outage spans
-remain blank, and the Setup version label matches `/api/health`.
+Version `1.0.5` must additionally prove that the default view covers the latest
+24 hours on a responsive hourly grid, every real measurement uses uniform bar
+geometry, mixed five-minute and fifteen-minute history retains consistent
+visual delimiters, outage spans remain blank, and the Setup version label
+matches `/api/health`.  Installation must also exit successfully after cleaning
+its isolated privileged build workspace.
 The verified bootstrap must also discover the installed source commit from the
 root-owned manifest and use that exact commit for data-preserving uninstall,
 without requiring the installed and bootstrap versions to match.

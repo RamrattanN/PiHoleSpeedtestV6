@@ -1,7 +1,7 @@
 # Approved dashboard baseline
 
 > Version `0.1.0.dev4` remains the approved historical baseline described on
-> this page.  Version `1.0.5` is the release-blocking visual-alignment candidate
+> this page.  Version `1.0.5` is the published visual-alignment candidate
 > awaiting live owner acceptance.  It keeps
 > substantial collection outages blank and breaks line charts across them
 > without adding labels, shaded overlays, or synthetic measurements, restores

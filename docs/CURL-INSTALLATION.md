@@ -2,12 +2,13 @@
 
 ## Status
 
-Version `1.0.4` is the production maintenance release.  Version `1.0.3` is
+Version `1.0.4` remains the installed production maintenance release.  Version
+`1.0.5` is the published owner-acceptance candidate.  Version `1.0.3` is
 withdrawn because live download verification correctly detected that its
 published bundle bytes did not match its embedded checksum.  Do not use the
-version `1.0.3` bootstrap.  Version `1.0.4` additionally supports uninstalling
-any verified installed version.  Reboot, interrupted-install, and explicit
-purge acceptance remain tracked in issue #3.
+version `1.0.3` bootstrap.  Version `1.0.5` supports uninstalling any verified
+installed version and corrects post-install cleanup.  Reboot,
+interrupted-install, and explicit purge acceptance remain tracked in issue #3.
 
 ## Trust chain
 
@@ -25,17 +26,18 @@ It will:
 
 No branch-based curl command is supported.
 
-## Production trust anchors
+## Version 1.0.5 acceptance trust anchors
 
 | Item | Immutable value |
 | --- | --- |
-| Application source commit | `b3e36096d30c96f79a8df46945bc6db4483826af` |
-| Bundle asset commit | `6c3878b56a92b79719d1015bac4cf394b3b276d8` |
-| Bundle SHA-256 | `3506e503823dcde66bcd7dc7971a1fe26225eb2e2d7ce96e1e31dc35e1b97903` |
-| Bootstrap commit | `72192929a7d53c35b252e8ec55f02f477f6d4b0d` |
-| Bootstrap SHA-256 | `e40405958a6a035df3a0e23c8fea91221fbed4ea64172120da0d22a22e98e775` |
+| Application source commit | `2400a3108235a477c6d9c2c3af0d2024f1cf9633` |
+| GitHub CI | Run 68 passed |
+| Bundle asset commit | `0c9f90a10ed418fffd761b8b719351357167b46e` |
+| Bundle SHA-256 | `b5da1523ec3b458a694be3d178effa33cb5fa67e0578d43e26b7fcdfe7c323b0` |
+| Bootstrap commit | `8d6a779b34341a302a8a6c84502f2d95002dc95e` |
+| Bootstrap SHA-256 | `af2d2ca9c17d2420c22bb0ba894a409f00f468b0557eb95e8aacddfe9b430335` |
 
-## Production install command
+## Version 1.0.5 acceptance install command
 
 Run this on the Raspberry Pi.  It downloads and verifies the bootstrap before
 the bootstrap downloads and verifies the complete bundle.  `sudo` is invoked
@@ -46,9 +48,9 @@ bootstrap=/tmp/pihole-speedtest-v6-bootstrap.sh && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
   --output "$bootstrap" \
-  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/72192929a7d53c35b252e8ec55f02f477f6d4b0d/release/pihole-speedtest-v6-bootstrap.sh && \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/8d6a779b34341a302a8a6c84502f2d95002dc95e/release/pihole-speedtest-v6-bootstrap.sh && \
 printf '%s  %s\n' \
-  'e40405958a6a035df3a0e23c8fea91221fbed4ea64172120da0d22a22e98e775' \
+  'af2d2ca9c17d2420c22bb0ba894a409f00f468b0557eb95e8aacddfe9b430335' \
   "$bootstrap" | sha256sum --check --status - && \
 bash "$bootstrap" install
 ```
@@ -94,7 +96,8 @@ bash /tmp/pihole-speedtest-v6-bootstrap.sh uninstall
 ```
 
 If `/tmp` has been cleared, repeat the download and bootstrap checksum steps
-from the production install command, then replace the final `install` action
+from the version 1.0.5 acceptance install command, then replace the final
+`install` action
 with the required removal action.
 
 Permanent deletion remains a separate command and must never be combined with

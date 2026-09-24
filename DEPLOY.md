@@ -3,7 +3,8 @@
 The dashboard companion service, 15-minute automated collection, and optional
 Pi-hole navigation adapter passed live verification on the Raspberry Pi.
 Version `1.0.4` is the installed production maintenance line.  Version `1.0.5`
-is the release-blocking visual and installer-cleanup candidate.
+is the published visual and installer-cleanup candidate awaiting live owner
+acceptance.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
@@ -47,8 +48,8 @@ Systemd units are maintained under `deploy/systemd/` for:
 - process locking that refuses overlapping collections.
 
 The dashboard and collection timer run without an interactive Terminal
-session.  Production source commit
-`8db8852cd4b47bf2c7024ec9c08277a1b87ae2f2` passed GitHub CI run 58.  Its
+session.  Version `1.0.5` source commit
+`2400a3108235a477c6d9c2c3af0d2024f1cf9633` passed GitHub CI run 68.  Its
 verification anchors are recorded in the checksum-verified curl workflow.
 General backup, restore, and final reboot acceptance remain tracked release
 work.
@@ -129,7 +130,7 @@ evidence under `/var/lib/pihole-speedtest-upgrade-recovery/`.
 
 ## Checksum-verified curl installation and removal
 
-Version `1.0.4` contains the release installer, data-preserving uninstaller,
+Version `1.0.5` contains the release installer, data-preserving uninstaller,
 separate purge command, deterministic bundle builder, and immutable-bootstrap
 renderer.  The bootstrap verifies the complete bundle before invoking `sudo`;
 it never pipes a mutable branch into a privileged shell.

@@ -53,5 +53,7 @@ by validating the source commit recorded in the installed manifest.
 
 Version `1.0.5` is the active release-blocking visual-alignment candidate.  It
 uses a 24-hour default window, responsive hourly grid, uniform bar geometry,
-blank outage spans, and a corrected post-install cleanup path.  Live owner
-acceptance remains required before it replaces version `1.0.4`.
+blank outage spans, and a corrected post-install cleanup path.  Its source
+passed GitHub CI run 68, and its immutable bundle and bootstrap were
+independently downloaded and checksum-verified.  Live owner acceptance remains
+required before it replaces version `1.0.4`.

@@ -7,7 +7,8 @@ Pi-hole upgrade cannot erase data or disable scheduled tests.
 ## Current status
 
 Version `1.0.4` is the installed production maintenance line.  Version `1.0.5`
-is the release-blocking visual-alignment candidate.  The product provides:
+is the published visual-alignment candidate awaiting live owner acceptance.
+The product provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;
