@@ -73,12 +73,23 @@ detailed acceptance criteria for active engineering work.
   override, `install-all`, `uninstall-all`, guarded release publication, and
   deferred Docker publication; GitHub CI passed on `main`.
 
+- Prepare version `1.0.6` release assets through pull requests #5 and #6.
+  Before any release was published, two defects were found and the assets
+  were superseded rather than published:
+  - a shallow-checkout provenance test defect superseded the PR #5 bundle
+    `40ea0b5c…` (branch `release/v1.0.6-assets`, closed);
+  - the guarded prerelease attempt found that `scripts/publish_github_release.sh`
+    treated GitHub's 404 response for a missing tag as an existing tag, which
+    superseded the PR #6 bundle `59a67636…` and bootstrap `84f39f17…` (branch
+    `release/v1.0.6-assets-2`).
+  No tag or GitHub Release was created from either set of assets.
+
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Version `1.0.6` release assets | Branch `release/v1.0.6-assets` | Build the deterministic bundle and render the bootstrap in the guarded, read-only GitHub Actions preparation workflow; review and merge them.  Not released: the `v1.0.6-rc.1` prerelease, Raspberry Pi 3 acceptance with `PIHOLE_SPEEDTEST_RELEASE_TAG`, and the stable `v1.0.6` release from the same commit and bytes remain open |
+| Version `1.0.6` release assets | Branch `fix/v1.0.6-release-publication` | Recut the deterministic bundle and bootstrap in the guarded preparation workflow after correcting the publication tool; review and merge them.  Not released: the `v1.0.6-rc.1` prerelease, Raspberry Pi 3 acceptance with `PIHOLE_SPEEDTEST_RELEASE_TAG`, and the stable `v1.0.6` release from the same commit and bytes remain open |
 
 ## Backlog
 
