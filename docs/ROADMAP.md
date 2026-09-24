@@ -74,11 +74,14 @@
   under the recovery-backed approval gate.
 - [x] Complete owner acceptance of embedded branding, manual test controls,
   true timestamp gaps, and adaptive layered bars in version `0.1.0.dev4`.
-- [ ] Complete owner acceptance of production maintenance version `1.0.1`,
+- [x] Complete owner acceptance of production maintenance version `1.0.1`,
   which leaves substantial collection outages blank without inserting
   synthetic rows into measurement history.
-- [ ] Complete owner acceptance of version `1.0.2` bar delimiters and the
+- [x] Complete owner review of version `1.0.2` bar delimiters and the
   runtime-derived Setup version label.
+- [ ] Complete owner acceptance of version `1.0.3`, which retains a consistent
+  two-pixel gap between neighboring bar groups across mixed collection
+  cadences.
 - [ ] Prove Pi-hole update failure isolation on the live service boundary.
 
 ## Release

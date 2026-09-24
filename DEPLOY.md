@@ -2,7 +2,7 @@
 
 The dashboard companion service, 15-minute automated collection, and optional
 Pi-hole navigation adapter passed live verification on the Raspberry Pi.
-Version `1.0.2` is the production maintenance line.
+Version `1.0.3` is the production maintenance line.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
@@ -46,9 +46,9 @@ Systemd units are maintained under `deploy/systemd/` for:
 - process locking that refuses overlapping collections.
 
 The dashboard and collection timer run without an interactive Terminal
-session.  Production source commit
-`6c86318e202d136ae6c01346a223407cbff791e1` passed GitHub CI run 54.  General
-backup, restore, and final reboot acceptance remain tracked release work.
+session.  The immutable production source and verification anchors are recorded
+in the checksum-verified curl workflow.  General backup, restore, and final
+reboot acceptance remain tracked release work.
 
 The authoritative deployment gates are in
 [`docs/QA-AND-ACCEPTANCE.md`](docs/QA-AND-ACCEPTANCE.md).
@@ -126,7 +126,7 @@ evidence under `/var/lib/pihole-speedtest-upgrade-recovery/`.
 
 ## Checksum-verified curl installation and removal
 
-Version `1.0.2` contains the release installer, data-preserving uninstaller,
+Version `1.0.3` contains the release installer, data-preserving uninstaller,
 separate purge command, deterministic bundle builder, and immutable-bootstrap
 renderer.  The bootstrap verifies the complete bundle before invoking `sudo`;
 it never pipes a mutable branch into a privileged shell.

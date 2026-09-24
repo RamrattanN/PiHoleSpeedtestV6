@@ -7,6 +7,7 @@ let zoomEnd = 0;
 let collectionIntervalMinutes = 60;
 let chartMode = localStorage.getItem("pihole-speedtest-chart-mode") || "line";
 const chartStates = new Map();
+const BAR_GROUP_GAP_PX = 2;
 
 function requestedView() {
   return window.location.hash === "#setup" ? "setup" : "overview";
@@ -119,7 +120,8 @@ function chartBarGroupWidth(timeline, xPositions, index, measuredSpacing) {
   const availableSpacing = localSpacings.length
     ? Math.min(measuredSpacing, ...localSpacings)
     : measuredSpacing;
-  return Math.max(1, Math.min(18, availableSpacing * 0.72));
+  const reservedGap = Math.min(BAR_GROUP_GAP_PX, availableSpacing * 0.5);
+  return Math.max(0.1, availableSpacing - reservedGap);
 }
 
 function drawBarGroup(context, x, chartBottom, bars, groupWidth) {

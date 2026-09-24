@@ -35,13 +35,15 @@ detailed acceptance criteria for active engineering work.
   delimiter, and publish the installed runtime version discreetly in Setup.
 - Publish the immutable version `1.0.2` source, deterministic bundle, bundle
   checksum, and checksum-pinned bootstrap after GitHub CI run 54 passed.
+- Complete owner review of version `1.0.2` and identify inconsistent visible
+  gaps between mixed-cadence bar groups.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Production `1.0.2` acceptance | Version `1.0.2` | Verify adaptive bar spacing, the Setup version label, blank outage spans, and collection continuity on Raspberry Pi 3 |
+| Production `1.0.3` acceptance | Version `1.0.3` | Verify consistent bar gaps, the Setup version label, blank outage spans, and collection continuity on Raspberry Pi 3 |
 
 ## Backlog
 

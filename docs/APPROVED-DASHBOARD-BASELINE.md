@@ -1,12 +1,13 @@
 # Approved dashboard baseline
 
 > Version `0.1.0.dev4` remains the approved historical baseline described on
-> this page.  Version `1.0.2` is the production maintenance candidate.  It keeps
+> this page.  Version `1.0.3` is the production maintenance candidate.  It keeps
 > substantial collection outages blank and breaks line charts across them
 > without adding labels, shaded overlays, or synthetic measurements, restores
-> subtle spacing between mixed-cadence bars, and shows the installed version
-> discreetly in Setup.  This page will be rebaselined only after owner visual
-> acceptance on the Raspberry Pi.
+> a consistent two-pixel gap between neighboring bar groups across mixed
+> collection cadences, and shows the installed version discreetly in Setup.
+> This page will be rebaselined only after owner visual acceptance on the
+> Raspberry Pi.
 
 ## Decision
 
@@ -55,8 +56,8 @@ changes to Pi-hole Core, Web, FTL, configuration, or data.
 
 - position measurements by their actual collection timestamps instead of by
   equal record spacing;
-- leave expected but uncollected measurement intervals blank and label visible
-  gaps as `No data` rather than inventing or interpolating performance values;
+- leave expected but uncollected measurement intervals blank without labels,
+  shaded overlays, or invented performance values;
 - break line charts across missing intervals so collection gaps remain visible;
 
 - provide separate download/upload and latency/jitter charts;
@@ -64,6 +65,8 @@ changes to Pi-hole Core, Web, FTL, configuration, or data.
 - layer paired bars on a shared timestamp, with the taller value behind and a
   narrower shorter value in front, while showing equal or nearly equal values
   side by side so neither series is hidden;
+- retain the same subtle visual gap between neighboring bar groups across
+  supported collection cadences and historical mixed-cadence data;
 - apply horizontal time-axis zoom without rescaling the y-axis;
 - support zoom controls, mouse-wheel zoom, and horizontal drag navigation;
 - keep series names and colors identifiable through local legends;

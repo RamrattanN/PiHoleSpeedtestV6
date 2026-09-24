@@ -43,10 +43,10 @@ sawtooth lines, substantial outages remain visible as blank time spans, and
 SQLite history, health counts, the measurement table, and CSV exports remain
 unchanged before owner visual acceptance and live upgrade.
 
-Version `1.0.2` must additionally prove that each bar group is sized against
+Version `1.0.3` must additionally prove that each bar group is sized against
 its nearest real neighbor, mixed five-minute and fifteen-minute history retains
-a subtle delimiter between timestamp columns, outage spans remain blank, and
-the Setup version label matches `/api/health`.
+a consistent two-pixel gap between neighboring timestamp columns, outage spans
+remain blank, and the Setup version label matches `/api/health`.
 
 ## Gate 2: read-only Pi preflight
 
