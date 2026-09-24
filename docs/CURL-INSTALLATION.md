@@ -7,12 +7,19 @@ Version `1.0.3` is
 withdrawn because live download verification correctly detected that its
 published bundle bytes did not match its embedded checksum.  Do not use the
 version `1.0.3` bootstrap.  Version `1.0.5` supports uninstalling any verified
-installed version and corrects post-install cleanup.  Reboot,
-interrupted-install, and explicit purge acceptance remain tracked in issue #3.
+installed version and corrects post-install cleanup.  Its curl uninstall and
+reinstall acceptance passed with measurement history and settings preserved.
+Reboot, interrupted-install, and explicit purge acceptance remain tracked in
+issue #3.
+
+Version `1.0.6` is in preparation and unpublished.  It adds the one-line
+convenience runner and the `install-all` and `uninstall-all` bootstrap actions
+described below.  Its trust anchors will be recorded here only after its
+release assets are published and verified.
 
 ## Trust chain
 
-The documented command will never pipe a mutable branch directly into a shell.
+The pinned command below never pipes a mutable branch directly into a shell.
 It will:
 
 1. download a small bootstrap from an immutable Git commit over HTTPS;
@@ -24,7 +31,86 @@ It will:
 6. validate the bundle's source-commit marker;
 7. invoke `sudo` only for the selected, verified installation or removal phase.
 
-No branch-based curl command is supported.
+The version `1.0.6` convenience runner is the only branch-based entry point.
+It performs no privileged operation itself and executes only a bootstrap whose
+published checksum matches, so the bundle verification in steps 4 to 7 is
+unchanged.
+
+## Version 1.0.6 convenience runner
+
+Not yet available: the runner is added to `main` and its release assets are
+published only as part of the approved `1.0.6` release.
+
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
+  bash
+```
+
+`install.sh` accepts one optional action.  No action and `install` run the
+bootstrap's `install-all`; `uninstall` runs `uninstall-all`.  Installation
+options such as `--pihole-origin`, `--companion-url`, and `--interval-minutes`
+follow the action, for example `bash -s -- install --interval-minutes 60`.
+
+The runner:
+
+1. refuses to run as root and requires a user with `sudo` rights;
+2. creates a private temporary directory and removes it on exit;
+3. downloads `pihole-speedtest-v6-bootstrap.sh` and
+   `pihole-speedtest-v6-bootstrap.sh.sha256` from the latest GitHub Release
+   over HTTPS with TLS 1.2 or newer;
+4. rejects a failed download, an empty file, or a checksum file that is not
+   exactly one SHA-256 line naming the bootstrap;
+5. verifies the bootstrap checksum and confirms that it is a rendered
+   Pi-hole Speedtest release bootstrap;
+6. runs the verified bootstrap as the current user, which then verifies the
+   immutable release bundle and uses `sudo` only for privileged phases.
+
+The runner reads its complete script before executing anything, so a truncated
+download does nothing.  The bootstrap and its checksum come from the same
+release, so the runner check guards against corruption and substitution in
+transit; independently pinned trust anchors remain available through the
+production install command below.  Each release must therefore attach both the
+rendered bootstrap and its `.sha256` file as release assets.
+
+## Full-product actions
+
+Version `1.0.6` adds two bootstrap actions that compose the verified granular
+phases.  Neither action deletes user data.
+
+`install-all`:
+
+1. installs the companion, keeps an already installed copy of the same release,
+   or upgrades an older installation by a data-preserving uninstall and
+   reinstall;
+2. verifies dashboard health and the reported version;
+3. verifies exactly one enabled and active collection timer;
+4. installs the Pi-hole sidebar adapter unless it is already installed;
+5. verifies Pi-hole FTL and the Pi-hole web interface;
+6. verifies the adapter manifest, sidebar, and wrapper pages;
+7. prints the detected dashboard, Overview, and Setup addresses.
+
+If the sidebar phases fail, the adapter installer's own rollback restores the
+Pi-hole web files; any adapter recorded by this run is also removed through its
+verified manifest.  The companion, database, settings, and recovery evidence are
+kept, and the output names the failed phase with the `install-adapter` retry and
+`uninstall-all` recovery commands.
+
+`uninstall-all`:
+
+1. detects the installed companion and sidebar adapter;
+2. removes the adapter through its installed manifest when present;
+3. verifies that the original sidebar is restored and no adapter pages remain;
+4. uninstalls the companion;
+5. verifies that the database, settings, and uninstall marker are preserved;
+6. verifies that Pi-hole FTL remains active;
+7. confirms that the application, services, timer, and service account are
+   absent.
+
+Repeating `install-all` on a current installation, or `uninstall-all` after a
+completed uninstall, reports the state and changes nothing.  An incomplete
+installation stops both actions without changes.  Permanent deletion remains
+the separate `purge-data` action.
 
 ## Licence files
 
@@ -120,7 +206,8 @@ bash /tmp/pihole-speedtest-v6-bootstrap.sh purge-data \
 
 ## Supported actions
 
-The one bootstrap exposes five distinct actions:
+The version `1.0.5` bootstrap exposes five distinct actions.  Version `1.0.6`
+retains them and adds `install-all` and `uninstall-all`:
 
 - `install` installs the unprivileged companion service and collection timer;
 - `install-adapter` separately installs the Pi-hole Web v6.6 sidebar adapter;
@@ -167,12 +254,17 @@ The purge action is unavailable while any application, unit, environment file,
 or service account remains.  It also refuses data without a verified uninstall
 marker.
 
-## Acceptance still required
+## Acceptance
+
+Version `1.0.5` passed curl uninstall and reinstall acceptance with measurement
+history and settings preserved, and the owner accepted the restored dashboard
+and sidebar.
+
+Still required:
 
 - clean Raspberry Pi 3 ARM64 installation;
-- separate sidebar installation and exact removal;
 - interrupted-install rollback and repeat invocation;
-- default uninstall with unchanged history and settings;
-- reinstall using the preserved history;
 - reboot with dashboard and timer continuity;
-- explicit purge test using disposable data only.
+- explicit purge test using disposable data only;
+- version `1.0.6` `install-all`, `uninstall-all`, and one-line runner
+  acceptance on Raspberry Pi 3 after its release assets are published.

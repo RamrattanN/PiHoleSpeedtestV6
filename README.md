@@ -1,14 +1,89 @@
 # Pi-hole Speedtest v6
 
-Pi-hole Speedtest v6 is a resilient speed-test companion for Pi-hole v6.  It
-keeps collection, history, and the full dashboard independent from Pi-hole so a
-Pi-hole upgrade cannot erase data or disable scheduled tests.
+Ramrattan Pi-hole Speedtest is a resilient speed-test companion for Pi-hole v6.
+It keeps collection, history, and the full dashboard independent from Pi-hole
+so a Pi-hole upgrade cannot erase data or disable scheduled tests.  Optional
+sidebar pages open the dashboard from inside the Pi-hole web interface.
+
+> **Release status:** the one-line commands below are introduced by version
+> `1.0.6`, which is in preparation and has not been published.  Until its
+> GitHub Release exists, the runner stops safely without changing anything.
+> Version `1.0.5` remains available through the
+> [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
+
+## Quick install
+
+Run as a regular user with `sudo` rights on the Pi-hole host:
+
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
+  bash
+```
+
+This convenience command downloads the current production bootstrap and its
+published checksum from the latest GitHub Release, verifies the bootstrap, and
+runs it as your user.  The bootstrap downloads the complete release bundle from
+an immutable commit, verifies its embedded checksum and source marker, and uses
+`sudo` only for privileged phases.  It installs or upgrades the companion,
+verifies dashboard health and exactly one collection timer, then adds the
+Pi-hole sidebar pages.  Adding `install` after `bash -s --` is equivalent.
+
+## Quick uninstall
+
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
+  bash -s -- uninstall
+```
+
+Uninstall removes the sidebar pages first, verifies that the original Pi-hole
+web files are restored, and then removes the companion application, services,
+timer, and service account.  Measurement history, settings, backups, logs,
+manifests, and recovery evidence are preserved under
+`/var/lib/pihole-speedtest`, and a later install reuses them.  Permanent data
+deletion is a separate, explicitly confirmed action described in the
+[checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
+
+## After installation
+
+The installer prints the addresses it detected for this device:
+
+- **Dashboard:** `http://<pi-hole-address>:8765/`
+- **Pi-hole Overview:** `http://<pi-hole-address>/admin/speedtest`
+- **Pi-hole Setup:** `http://<pi-hole-address>/admin/speedtest-setup`
+
+Measurements are collected every 15 minutes by default.  A hostname, HTTPS,
+reverse proxy, or nonstandard origin can be supplied with
+`--pihole-origin` and `--companion-url` after `bash -s -- install`.
+
+## Fully pinned installation
+
+The convenience command trusts the latest GitHub Release for the bootstrap and
+its checksum.  For independently pinned installation, use the immutable
+commands, trust anchors, and recovery contract in the
+[checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
+
+## Supported environment
+
+- Pi-hole Core v6 with systemd on an `aarch64` or `x86_64` Debian-family host,
+  such as Raspberry Pi OS 64-bit;
+- Pi-hole Web v6.6 with its approved sidebar for the sidebar pages;
+- Python 3.9 or newer;
+- the official Ookla CLI at `/usr/bin/speedtest`;
+- a regular user account with `sudo` rights.
+
+Docker deployment is not supported in this release; it is planned future work.
 
 ## Current status
 
 Version `1.0.5` is the owner-approved production baseline.  It is installed on
 the verified Raspberry Pi with the companion, 15-minute collection timer, and
-Pi-hole sidebar adapter active.  The product provides:
+Pi-hole sidebar adapter active.  Version `1.0.6` is in preparation and
+unpublished; it adds canonical third-party notices, the one-line runner, and
+the `install-all` and `uninstall-all` bootstrap actions without changing the
+dashboard, charts, settings, collection schedule, database, or sidebar
+appearance.  The product provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;

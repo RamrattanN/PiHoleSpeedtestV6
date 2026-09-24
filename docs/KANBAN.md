@@ -65,13 +65,16 @@ detailed acceptance criteria for active engineering work.
   adapter preserved.
 - Complete owner visual acceptance and rebaseline version `1.0.5` as the
   production baseline.
+- Pass version `1.0.5` curl uninstall and reinstall acceptance with measurement
+  history and settings preserved; the owner accepted the restored dashboard and
+  sidebar without defects.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Licence and third-party notices | Branch `fix/license-and-third-party-notices` | Completed locally with canonical Chart.js and @kurkle/color licences and the scoped inherited notice; awaiting owner review, merge, and publication |
+| Version `1.0.6` release preparation | Branch `release/v1.0.6` | Canonical third-party notices, one-line runner, `install-all`, `uninstall-all`, documentation, and deferred Docker publication are implemented and awaiting owner review.  Not released: requires merge, fresh immutable release assets, a GitHub Release carrying the bootstrap and its checksum, and Raspberry Pi 3 acceptance |
 
 ## Backlog
 
@@ -83,11 +86,36 @@ detailed acceptance criteria for active engineering work.
 - Chart date ranges, optional preferred server selection, table sorting, and
   complete accessible-state verification.
 - First supported v6 release tag after all release gates pass.
-- Version `1.0.6` release (planned; not built or published): ship
-  `THIRD_PARTY_NOTICES.md` with the corrected canonical notices in fresh
-  immutable release assets after owner review of the licence reconciliation
-  and completion of the version `1.0.5` curl uninstall and reinstall
-  acceptance.
+
+### Future: version 1.1.0 Docker deployment
+
+Docker is not part of version `1.0.6`.  The reference project
+<https://github.com/arevindh/pihole-speedtest> offers useful ideas; no source
+code is to be copied from it.
+
+Ideas to adopt:
+
+- publish container images through GitHub Container Registry;
+- trigger production image publication only from an approved formal release;
+- provide a straightforward Compose deployment example;
+- support both ARM64 Raspberry Pi and AMD64 systems;
+- preserve settings and history in persistent storage;
+- ensure container restart continuity.
+
+Architectural decisions:
+
+- remain a companion or sidecar, not a modified replacement Pi-hole image;
+- never pipe an unverified remote script into a privileged shell;
+- never build production images from a floating `pihole/pihole:latest` base;
+- never modify ephemeral Pi-hole container files;
+- support native Pi-hole with containerized Speedtest, and containerized
+  Pi-hole with containerized Speedtest;
+- determine persistent sidebar adapter integration before implementation;
+- publish immutable version tags and image digests;
+- keep exactly one scheduled collector.
+
+Until then, `.github/workflows/publish.yml` is manual-only, marked
+experimental, and cannot run from a GitHub Release.
 
 ## Approval-gated
 

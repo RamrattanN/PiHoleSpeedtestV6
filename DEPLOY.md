@@ -3,6 +3,7 @@
 The dashboard companion service, 15-minute automated collection, and optional
 Pi-hole navigation adapter passed live verification on the Raspberry Pi.
 Version `1.0.5` is the installed and owner-approved production baseline.
+Version `1.0.6` is in preparation and unpublished.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
@@ -132,6 +133,14 @@ Version `1.0.5` contains the release installer, data-preserving uninstaller,
 separate purge command, deterministic bundle builder, and immutable-bootstrap
 renderer.  The bootstrap verifies the complete bundle before invoking `sudo`;
 it never pipes a mutable branch into a privileged shell.
+
+Version `1.0.6` adds the `install-all` and `uninstall-all` bootstrap actions
+and the root `install.sh` convenience runner.  The runner performs no
+privileged operation; it verifies the release bootstrap against its published
+checksum and runs it as the current user.  Each `1.0.6` or later release must
+attach the rendered `pihole-speedtest-v6-bootstrap.sh` and its `.sha256` file
+as GitHub Release assets.  Docker image publication is deferred and cannot run
+from a GitHub Release.
 
 Immutable production command syntax and the complete trust, preservation,
 rollback, and acceptance contract are maintained in

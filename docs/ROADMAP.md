@@ -90,6 +90,21 @@
 - [ ] Pass the complete acceptance plan on Raspberry Pi 3.
 - [x] Reconcile repository documentation and Wiki navigation with the accepted
   live implementation.
+- [x] Pass version `1.0.5` curl uninstall and reinstall acceptance with
+  history and settings preserved.
+- [x] Prepare version `1.0.6` source with canonical third-party notices, the
+  one-line runner, and the `install-all` and `uninstall-all` actions.
 - [ ] Publish a release bundle that carries `THIRD_PARTY_NOTICES.md` beside
   the product `LICENSE`.
+- [ ] Publish the version `1.0.6` GitHub Release with the rendered bootstrap
+  and its checksum as release assets.
+- [ ] Complete version `1.0.6` one-line install and uninstall acceptance on
+  Raspberry Pi 3.
 - [ ] Tag the first supported v6 release.
+
+## Future: version 1.1.0
+
+- [ ] Docker deployment as a companion or sidecar with GitHub Container
+  Registry images, immutable tags and digests, ARM64 and AMD64 support,
+  persistent history and settings, and one scheduled collector.  See
+  [Kanban](KANBAN.md) for the recorded decisions.

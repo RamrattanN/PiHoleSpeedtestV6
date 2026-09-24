@@ -173,6 +173,29 @@ remained operational.
 - clean install, adapter install and removal, uninstall, reinstall, reboot, and
   disposable-data purge pass on Raspberry Pi 3 ARM64.
 
+### Version 1.0.6 one-line workflow acceptance
+
+Automated tests exercise the runner and the rendered bootstrap against stubbed
+system commands.  Before version `1.0.6` replaces version `1.0.5`, the
+following must also pass on Raspberry Pi 3 ARM64 using the published release
+assets:
+
+- the one-line runner verifies the release bootstrap checksum, refuses root,
+  and runs `install-all` by default and `uninstall-all` for `uninstall`;
+- `install-all` upgrades the installed version `1.0.5` by a data-preserving
+  reinstall with measurement history and settings unchanged;
+- dashboard health, exactly one enabled collection timer, Pi-hole FTL and web
+  health, and the sidebar adapter manifest and pages are verified;
+- the printed dashboard, Overview, and Setup addresses open correctly;
+- a repeated `install-all` changes nothing;
+- `uninstall-all` removes the sidebar before the companion, restores the
+  original sidebar exactly, and preserves history, settings, and recovery
+  evidence;
+- a repeated `uninstall-all` changes nothing, and a following `install-all`
+  reuses the preserved data;
+- a sidebar failure leaves the companion, data, and Pi-hole web files intact
+  and prints the failed phase and recovery commands.
+
 ## Stop conditions
 
 Stop immediately if Pi-hole DNS health changes, the admin interface becomes
