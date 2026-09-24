@@ -6,9 +6,9 @@ Pi-hole upgrade cannot erase data or disable scheduled tests.
 
 ## Current status
 
-Version `1.0.4` is the installed production maintenance line.  Version `1.0.5`
-is the published visual-alignment candidate awaiting live owner acceptance.
-The product provides:
+Version `1.0.5` is the owner-approved production baseline.  It is installed on
+the verified Raspberry Pi with the companion, 15-minute collection timer, and
+Pi-hole sidebar adapter active.  The product provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;
@@ -30,7 +30,7 @@ The product provides:
 
 The approved companion service, 15-minute collection timer, and reversible
 Pi-hole Web v6.6 sidebar adapter are running on the verified Raspberry Pi 3
-baseline.  Version `1.0.5` replaces the irregular mixed-cadence default with a
+baseline.  Version `1.0.5` replaced the irregular mixed-cadence default with a
 Pi-hole-style 24-hour chart, responsive hourly grid, uniform bar geometry, and
 blank outage intervals while retaining zoom access to older history.  It also
 corrects post-install cleanup so a successful installation cannot be reported

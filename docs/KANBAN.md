@@ -60,13 +60,17 @@ detailed acceptance criteria for active engineering work.
 - Publish version `1.0.5` source after GitHub CI run 68 passed, then build the
   release bundle twice and independently download-verify the immutable bundle
   and checksum-pinned bootstrap.
+- Upgrade the live Raspberry Pi to version `1.0.5` with 98,719 measurements,
+  SQLite integrity `ok`, one active 15-minute timer, and the installed sidebar
+  adapter preserved.
+- Complete owner visual acceptance and rebaseline version `1.0.5` as the
+  production baseline.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Production `1.0.5` acceptance | Version `1.0.5` | Upgrade from installed version `1.0.4`; verify the 24-hour hourly grid, uniform bar geometry, blank outage spans, Setup version label, clean bootstrap exit, one active timer, and collection continuity on Raspberry Pi 3 |
 
 ## Backlog
 

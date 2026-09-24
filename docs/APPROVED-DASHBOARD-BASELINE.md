@@ -1,15 +1,16 @@
 # Approved dashboard baseline
 
 > Version `0.1.0.dev4` remains the approved historical baseline described on
-> this page.  Version `1.0.5` is the published visual-alignment candidate
-> awaiting live owner acceptance.  It keeps
+> this page.  Version `1.0.5` is the owner-approved production baseline.  It
+> keeps
 > substantial collection outages blank and breaks line charts across them
 > without adding labels, shaded overlays, or synthetic measurements, restores
 > a Pi-hole-style 24-hour hourly grid with uniform bar geometry and blank outage
 > spans, retains older history through zooming, and shows the installed version
 > discreetly in Setup.
-> This page will be rebaselined only after owner visual acceptance on the
-> Raspberry Pi.
+> Live acceptance completed on September 24, 2026 with 98,719 measurements,
+> SQLite integrity `ok`, one active 15-minute timer, and the sidebar adapter
+> preserved.
 
 ## Decision
 
@@ -24,6 +25,13 @@ Raspberry Pi verification of version `0.1.0.dev4` at commit
 the embedded Ramrattan identity and manual-test control, true timestamp
 spacing, labelled no-data gaps, chart mouseover details, and adaptive layered
 bars that separate equal or nearly equal values.
+
+The owner rebaselined version `1.0.5` on September 24, 2026 after live
+Raspberry Pi verification of source commit
+`2400a3108235a477c6d9c2c3af0d2024f1cf9633`.  The accepted revision presents
+the latest 24 hours on a responsive hourly grid, uses uniform bar geometry and
+consistent delimiters, preserves blank outage spans, retains older history
+through zooming, and cleans its isolated installation workspace correctly.
 
 This acceptance establishes the go-to interface and includes the installed,
 reversible Pi-hole Web v6.6 navigation adapter.  It does not authorize other

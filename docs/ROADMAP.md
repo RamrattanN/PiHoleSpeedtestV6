@@ -79,7 +79,7 @@
   synthetic rows into measurement history.
 - [x] Complete owner review of version `1.0.2` bar delimiters and the
   runtime-derived Setup version label.
-- [ ] Complete owner acceptance of version `1.0.5`, which presents the latest
+- [x] Complete owner acceptance of version `1.0.5`, which presents the latest
   24 hours on a Pi-hole-style hourly grid, uses uniform bar geometry, preserves
   blank outage spans and older zoomable history, exits installation cleanly,
   and allows the current verified bootstrap to uninstall any supported version.
