@@ -46,9 +46,11 @@ Systemd units are maintained under `deploy/systemd/` for:
 - process locking that refuses overlapping collections.
 
 The dashboard and collection timer run without an interactive Terminal
-session.  The immutable production source and verification anchors are recorded
-in the checksum-verified curl workflow.  General backup, restore, and final
-reboot acceptance remain tracked release work.
+session.  Production source commit
+`8db8852cd4b47bf2c7024ec9c08277a1b87ae2f2` passed GitHub CI run 58.  Its
+verification anchors are recorded in the checksum-verified curl workflow.
+General backup, restore, and final reboot acceptance remain tracked release
+work.
 
 The authoritative deployment gates are in
 [`docs/QA-AND-ACCEPTANCE.md`](docs/QA-AND-ACCEPTANCE.md).

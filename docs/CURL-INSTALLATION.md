@@ -2,7 +2,7 @@
 
 ## Status
 
-Version `1.0.2` is the production maintenance release.  Its immutable bundle and
+Version `1.0.3` is the production maintenance release.  Its immutable bundle and
 checksum-pinned bootstrap are published for Raspberry Pi installation,
 adapter management, and data-preserving removal.  Reboot, interrupted-install,
 and explicit purge acceptance remain tracked in issue #3.
@@ -27,11 +27,11 @@ No branch-based curl command is supported.
 
 | Item | Immutable value |
 | --- | --- |
-| Application source commit | `6c86318e202d136ae6c01346a223407cbff791e1` |
-| Bundle asset commit | `dc20e3ef607e7a144948703cfeccca3592839106` |
-| Bundle SHA-256 | `125655939bf882fcf607965fabec5fab173b332f2f570b680dc88949f5af72a1` |
-| Bootstrap commit | `4156faddcdaa67b022a98bc36f2c39dadc0827ea` |
-| Bootstrap SHA-256 | `ff8ca1f596b2a53b75ec761a849404467ef084694dbf59346af934270459a321` |
+| Application source commit | `8db8852cd4b47bf2c7024ec9c08277a1b87ae2f2` |
+| Bundle asset commit | `c34765a28b76abc7f184f6ff155da2bd91a9f99b` |
+| Bundle SHA-256 | `d29e7aaee356bd422347363079f2b327face738f9adff93fd5dc392c3444b42a` |
+| Bootstrap commit | `152468821249f0fdbf3bd28e0150444446559337` |
+| Bootstrap SHA-256 | `4151a8a3e6faa541f6938c536e8eab5bd0bde9cec9ba7a369960d68bd3c8a21d` |
 
 ## Production install command
 
@@ -44,9 +44,9 @@ bootstrap=/tmp/pihole-speedtest-v6-bootstrap.sh && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
   --output "$bootstrap" \
-  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/4156faddcdaa67b022a98bc36f2c39dadc0827ea/release/pihole-speedtest-v6-bootstrap.sh && \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/152468821249f0fdbf3bd28e0150444446559337/release/pihole-speedtest-v6-bootstrap.sh && \
 printf '%s  %s\n' \
-  'ff8ca1f596b2a53b75ec761a849404467ef084694dbf59346af934270459a321' \
+  '4151a8a3e6faa541f6938c536e8eab5bd0bde9cec9ba7a369960d68bd3c8a21d' \
   "$bootstrap" | sha256sum --check --status - && \
 bash "$bootstrap" install
 ```

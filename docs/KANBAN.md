@@ -37,6 +37,9 @@ detailed acceptance criteria for active engineering work.
   checksum, and checksum-pinned bootstrap after GitHub CI run 54 passed.
 - Complete owner review of version `1.0.2` and identify inconsistent visible
   gaps between mixed-cadence bar groups.
+- Publish the immutable version `1.0.3` source after GitHub CI run 58 passed,
+  followed by its deterministic bundle, checksum, and checksum-pinned
+  bootstrap.
 
 ## In progress
 
