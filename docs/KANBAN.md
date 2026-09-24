@@ -26,13 +26,16 @@ detailed acceptance criteria for active engineering work.
   bars.
 - Promote version `1.0.0`, pass GitHub CI run 46, and publish an immutable
   production bundle plus checksum-pinned bootstrap.
+- Upgrade the live Raspberry Pi companion to version `1.0.0` with 98,713
+  measurements, SQLite integrity, services, timer, adapter, and Pi-hole health
+  verified.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Production `1.0.0` live upgrade | Version `1.0.0` | Run the guarded upgrade and verify data, timer, dashboard, adapter, and Pi-hole health |
+| Production chart-gap correction | Version `1.0.1` | Remove synthetic zero points, preserve blank outage spans, pass CI, and complete owner visual acceptance |
 
 ## Backlog
 

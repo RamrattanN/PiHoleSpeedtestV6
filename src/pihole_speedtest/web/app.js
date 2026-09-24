@@ -49,45 +49,33 @@ function chartMaximum(records, series, minimum) {
   return Math.ceil(Math.max(minimum, ...values) * 1.1);
 }
 
-function buildChartRecords(records) {
-  if (records.length < 2) return records.slice();
-  const intervalMs = collectionIntervalMinutes * 60 * 1000;
-  const plotted = [];
-  records.forEach((record, index) => {
-    if (index > 0) {
-      const previous = Date.parse(records[index - 1].recorded_at);
-      const current = Date.parse(record.recorded_at);
-      if (Number.isFinite(previous) && Number.isFinite(current) && current > previous) {
-        for (
-          let timestamp = previous + intervalMs;
-          timestamp < current - intervalMs / 2;
-          timestamp += intervalMs
-        ) {
-          plotted.push({
-            recorded_at: new Date(timestamp).toISOString(),
-            download_mbps: 0,
-            upload_mbps: 0,
-            latency_ms: 0,
-            jitter_ms: 0,
-            synthetic_zero: true,
-          });
-        }
-      }
-    }
-    plotted.push(record);
-  });
-  return plotted;
-}
-
 function chartTimeline(records) {
   const intervalMs = collectionIntervalMinutes * 60 * 1000;
   const timestamps = records.map((record) => Date.parse(record.recorded_at));
   const valid = timestamps.filter(Number.isFinite);
+  const deltas = [];
+  for (let index = 1; index < timestamps.length; index += 1) {
+    const elapsed = timestamps[index] - timestamps[index - 1];
+    if (Number.isFinite(elapsed) && elapsed > 0) deltas.push(elapsed);
+  }
+  deltas.sort((left, right) => left - right);
+  const medianDelta = deltas.length
+    ? deltas[Math.floor((deltas.length - 1) / 2)]
+    : intervalMs;
+  const cadenceMs = Math.max(intervalMs, medianDelta);
   const first = valid.length ? Math.min(...valid) : 0;
   const last = valid.length ? Math.max(...valid) : first;
   const start = records.length === 1 ? first - intervalMs / 2 : first;
   const end = records.length === 1 ? last + intervalMs / 2 : last;
-  return { timestamps, start, end, duration: Math.max(end - start, 1), intervalMs };
+  return {
+    timestamps,
+    start,
+    end,
+    duration: Math.max(end - start, 1),
+    intervalMs,
+    cadenceMs,
+    gapThresholdMs: cadenceMs * 2.5,
+  };
 }
 
 function formatAxisTime(timestamp) {
@@ -107,7 +95,7 @@ function chartBarSpacing(timeline, xPositions) {
     const current = timeline.timestamps[index];
     if (!Number.isFinite(previous) || !Number.isFinite(current)) continue;
     const elapsed = current - previous;
-    if (elapsed <= 0 || elapsed > timeline.intervalMs * 1.5) continue;
+    if (elapsed <= 0 || elapsed > timeline.cadenceMs * 1.5) continue;
     const spacing = xPositions[index] - xPositions[index - 1];
     if (spacing > 0) spacings.push(spacing);
   }
@@ -169,7 +157,7 @@ function drawChart(records, options) {
     return;
   }
 
-  const plottedRecords = buildChartRecords(records);
+  const plottedRecords = records;
   const timeline = chartTimeline(plottedRecords);
   setText(options.noteId, chartNote(records));
   const padding = { top: 20, right: 16, bottom: 34, left: 46 };
@@ -230,7 +218,9 @@ function drawChart(records, options) {
       const y = padding.top + chartHeight - chartHeight * value / maximum;
       const previous = index > 0 ? timeline.timestamps[index - 1] : null;
       const current = timeline.timestamps[index];
-      const breaksLine = index === 0 || !Number.isFinite(previous) || !Number.isFinite(current);
+      const elapsed = current - previous;
+      const breaksLine = index === 0 || !Number.isFinite(previous) ||
+        !Number.isFinite(current) || elapsed > timeline.gapThresholdMs;
       points.push({ x, y }); breaksLine ? context.moveTo(x, y) : context.lineTo(x, y);
     });
     context.stroke(); context.fillStyle = series.color;

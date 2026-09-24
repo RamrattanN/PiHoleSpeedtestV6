@@ -1,9 +1,10 @@
 # Approved dashboard baseline
 
 > Version `0.1.0.dev4` remains the approved historical baseline described on
-> this page.  Version `1.0.0` is the production revision that replaces labelled
-> gap overlays with display-only zero-valued scheduled points.  This page will
-> be rebaselined only after owner visual acceptance.
+> this page.  Version `1.0.1` is the production maintenance revision.  It keeps
+> substantial collection outages blank and breaks line charts across them
+> without adding labels, shaded overlays, or synthetic measurements.  This
+> page will be rebaselined only after owner visual acceptance.
 
 ## Decision
 

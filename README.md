@@ -6,7 +6,7 @@ Pi-hole upgrade cannot erase data or disable scheduled tests.
 
 ## Current status
 
-Version `1.0.0` is the production release line.  Its dashboard and Pi-hole
+Version `1.0.1` is the production maintenance line.  Its dashboard and Pi-hole
 sidebar integration are the visual, interaction, and deployment baseline for
 subsequent Pi-hole Speedtest work.  It provides:
 
@@ -17,8 +17,8 @@ subsequent Pi-hole Speedtest work.  It provides:
 - a local API and Ramrattan Network Tools dashboard;
 - local web assets with no CDN dependency;
 - line and adaptive layered-bar charts with fixed-scale time-axis zoom and pan;
-- true timestamp spacing with missed scheduled intervals plotted as zero-valued
-  chart points without altering stored measurements;
+- true timestamp spacing with substantial collection outages rendered as
+  blank chart intervals without altering stored measurements;
 - chart mouseover details for measurement time and values;
 - optional table visibility and complete-history CSV export;
 - dashboard controls for manual speed tests, collection-frequency changes,
@@ -30,9 +30,9 @@ subsequent Pi-hole Speedtest work.  It provides:
 
 The approved companion service, 15-minute collection timer, and reversible
 Pi-hole Web v6.6 sidebar adapter are running on the verified Raspberry Pi 3
-baseline.  Version `1.0.0` promotes that implementation to the production
-release line and replaces labelled gap overlays with derived zero-valued chart
-points.  Guarded installation and upgrade paths exist.  Immutable download
+baseline.  Version `1.0.1` removes synthetic zero points and breaks line charts
+across substantial collection outages while leaving bar-chart intervals blank.
+Guarded installation and upgrade paths exist.  Immutable download
 commands and checksums are documented in
 [Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  Remaining
 Raspberry Pi acceptance is tracked in
