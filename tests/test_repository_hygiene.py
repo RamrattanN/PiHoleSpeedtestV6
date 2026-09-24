@@ -21,7 +21,9 @@ class RepositoryHygieneTests(unittest.TestCase):
 
         self.assertTrue(license_text.startswith("MIT License\n"))
         copyright_lines = [
-            line for line in license_text.splitlines() if "copyright" in line.lower()
+            line
+            for line in license_text.splitlines()
+            if line.lower().startswith("copyright (c)")
         ]
         self.assertEqual(copyright_lines, ["Copyright (c) 2026 Nilesh Ramrattan"])
         self.assertIn("License :: OSI Approved :: MIT License", project)
