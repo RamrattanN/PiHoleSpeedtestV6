@@ -90,4 +90,6 @@
 - [ ] Pass the complete acceptance plan on Raspberry Pi 3.
 - [x] Reconcile repository documentation and Wiki navigation with the accepted
   live implementation.
+- [ ] Publish a release bundle that carries `THIRD_PARTY_NOTICES.md` beside
+  the product `LICENSE`.
 - [ ] Tag the first supported v6 release.

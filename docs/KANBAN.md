@@ -66,6 +66,7 @@ detailed acceptance criteria for active engineering work.
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
+| Licence and third-party notices | Branch `fix/license-and-third-party-notices` | Owner review and merge; the next release bundle then carries `THIRD_PARTY_NOTICES.md` |
 | Production `1.0.5` acceptance | Version `1.0.5` | Upgrade from installed version `1.0.4`; verify the 24-hour hourly grid, uniform bar geometry, blank outage spans, Setup version label, clean bootstrap exit, one active timer, and collection continuity on Raspberry Pi 3 |
 
 ## Backlog

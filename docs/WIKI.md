@@ -14,6 +14,9 @@ useful entry point rather than an independent source of truth.
 - [Deployment](../DEPLOY.md) - supported and approval-gated deployment paths.
 - [Checksum-verified curl workflow](CURL-INSTALLATION.md) - immutable download,
   verification, preservation, rollback, and purge contract.
+- [License](../LICENSE) - MIT licence for Ramrattan Pi-hole Speedtest.
+- [Third-Party Notices](../THIRD_PARTY_NOTICES.md) - licences applicable to
+  incorporated components only.
 
 ## Design
 

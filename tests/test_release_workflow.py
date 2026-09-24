@@ -1,3 +1,5 @@
+import fnmatch
+import re
 import subprocess
 import unittest
 from pathlib import Path
@@ -121,6 +123,38 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("':(exclude)release/*.tar.gz'", builder)
         self.assertIn("':(exclude)release/*.tar.gz.sha256'", builder)
         self.assertIn("':(exclude)release/pihole-speedtest-v6-bootstrap.sh'", builder)
+
+    def test_release_bundle_carries_license_and_third_party_notices(self):
+        builder = self.read(BUILDER)
+        excluded = re.findall(r"':\(exclude\)([^']+)'", builder)
+        tracked = subprocess.run(
+            ["git", "ls-files", "-z"],
+            cwd=ROOT,
+            check=True,
+            stdout=subprocess.PIPE,
+        ).stdout.decode("utf-8").split("\0")
+        bundled = {
+            path
+            for path in tracked
+            if path and not any(fnmatch.fnmatch(path, pattern) for pattern in excluded)
+        }
+
+        self.assertIn('git -C "$source_root" archive "$archive_commit" -- \\\n  . \\', builder)
+        for required in (
+            "LICENSE",
+            "THIRD_PARTY_NOTICES.md",
+            "web/chart.min.js",
+            "Archive/PiHole SpeedTest.zip",
+        ):
+            self.assertIn(required, bundled)
+
+    def test_bootstrap_extracts_the_complete_verified_bundle(self):
+        bootstrap = self.read(BOOTSTRAP)
+
+        self.assertIn(
+            'tar --extract --gzip --file "$bundle_path" --directory "$work_dir"\n',
+            bootstrap,
+        )
 
 
 if __name__ == "__main__":

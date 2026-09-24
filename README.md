@@ -116,4 +116,8 @@ verified device baseline is recorded in
 
 ## License
 
-MIT licensed.  See [LICENSE](LICENSE).
+Ramrattan Pi-hole Speedtest is MIT licensed by Nilesh Ramrattan.  See
+[LICENSE](LICENSE).
+
+See [Third-Party Notices](THIRD_PARTY_NOTICES.md) for licences applicable to
+incorporated components.

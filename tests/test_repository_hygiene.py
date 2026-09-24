@@ -12,6 +12,35 @@ PRIVATE_IPV4 = re.compile(
     r"172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2}"
     r")\b"
 )
+MIT_TERMS = """\
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+PRODUCT_COPYRIGHT = "Copyright (c) 2026 Nilesh Ramrattan"
+INHERITED_COPYRIGHT = "Copyright (c) 2018 Siddhu"
+
+
+def copyright_lines(text):
+    return [
+        line.strip()
+        for line in text.splitlines()
+        if line.strip().lower().startswith("copyright (c)")
+    ]
 
 
 class RepositoryHygieneTests(unittest.TestCase):
@@ -19,14 +48,40 @@ class RepositoryHygieneTests(unittest.TestCase):
         license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
         project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
-        self.assertTrue(license_text.startswith("MIT License\n"))
-        copyright_lines = [
-            line
-            for line in license_text.splitlines()
-            if line.lower().startswith("copyright (c)")
-        ]
-        self.assertEqual(copyright_lines, ["Copyright (c) 2026 Nilesh Ramrattan"])
+        self.assertEqual(
+            license_text, f"MIT License\n\n{PRODUCT_COPYRIGHT}\n\n{MIT_TERMS}"
+        )
+        self.assertEqual(copyright_lines(license_text), [PRODUCT_COPYRIGHT])
         self.assertIn("License :: OSI Approved :: MIT License", project)
+
+    def test_third_party_notice_retains_inherited_mit_license(self):
+        notice = (ROOT / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+
+        self.assertIn("https://github.com/arevindh/pihole-speedtest", notice)
+        self.assertIn(
+            f"MIT License\n\n{INHERITED_COPYRIGHT}\n\n{MIT_TERMS}", notice
+        )
+        self.assertIn("[LICENSE](LICENSE)", notice)
+
+    def test_third_party_notice_preserves_bundled_chart_headers(self):
+        notice = (ROOT / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+        chart = (ROOT / "web" / "chart.min.js").read_text(encoding="utf-8")
+        headers = re.findall(r"/\*!\n(.*?)\n \*/", chart, re.S)
+
+        self.assertEqual(len(headers), 2)
+        for header in headers:
+            retained = "\n".join(line[3:] for line in header.splitlines())
+            self.assertIn(f"```text\n{retained}\n```", notice)
+        self.assertIn(MIT_TERMS, notice.split("## MIT License text for")[1])
+
+    def test_product_and_third_party_licenses_are_not_confused(self):
+        license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+        notice = (ROOT / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+
+        for inherited in ("Siddhu", "arevindh", "Chart.js", "kurkle"):
+            self.assertNotIn(inherited, license_text)
+        self.assertNotIn(PRODUCT_COPYRIGHT, notice)
+        self.assertEqual(copyright_lines(notice), [INHERITED_COPYRIGHT])
 
     def test_repository_does_not_publish_private_ipv4_addresses(self):
         findings = []

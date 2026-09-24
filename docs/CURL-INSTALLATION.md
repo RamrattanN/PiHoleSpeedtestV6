@@ -26,6 +26,17 @@ It will:
 
 No branch-based curl command is supported.
 
+## Licence files
+
+Each release bundle is a complete archive of the tracked source at its release
+commit, so it carries the product [LICENSE](../LICENSE) and
+[Third-Party Notices](../THIRD_PARTY_NOTICES.md) for incorporated components.
+The installer builds the Python package from that bundle; the installed
+package contains only product code and records the product licence in its
+package metadata.  Uninstall removes the application directory, including that
+metadata, and no other licence files.  Bundles published through version
+`1.0.5` predate `THIRD_PARTY_NOTICES.md` and remain immutable.
+
 ## Version 1.0.5 acceptance trust anchors
 
 | Item | Immutable value |
