@@ -1,0 +1,11 @@
+[Unit]
+Description=Check whether a Pi-hole Speedtest v6 measurement is due
+
+[Timer]
+OnCalendar=*:00/15
+RandomizedDelaySec=60
+Persistent=true
+Unit=pihole-speedtest-collect.service
+
+[Install]
+WantedBy=timers.target

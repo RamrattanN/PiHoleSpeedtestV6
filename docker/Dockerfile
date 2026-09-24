@@ -1,6 +1,15 @@
-FROM pihole/pihole:latest
-# Copy v6 safe assets
-COPY scripts/speedtest.sh /usr/local/bin/pihole-speedtest
-COPY web /var/www/html/speedtest
-RUN mkdir -p /etc/pihole/speedtest &&         ln -sf /etc/pihole/speedtest/speedtest.json /var/www/html/speedtest/speedtest.json &&         chmod 0755 /usr/local/bin/pihole-speedtest
-# Note: You still need a speedtest CLI in the image or on the host network namespace.
+FROM python:3.11-slim
+
+WORKDIR /opt/pihole-speedtest
+
+COPY pyproject.toml README.md LICENSE ./
+COPY src ./src
+
+RUN python -m pip install --no-cache-dir . \
+    && useradd --create-home --uid 10001 speedtest
+
+USER speedtest
+VOLUME ["/data"]
+EXPOSE 8765
+
+CMD ["pihole-speedtest", "serve", "--database", "/data/speedtest.db", "--host", "0.0.0.0", "--port", "8765"]

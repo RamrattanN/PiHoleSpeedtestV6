@@ -1,8 +1,16 @@
 name: build
 
+# EXPERIMENTAL - Docker image publication is deferred future work (planned for
+# version 1.1.0; see docs/KANBAN.md).  The current Docker assets are not
+# production-equivalent, so this workflow never runs from a GitHub Release or
+# any other automatic event.  It can only be started by hand with an explicit
+# confirmation.
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type PUBLISH EXPERIMENTAL IMAGE to publish an experimental image
+        required: true
 
 env:
   REGISTRY: ghcr.io
@@ -10,6 +18,7 @@ env:
 
 jobs:
   build-and-push-image:
+    if: github.event_name == 'workflow_dispatch' && inputs.confirm == 'PUBLISH EXPERIMENTAL IMAGE'
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
@@ -32,6 +41,8 @@ jobs:
         uses: docker/metadata-action@v5.5.1
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            suffix=-experimental
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5.3.0

@@ -1,0 +1,27 @@
+[Unit]
+Description=Collect one Pi-hole Speedtest v6 measurement
+Documentation=https://github.com/RamrattanN/PiHoleSpeedtestV6
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=pihole-speedtest
+Group=pihole-speedtest
+WorkingDirectory=/var/lib/pihole-speedtest
+Environment=HOME=/var/lib/pihole-speedtest
+ExecStart=/opt/pihole-speedtest/venv/bin/pihole-speedtest collect --database /var/lib/pihole-speedtest/speedtest.db --binary /usr/bin/speedtest --timeout 180 --lock-file /var/lib/pihole-speedtest/collect.lock --settings-file /var/lib/pihole-speedtest/settings.json --respect-schedule
+UMask=0077
+Nice=10
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/pihole-speedtest
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictSUIDSGID=true

@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install
+        run: python -m pip install -e .
+      - name: Compile
+        run: python -m compileall -q src
+      - name: Test
+        run: python -m unittest discover -s tests -v
+
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check retained shell syntax
+        run: |
+          bash -n mod
+          bash -n test
+          bash -n scripts/*.sh
+          bash -n release/bootstrap.template.sh
+      - name: Verify deterministic release assets
+        run: |
+          commit="$(git rev-parse HEAD)"
+          first="$(mktemp -d)"
+          second="$(mktemp -d)"
+          scripts/build_release_assets.sh \
+            --source-commit "$commit" \
+            --output-directory "$first"
+          scripts/build_release_assets.sh \
+            --source-commit "$commit" \
+            --output-directory "$second"
+          version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' pyproject.toml)"
+          bundle_name="pihole-speedtest-v6-${version}.tar.gz"
+          cmp "$first/$bundle_name" "$second/$bundle_name"
+          bundle_sha="$(sha256sum "$first/$bundle_name" | awk '{print $1}')"
+          scripts/render_release_bootstrap.sh \
+            --source-commit "$commit" \
+            --asset-commit "$commit" \
+            --bundle-sha256 "$bundle_sha" \
+            --output "$first/bootstrap.sh"
+          bash -n "$first/bootstrap.sh"
+          ! grep -q '@SOURCE_COMMIT@\|@ASSET_COMMIT@\|@BUNDLE_SHA256@' "$first/bootstrap.sh"

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Pi-hole Speedtest</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="brand-header">
+      <div class="brand-copy">
+        <img class="brand-logo" src="/ramrattan-logo.png" alt="Ramrattan" width="72" height="87">
+        <div>
+          <p class="eyebrow">Ramrattan Network Tools</p>
+          <h1>Pi-hole Speedtest</h1>
+          <p class="tagline">Clear, local visibility into your internet connection performance.</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <div id="health" class="health" role="status">Loading status</div>
+        <button id="open-help" class="icon-button" type="button" title="Help" aria-label="Help">?</button>
+      </div>
+    </header>
+
+    <div class="embedded-toolbar" aria-label="Pi-hole Speedtest controls">
+      <div class="embedded-brand">
+        <img src="/ramrattan-logo.png" alt="Ramrattan" width="42" height="51">
+        <div>
+          <span>Ramrattan Network Tools</span>
+          <strong>Pi-hole Speedtest</strong>
+        </div>
+      </div>
+      <button class="run-speedtest-button" type="button" data-run-speedtest>Run speed test now</button>
+    </div>
+
+    <nav class="view-navigation" aria-label="Speedtest sections">
+      <div class="view-tabs">
+        <button type="button" class="active" data-view="overview">Overview</button>
+        <button type="button" data-view="setup">Setup</button>
+      </div>
+      <button class="run-speedtest-button" type="button" data-run-speedtest>Run speed test now</button>
+    </nav>
+
+    <div id="overview-view">
+      <h2 class="section-title">Connection history</h2>
+    <p id="collection-message" class="form-message" role="status"></p>
+
+    <section class="summary" aria-label="Latest measurement">
+      <article class="metric-card metric-download">
+        <i class="metric-icon" aria-hidden="true">&darr;</i>
+        <div><span>Download</span><strong id="latest-download">-</strong><small>Mbps</small></div>
+      </article>
+      <article class="metric-card metric-upload">
+        <i class="metric-icon" aria-hidden="true">&uarr;</i>
+        <div><span>Upload</span><strong id="latest-upload">-</strong><small>Mbps</small></div>
+      </article>
+      <article class="metric-card metric-latency">
+        <i class="metric-icon metric-clock" aria-hidden="true"></i>
+        <div><span>Latency</span><strong id="latest-latency">-</strong><small>ms</small></div>
+      </article>
+      <article class="metric-card metric-jitter">
+        <i class="metric-icon metric-wave" aria-hidden="true">&#8767;</i>
+        <div><span>Jitter</span><strong id="latest-jitter">-</strong><small>ms</small></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Download and upload</h2>
+        <span id="chart-note">No measurements</span>
+      </div>
+      <div class="chart-legend" aria-label="Download and upload chart legend">
+        <span><i class="legend-dot download" aria-hidden="true"></i>Download</span>
+        <span><i class="legend-dot upload" aria-hidden="true"></i>Upload</span>
+      </div>
+      <div class="chart-surface">
+        <canvas id="history-chart" height="280">Speed history chart</canvas>
+        <div id="history-tooltip" class="chart-tooltip" role="status" hidden></div>
+      </div>
+      <div class="chart-controls" aria-label="Chart controls">
+        <div class="segmented" role="group" aria-label="Chart type">
+          <button type="button" data-chart-mode="line" class="active">Line</button>
+          <button type="button" data-chart-mode="bar">Bar</button>
+        </div>
+        <div class="zoom-controls" role="group" aria-label="Time axis zoom">
+          <button type="button" data-zoom="in" title="Zoom in on time axis">+</button>
+          <button type="button" data-zoom="out" title="Zoom out on time axis">-</button>
+          <button type="button" data-zoom="reset">Reset zoom</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Latency and jitter</h2>
+        <span id="latency-chart-note">No measurements</span>
+      </div>
+      <div class="chart-legend" aria-label="Latency and jitter chart legend">
+        <span><i class="legend-dot latency" aria-hidden="true"></i>Latency</span>
+        <span><i class="legend-dot jitter" aria-hidden="true"></i>Jitter</span>
+      </div>
+      <div class="chart-surface">
+        <canvas id="latency-chart" height="280">Latency and jitter history chart</canvas>
+        <div id="latency-tooltip" class="chart-tooltip" role="status" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel" id="measurement-table">
+      <div class="panel-heading">
+        <h2>Recent measurements</h2>
+        <span>Newest first</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Time</th>
+              <th scope="col">Download</th>
+              <th scope="col">Upload</th>
+              <th scope="col">Latency</th>
+              <th scope="col">Jitter</th>
+              <th scope="col">Server</th>
+              <th scope="col">Interface</th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+      </div>
+      <p id="empty-state" class="empty">No successful measurements yet.</p>
+    </section>
+    </div>
+
+    <section id="setup-view" class="setup-view" hidden>
+      <div class="section-heading">
+        <p class="eyebrow">Setup</p>
+        <h2>Speedtest configuration</h2>
+        <p>Manage display, export, collection frequency, and measurement history.</p>
+      </div>
+
+      <section class="panel setup-panel" aria-labelledby="display-and-charts-title">
+        <h3 id="display-and-charts-title" class="setup-panel-title">Display and charts</h3>
+        <label class="setting-row">
+          <span><strong>Measurement table</strong><small>Show recent data beneath the charts.</small></span>
+          <input id="show-table" type="checkbox" checked>
+        </label>
+      </section>
+
+      <section class="panel setup-panel" aria-labelledby="data-and-export-title">
+        <h3 id="data-and-export-title" class="setup-panel-title">Data and export</h3>
+        <p>Download the complete measurement history in chronological order.</p>
+        <a class="button-link" href="/api/export.csv" download>Export CSV</a>
+      </section>
+
+      <section class="panel setup-panel" aria-labelledby="collection-title">
+        <h3 id="collection-title" class="setup-panel-title">Collection</h3>
+        <label for="collection-frequency">Capture frequency</label>
+        <select id="collection-frequency">
+          <option value="15">Every 15 minutes</option>
+          <option value="30">Every 30 minutes</option>
+          <option value="60">Every hour</option>
+          <option value="120">Every 2 hours</option>
+          <option value="240">Every 4 hours</option>
+          <option value="360">Every 6 hours</option>
+          <option value="720">Every 12 hours</option>
+          <option value="1440">Once a day</option>
+        </select>
+        <button id="save-frequency" type="button">Save frequency</button>
+        <p id="settings-message" class="form-message" role="status"></p>
+      </section>
+
+      <section class="panel setup-panel danger-panel" aria-labelledby="reset-data-title">
+        <h3 id="reset-data-title" class="setup-panel-title">Reset data</h3>
+        <p>A verified database backup is created before measurement history is cleared.  Settings are preserved.</p>
+        <label class="setting-row">
+          <span>I understand that the active measurement history will be cleared.</span>
+          <input id="reset-acknowledgement" type="checkbox">
+        </label>
+        <label for="reset-confirmation">Type RESET to continue</label>
+        <input id="reset-confirmation" type="text" autocomplete="off">
+        <button id="reset-data" class="danger-button" type="button" disabled>Reset measurement history</button>
+        <p id="reset-message" class="form-message" role="status"></p>
+      </section>
+
+      <p class="app-version" aria-label="Installed application version">
+        Pi-hole Speedtest <span id="app-version">version unavailable</span>
+      </p>
+    </section>
+
+    <dialog id="help-dialog" aria-labelledby="help-title">
+      <div class="dialog-heading">
+        <h2 id="help-title">Pi-hole Speedtest help</h2>
+        <button id="close-help" class="icon-button" type="button" aria-label="Close help">&times;</button>
+      </div>
+      <p>Point to either chart to see the measurement time and values.  Use Line or Bar to change the chart style.  Scroll over a chart or use the zoom buttons to inspect a shorter time range.  Drag horizontally to move through a zoomed range.</p>
+      <p>The y-axis remains fixed while you zoom so changes stay visually comparable.  Open Setup to control the table, export CSV data, change capture frequency, or reset history.</p>
+      <p>Use Run speed test now on the Overview page to start a measurement immediately.</p>
+    </dialog>
+  </main>
+</body>
+</html>
