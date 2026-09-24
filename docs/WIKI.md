@@ -45,18 +45,10 @@ v6.6 integration baseline.  The companion service, collection timer, embedded
 dashboard, and independently reversible sidebar adapter have completed live
 acceptance.
 
-Version `1.0.4` is the installed production maintenance line.  It removes synthetic zero
-points, leaves substantial collection outages blank, and breaks line charts
-across those outages while preserving the underlying measurement history
-exactly.  It also preserves a consistent two-pixel gap between neighboring bar
-groups across mixed collection cadences and shows the installed runtime version
-discreetly in Setup.  Live owner acceptance of this maintenance revision remains
-pending.  Its verified bootstrap can uninstall any supported installed version
-by validating the source commit recorded in the installed manifest.
-
-Version `1.0.5` is the active release-blocking visual-alignment candidate.  It
+Version `1.0.5` is the installed and owner-approved production baseline.  It
 uses a 24-hour default window, responsive hourly grid, uniform bar geometry,
 blank outage spans, and a corrected post-install cleanup path.  Its source
 passed GitHub CI run 68, and its immutable bundle and bootstrap were
-independently downloaded and checksum-verified.  Live owner acceptance remains
-required before it replaces version `1.0.4`.
+independently downloaded and checksum-verified.  Live acceptance preserved
+98,719 measurements, SQLite integrity, one active 15-minute timer, and the
+installed sidebar adapter.

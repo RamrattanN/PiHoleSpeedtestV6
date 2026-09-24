@@ -2,8 +2,8 @@
 
 ## Status
 
-Version `1.0.4` remains the installed production maintenance release.  Version
-`1.0.5` is the published owner-acceptance candidate.  Version `1.0.3` is
+Version `1.0.5` is the installed and owner-approved production baseline.
+Version `1.0.3` is
 withdrawn because live download verification correctly detected that its
 published bundle bytes did not match its embedded checksum.  Do not use the
 version `1.0.3` bootstrap.  Version `1.0.5` supports uninstalling any verified
@@ -37,7 +37,7 @@ package metadata.  Uninstall removes the application directory, including that
 metadata, and no other licence files.  Bundles published through version
 `1.0.5` predate `THIRD_PARTY_NOTICES.md` and remain immutable.
 
-## Version 1.0.5 acceptance trust anchors
+## Production trust anchors
 
 | Item | Immutable value |
 | --- | --- |
@@ -48,7 +48,7 @@ metadata, and no other licence files.  Bundles published through version
 | Bootstrap commit | `8d6a779b34341a302a8a6c84502f2d95002dc95e` |
 | Bootstrap SHA-256 | `af2d2ca9c17d2420c22bb0ba894a409f00f468b0557eb95e8aacddfe9b430335` |
 
-## Version 1.0.5 acceptance install command
+## Production install command
 
 Run this on the Raspberry Pi.  It downloads and verifies the bootstrap before
 the bootstrap downloads and verifies the complete bundle.  `sudo` is invoked
@@ -107,8 +107,7 @@ bash /tmp/pihole-speedtest-v6-bootstrap.sh uninstall
 ```
 
 If `/tmp` has been cleared, repeat the download and bootstrap checksum steps
-from the version 1.0.5 acceptance install command, then replace the final
-`install` action
+from the production install command, then replace the final `install` action
 with the required removal action.
 
 Permanent deletion remains a separate command and must never be combined with

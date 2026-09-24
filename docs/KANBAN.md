@@ -60,14 +60,18 @@ detailed acceptance criteria for active engineering work.
 - Publish version `1.0.5` source after GitHub CI run 68 passed, then build the
   release bundle twice and independently download-verify the immutable bundle
   and checksum-pinned bootstrap.
+- Upgrade the live Raspberry Pi to version `1.0.5` with 98,719 measurements,
+  SQLite integrity `ok`, one active 15-minute timer, and the installed sidebar
+  adapter preserved.
+- Complete owner visual acceptance and rebaseline version `1.0.5` as the
+  production baseline.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Licence and third-party notices | Branch `fix/license-and-third-party-notices` | Owner review and merge; the next release bundle then carries `THIRD_PARTY_NOTICES.md` |
-| Production `1.0.5` acceptance | Version `1.0.5` | Upgrade from installed version `1.0.4`; verify the 24-hour hourly grid, uniform bar geometry, blank outage spans, Setup version label, clean bootstrap exit, one active timer, and collection continuity on Raspberry Pi 3 |
+| Licence and third-party notices | Branch `fix/license-and-third-party-notices` | Completed locally with canonical Chart.js and @kurkle/color licences and the scoped inherited notice; awaiting owner review, merge, and publication |
 
 ## Backlog
 
@@ -79,6 +83,11 @@ detailed acceptance criteria for active engineering work.
 - Chart date ranges, optional preferred server selection, table sorting, and
   complete accessible-state verification.
 - First supported v6 release tag after all release gates pass.
+- Version `1.0.6` release (planned; not built or published): ship
+  `THIRD_PARTY_NOTICES.md` with the corrected canonical notices in fresh
+  immutable release assets after owner review of the licence reconciliation
+  and completion of the version `1.0.5` curl uninstall and reinstall
+  acceptance.
 
 ## Approval-gated
 

@@ -43,12 +43,14 @@ sawtooth lines, substantial outages remain visible as blank time spans, and
 SQLite history, health counts, the measurement table, and CSV exports remain
 unchanged before owner visual acceptance and live upgrade.
 
-Version `1.0.5` must additionally prove that the default view covers the latest
+Version `1.0.5` proved that the default view covers the latest
 24 hours on a responsive hourly grid, every real measurement uses uniform bar
 geometry, mixed five-minute and fifteen-minute history retains consistent
 visual delimiters, outage spans remain blank, and the Setup version label
-matches `/api/health`.  Installation must also exit successfully after cleaning
-its isolated privileged build workspace.
+matches `/api/health`.  The guarded live upgrade completed with 98,719
+measurements, SQLite integrity `ok`, one active 15-minute timer, and the
+sidebar adapter preserved.  The remaining release work exercises the current
+curl bootstrap through removal and reinstall while preserving those controls.
 The verified bootstrap must also discover the installed source commit from the
 root-owned manifest and use that exact commit for data-preserving uninstall,
 without requiring the installed and bootstrap versions to match.
