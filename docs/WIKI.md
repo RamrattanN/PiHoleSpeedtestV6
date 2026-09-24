@@ -13,7 +13,12 @@ useful entry point rather than an independent source of truth.
 - [Roadmap](ROADMAP.md) - capability and release backlog.
 - [Deployment](../DEPLOY.md) - supported and approval-gated deployment paths.
 - [Checksum-verified curl workflow](CURL-INSTALLATION.md) - immutable download,
-  verification, preservation, rollback, and purge contract.
+  verification, preservation, rollback, and purge contract, plus the unpublished
+  version `1.0.6` one-line runner, prerelease acceptance, release sequence,
+  guarded release publication, and full-product actions.
+- [License](../LICENSE) - MIT licence for Ramrattan Pi-hole Speedtest.
+- [Third-Party Notices](../THIRD_PARTY_NOTICES.md) - licences applicable to
+  incorporated components only.
 
 ## Design
 
@@ -49,3 +54,10 @@ passed GitHub CI run 68, and its immutable bundle and bootstrap were
 independently downloaded and checksum-verified.  Live acceptance preserved
 98,719 measurements, SQLite integrity, one active 15-minute timer, and the
 installed sidebar adapter.
+Its curl uninstall and reinstall acceptance preserved measurement history and
+settings, and the owner accepted the restored dashboard and sidebar.
+
+Version `1.0.6` is in preparation on branch `release/v1.0.6` and has not been
+published.  It adds canonical third-party notices, the one-line runner, and the
+`install-all` and `uninstall-all` actions without changing accepted dashboard,
+chart, settings, schedule, database, or sidebar behavior.

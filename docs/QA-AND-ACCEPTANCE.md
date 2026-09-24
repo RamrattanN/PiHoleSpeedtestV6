@@ -173,6 +173,40 @@ remained operational.
 - clean install, adapter install and removal, uninstall, reinstall, reboot, and
   disposable-data purge pass on Raspberry Pi 3 ARM64.
 
+### Version 1.0.6 one-line workflow acceptance
+
+Automated tests exercise the runner, the rendered bootstrap, and the release
+publication validation against stubbed system commands and throwaway
+repositories.  Before version `1.0.6` replaces version `1.0.5`, the following
+must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.1`
+prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.1` with the exact
+one-line runner from `main`:
+
+- the runner reports the selected tag and downloads the bootstrap and checksum
+  from that prerelease only;
+- the one-line runner verifies the release bootstrap checksum, refuses root,
+  and runs `install-all` by default and `uninstall-all` for `uninstall`;
+- `install-all` upgrades the installed version `1.0.5` by a data-preserving
+  reinstall with measurement history and settings unchanged;
+- dashboard health, exactly one enabled collection timer, Pi-hole FTL and web
+  health, and the sidebar adapter manifest and pages are verified;
+- the printed dashboard, Overview, and Setup addresses open correctly;
+- a repeated `install-all` changes nothing;
+- `uninstall-all` removes the sidebar before the companion, restores the
+  original sidebar exactly, and preserves history, settings, and recovery
+  evidence;
+- a repeated `uninstall-all` changes nothing, and a following `install-all`
+  reuses the preserved data;
+- a sidebar failure leaves the companion, data, and Pi-hole web files intact
+  and prints the failed phase and recovery commands.
+
+Preserve the runner output, dashboard health responses, timer listings, adapter
+manifests, and recovery evidence as acceptance evidence.  After acceptance,
+change no source or asset.  The stable `v1.0.6` release must then be published
+from the same commit with byte-identical bootstrap assets, and the ordinary
+command without the override must be verified to resolve it before the curl
+workflow issue is closed.
+
 ## Stop conditions
 
 Stop immediately if Pi-hole DNS health changes, the admin interface becomes
