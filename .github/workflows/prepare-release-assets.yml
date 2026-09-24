@@ -1,0 +1,303 @@
+name: Prepare release assets
+
+# Read-only preparation and validation of the version 1.0.6 release assets.
+#
+# The stage is derived from tracked files:
+#   A  the 1.0.6 bundle is absent: build it twice and upload it as a CI artifact;
+#   B  the bundle is committed but the bootstrap is not 1.0.6: verify the
+#      bundle, render the bootstrap, and upload it as a CI artifact;
+#   C  both are committed: verify everything, dry-run the guarded publication
+#      script, and upload the verified bootstrap as a CI artifact.
+#
+# This workflow never pushes, tags, creates or edits a GitHub Release, uploads
+# release assets, installs packages, or runs Docker.  Its only output is a
+# temporary GitHub Actions artifact.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prepare-release-assets-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  RELEASE_VERSION: "1.0.6"
+  RELEASE_BRANCH: release/v1.0.6-assets-2
+  REVIEWED_BASE: e3582b254b8a259ab8e9375ea06038aa6f00336e
+  PRERELEASE_TAG: v1.0.6-rc.1
+  REPOSITORY: RamrattanN/PiHoleSpeedtestV6
+  BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
+  BOOTSTRAP: pihole-speedtest-v6-bootstrap.sh
+
+jobs:
+  prepare:
+    if: github.head_ref == 'release/v1.0.6-assets-2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the exact pull request commit
+        uses: actions/checkout@v4
+        timeout-minutes: 3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Guard branch, base, scope, and cleanliness
+        timeout-minutes: 2
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$HEAD_REF" != "$RELEASE_BRANCH" ]; then
+            echo "::error::Only $RELEASE_BRANCH may prepare release assets."
+            exit 1
+          fi
+          if [ "$BASE_SHA" != "$REVIEWED_BASE" ]; then
+            echo "::error::main moved from the reviewed baseline $REVIEWED_BASE to $BASE_SHA."
+            exit 1
+          fi
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git merge-base --is-ancestor "$REVIEWED_BASE" HEAD
+          git diff --name-only "$REVIEWED_BASE" HEAD > "$RUNNER_TEMP/changed.txt"
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/prepare-release-assets.yml|\
+              tests/test_release_asset_preparation.py|\
+              tests/test_release_publication.py|\
+              README.md|DEPLOY.md|\
+              docs/CURL-INSTALLATION.md|docs/KANBAN.md|docs/QA-AND-ACCEPTANCE.md|\
+              docs/ROADMAP.md|docs/WIKI.md|\
+              release/pihole-speedtest-v6-1.0.6.tar.gz|\
+              release/pihole-speedtest-v6-1.0.6.tar.gz.sha256|\
+              release/pihole-speedtest-v6-bootstrap.sh) ;;
+              *) echo "::error::Changed file is outside the release allowlist: $path"; exit 1 ;;
+            esac
+          done < "$RUNNER_TEMP/changed.txt"
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::The checked-out tree is not clean."
+            exit 1
+          fi
+          grep -Fqx "version = \"$RELEASE_VERSION\"" pyproject.toml
+          grep -Fqx "version=\"$RELEASE_VERSION\"" release/bootstrap.template.sh
+          cat "$RUNNER_TEMP/changed.txt"
+
+      - name: Determine the release stage
+        id: stage
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          bootstrap_is_release=0
+          if grep -Fqx "version=\"$RELEASE_VERSION\"" "release/$BOOTSTRAP"; then
+            bootstrap_is_release=1
+          fi
+          if [ ! -e "release/$BUNDLE" ] && [ ! -e "release/$BUNDLE.sha256" ]; then
+            if [ "$bootstrap_is_release" -eq 1 ]; then
+              echo "::error::A $RELEASE_VERSION bootstrap is committed without its bundle."
+              exit 1
+            fi
+            stage=A
+          elif [ -f "release/$BUNDLE" ] && [ -f "release/$BUNDLE.sha256" ]; then
+            if [ "$bootstrap_is_release" -eq 1 ]; then stage=C; else stage=B; fi
+          else
+            echo "::error::The bundle and its checksum must be committed together."
+            exit 1
+          fi
+          echo "stage=$stage" >> "$GITHUB_OUTPUT"
+          echo "Release stage: $stage"
+
+      - name: "Stage A: build the bundle twice from the reviewed source commit"
+        if: steps.stage.outputs.stage == 'A'
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          source_commit="$(git rev-parse HEAD)"
+          for build in first second; do
+            scripts/build_release_assets.sh \
+              --source-commit "$source_commit" \
+              --archive-commit "$source_commit" \
+              --output-directory "$RUNNER_TEMP/$build"
+          done
+          cmp "$RUNNER_TEMP/first/$BUNDLE" "$RUNNER_TEMP/second/$BUNDLE"
+          cmp "$RUNNER_TEMP/first/$BUNDLE.sha256" "$RUNNER_TEMP/second/$BUNDLE.sha256"
+          for build in first second; do
+            (cd "$RUNNER_TEMP/$build" && sha256sum --check --strict "$BUNDLE.sha256")
+          done
+          echo "SOURCE_COMMIT=$source_commit" >> "$GITHUB_ENV"
+          echo "BUNDLE_DIR=$RUNNER_TEMP/first" >> "$GITHUB_ENV"
+
+      - name: "Stages B and C: verify and deterministically rebuild the committed bundle"
+        if: steps.stage.outputs.stage != 'A'
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          (cd release && sha256sum --check --strict "$BUNDLE.sha256")
+          test "$(grep -c '' "release/$BUNDLE.sha256")" -eq 1
+          grep -Eqx "[0-9a-f]{64}  ${BUNDLE//./\\.}" "release/$BUNDLE.sha256"
+          source_commit="$(tar -xzOf "release/$BUNDLE" "pihole-speedtest-v6-$RELEASE_VERSION/release/SOURCE-COMMIT")"
+          [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]]
+          asset_commit="$(git log --diff-filter=A --format=%H -- "release/$BUNDLE" | tail -n 1)"
+          [[ "$asset_commit" =~ ^[0-9a-f]{40}$ ]]
+          git merge-base --is-ancestor "$REVIEWED_BASE" "$source_commit"
+          git merge-base --is-ancestor "$source_commit" "$asset_commit"
+          test "$(git rev-parse "$asset_commit^")" = "$source_commit"
+          test "$(git diff --name-only "$source_commit" "$asset_commit" | LC_ALL=C sort | tr '\n' ' ')" = \
+            "release/$BUNDLE release/$BUNDLE.sha256 "
+          git worktree add --detach "$RUNNER_TEMP/source" "$source_commit"
+          for build in first second; do
+            "$RUNNER_TEMP/source/scripts/build_release_assets.sh" \
+              --source-commit "$source_commit" \
+              --archive-commit "$source_commit" \
+              --output-directory "$RUNNER_TEMP/$build"
+            cmp "$RUNNER_TEMP/$build/$BUNDLE" "release/$BUNDLE"
+            cmp "$RUNNER_TEMP/$build/$BUNDLE.sha256" "release/$BUNDLE.sha256"
+          done
+          git worktree remove --force "$RUNNER_TEMP/source"
+          echo "SOURCE_COMMIT=$source_commit" >> "$GITHUB_ENV"
+          echo "ASSET_COMMIT=$asset_commit" >> "$GITHUB_ENV"
+          echo "BUNDLE_DIR=$RUNNER_TEMP/first" >> "$GITHUB_ENV"
+
+      - name: Audit the bundle contents
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          root="pihole-speedtest-v6-$RELEASE_VERSION"
+          tar -tzf "$BUNDLE_DIR/$BUNDLE" > "$RUNNER_TEMP/members.txt"
+          for member in LICENSE THIRD_PARTY_NOTICES.md web/chart.min.js release/SOURCE-COMMIT \
+            install.sh release/bootstrap.template.sh
+          do
+            grep -Fqx "$root/$member" "$RUNNER_TEMP/members.txt" ||
+              { echo "::error::Bundle is missing $member"; exit 1; }
+          done
+          if grep -Eq "^$root/release/(.*\.tar\.gz(\.sha256)?|$BOOTSTRAP)\$" "$RUNNER_TEMP/members.txt"; then
+            echo "::error::Bundle contains a generated release archive or rendered bootstrap."
+            exit 1
+          fi
+          if grep -Eq "^$root/data(/|\$)|admin\.token" "$RUNNER_TEMP/members.txt"; then
+            echo "::error::Bundle contains local data or a token file."
+            exit 1
+          fi
+          if grep -Ev "^$root(/|\$)" "$RUNNER_TEMP/members.txt"; then
+            echo "::error::Bundle contains entries outside $root."
+            exit 1
+          fi
+          test "$(tar -xzOf "$BUNDLE_DIR/$BUNDLE" "$root/release/SOURCE-COMMIT")" = "$SOURCE_COMMIT"
+          mkdir "$RUNNER_TEMP/extracted"
+          tar -xzf "$BUNDLE_DIR/$BUNDLE" -C "$RUNNER_TEMP/extracted"
+          if grep -rIEn '\b(10(\.[0-9]{1,3}){3}|192\.168(\.[0-9]{1,3}){2}|172\.(1[6-9]|2[0-9]|3[01])(\.[0-9]{1,3}){2})\b' \
+            "$RUNNER_TEMP/extracted"
+          then
+            echo "::error::Bundle contains a private IPv4 address."
+            exit 1
+          fi
+          echo "BUNDLE_SHA256=$(sha256sum "$BUNDLE_DIR/$BUNDLE" | cut -c1-64)" >> "$GITHUB_ENV"
+
+      - name: "Stage A: stage the bundle artifact"
+        if: steps.stage.outputs.stage == 'A'
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/artifact"
+          cp "$BUNDLE_DIR/$BUNDLE" "$BUNDLE_DIR/$BUNDLE.sha256" "$RUNNER_TEMP/artifact/"
+          test "$(ls -A "$RUNNER_TEMP/artifact" | LC_ALL=C sort | tr '\n' ' ')" = "$BUNDLE $BUNDLE.sha256 "
+          test -z "$(git ls-files -- data/)"
+
+      - name: "Stages B and C: render and verify the bootstrap"
+        if: steps.stage.outputs.stage != 'A'
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          rendered="$RUNNER_TEMP/rendered/$BOOTSTRAP"
+          mkdir -p "$RUNNER_TEMP/rendered"
+          scripts/render_release_bootstrap.sh \
+            --source-commit "$SOURCE_COMMIT" \
+            --asset-commit "$ASSET_COMMIT" \
+            --bundle-sha256 "$BUNDLE_SHA256" \
+            --output "$rendered"
+          bash -n "$rendered"
+          if grep -Eq '@(SOURCE_COMMIT|ASSET_COMMIT|BUNDLE_SHA256)@' "$rendered"; then
+            echo "::error::The rendered bootstrap contains a template placeholder."
+            exit 1
+          fi
+          grep -Fqx "repository=\"$REPOSITORY\"" "$rendered"
+          grep -Fqx "version=\"$RELEASE_VERSION\"" "$rendered"
+          grep -Fqx "source_commit=\"$SOURCE_COMMIT\"" "$rendered"
+          grep -Fqx "asset_commit=\"$ASSET_COMMIT\"" "$rendered"
+          grep -Fqx "bundle_sha256=\"$BUNDLE_SHA256\"" "$rendered"
+          grep -Fqx 'bundle_url="https://raw.githubusercontent.com/${repository}/${asset_commit}/release/${bundle_name}"' "$rendered"
+          mkdir "$RUNNER_TEMP/artifact"
+          cp "$rendered" "$RUNNER_TEMP/artifact/$BOOTSTRAP"
+          (cd "$RUNNER_TEMP/artifact" && sha256sum "$BOOTSTRAP" > "$BOOTSTRAP.sha256")
+          test "$(ls -A "$RUNNER_TEMP/artifact" | LC_ALL=C sort | tr '\n' ' ')" = "$BOOTSTRAP $BOOTSTRAP.sha256 "
+          test -z "$(git ls-files -- data/)"
+          echo "BOOTSTRAP_SHA256=$(cut -c1-64 "$RUNNER_TEMP/artifact/$BOOTSTRAP.sha256")" >> "$GITHUB_ENV"
+
+      - name: "Stage C: verify the committed bootstrap and dry-run publication"
+        if: steps.stage.outputs.stage == 'C'
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          cmp "release/$BOOTSTRAP" "$RUNNER_TEMP/artifact/$BOOTSTRAP"
+          test "$(git log -1 --format=%H -- "release/$BOOTSTRAP")" = "$(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD^)" = "$ASSET_COMMIT"
+          test "$(git diff --name-only "$ASSET_COMMIT" HEAD)" = "release/$BOOTSTRAP"
+          test "$(git ls-files --stage -- "release/$BOOTSTRAP" | cut -d' ' -f1)" = "100755"
+          scripts/publish_github_release.sh \
+            --kind prerelease \
+            --tag "$PRERELEASE_TAG" \
+            --expected-commit "$(git rev-parse HEAD)" \
+            --bootstrap-sha256 "$BOOTSTRAP_SHA256" \
+            --asset-dir "$RUNNER_TEMP/artifact" | tee "$RUNNER_TEMP/dry-run.txt"
+          grep -Fqx "Validation only.  Nothing was tagged, created, or uploaded." "$RUNNER_TEMP/dry-run.txt"
+          echo "RELEASE_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: "Stage C: run the complete test and shell validation suites"
+        if: steps.stage.outputs.stage == 'C'
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          PYTHONPATH=src python3 -m unittest discover -s tests -v
+          python3 -m compileall -q src tests
+          for script in install.sh mod test scripts/*.sh release/bootstrap.template.sh "release/$BOOTSTRAP"; do
+            bash -n "$script"
+          done
+          git diff --check "$REVIEWED_BASE" HEAD
+          test -z "$(git status --porcelain)"
+
+      - name: Upload the temporary CI artifact
+        uses: actions/upload-artifact@v4
+        timeout-minutes: 3
+        with:
+          name: v1.0.6-${{ steps.stage.outputs.stage == 'A' && 'bundle-stage' || steps.stage.outputs.stage == 'B' && 'bootstrap-stage' || 'release-validated' }}
+          path: ${{ runner.temp }}/artifact/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Write the preparation summary
+        if: always()
+        timeout-minutes: 1
+        env:
+          STAGE: ${{ steps.stage.outputs.stage }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          {
+            echo "## Version $RELEASE_VERSION release asset preparation"
+            echo
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Stage | ${STAGE:-not determined} |"
+            echo "| Pull request head | \`$HEAD_SHA\` |"
+            echo "| Source commit | \`${SOURCE_COMMIT:-n/a}\` |"
+            echo "| Bundle asset commit | \`${ASSET_COMMIT:-n/a}\` |"
+            echo "| Release commit | \`${RELEASE_COMMIT:-n/a}\` |"
+            echo "| Bundle SHA-256 | \`${BUNDLE_SHA256:-n/a}\` |"
+            echo "| Bootstrap SHA-256 | \`${BOOTSTRAP_SHA256:-n/a}\` |"
+            echo
+            echo "Nothing was tagged, released, published, or pushed by this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"

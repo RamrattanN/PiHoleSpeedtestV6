@@ -16,6 +16,13 @@ useful entry point rather than an independent source of truth.
   verification, preservation, rollback, and purge contract, plus the unpublished
   version `1.0.6` one-line runner, prerelease acceptance, release sequence,
   guarded release publication, and full-product actions.
+- [Removal and recovery](CURL-INSTALLATION.md#preservation-and-recovery) -
+  data-preserving uninstall, preserved history and settings, recovery evidence,
+  and the separate purge action.
+- [Troubleshooting](CURL-INSTALLATION.md#fail-closed-checks) - the checks that
+  stop installation and the recovery commands each failure prints.
+- [Backup status](../DEPLOY.md) - reset recovery backups exist; general backup
+  and restore controls remain open roadmap work.
 - [License](../LICENSE) - MIT licence for Ramrattan Pi-hole Speedtest.
 - [Third-Party Notices](../THIRD_PARTY_NOTICES.md) - licences applicable to
   incorporated components only.
@@ -42,10 +49,10 @@ useful entry point rather than an independent source of truth.
 
 ## Current approved baseline
 
-Version `0.1.0.dev4` is the owner-approved live Raspberry Pi and Pi-hole Web
-v6.6 integration baseline.  The companion service, collection timer, embedded
-dashboard, and independently reversible sidebar adapter have completed live
-acceptance.
+Historical: version `0.1.0.dev4` was the first owner-approved live Raspberry Pi
+and Pi-hole Web v6.6 integration baseline, where the companion service,
+collection timer, embedded dashboard, and independently reversible sidebar
+adapter first completed live acceptance.
 
 Version `1.0.5` is the installed and owner-approved production baseline.  It
 uses a 24-hour default window, responsive hourly grid, uniform bar geometry,
@@ -57,7 +64,10 @@ installed sidebar adapter.
 Its curl uninstall and reinstall acceptance preserved measurement history and
 settings, and the owner accepted the restored dashboard and sidebar.
 
-Version `1.0.6` is in preparation on branch `release/v1.0.6` and has not been
-published.  It adds canonical third-party notices, the one-line runner, and the
+Version `1.0.6` source is merged to `main` and has not been published.  It
+carries the accepted version `1.0.5` Pi-hole-aligned chart corrections
+unchanged and adds canonical third-party notices, the one-line runner, and the
 `install-all` and `uninstall-all` actions without changing accepted dashboard,
-chart, settings, schedule, database, or sidebar behavior.
+chart, settings, schedule, database, or sidebar behavior.  Its immutable
+release assets, `v1.0.6-rc.1` prerelease acceptance on the Raspberry Pi, and the
+stable release remain open.

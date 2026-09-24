@@ -39,8 +39,9 @@ unchanged.
 
 ## Version 1.0.6 convenience runner
 
-Not yet available: the runner is added to `main` and its release assets are
-published only as part of the approved `1.0.6` release.
+The runner is on `main`, but it cannot complete until a GitHub Release carries
+the verified version `1.0.6` bootstrap and its checksum.  Until then it stops
+safely at the download step without changing anything.
 
 ```bash
 curl -fsSL \

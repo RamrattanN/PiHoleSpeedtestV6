@@ -62,7 +62,18 @@ class ReleaseFixture:
 
     def git(self, *args):
         return subprocess.run(
-            ["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid", *args],
+            [
+                "git",
+                "-c",
+                "maintenance.auto=false",
+                "-c",
+                "gc.auto=0",
+                "-c",
+                "user.name=Test",
+                "-c",
+                "user.email=test@example.invalid",
+                *args,
+            ],
             cwd=self.repo,
             check=True,
             stdout=subprocess.PIPE,
