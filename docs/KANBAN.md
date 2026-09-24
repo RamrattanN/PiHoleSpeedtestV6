@@ -68,13 +68,17 @@ detailed acceptance criteria for active engineering work.
 - Pass version `1.0.5` curl uninstall and reinstall acceptance with measurement
   history and settings preserved; the owner accepted the restored dashboard and
   sidebar without defects.
+- Merge version `1.0.6` source to `main` through pull requests #4 and #1 with
+  canonical third-party notices, the one-line runner and its tagged prerelease
+  override, `install-all`, `uninstall-all`, guarded release publication, and
+  deferred Docker publication; GitHub CI passed on `main`.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Version `1.0.6` release preparation | Branch `release/v1.0.6` | Canonical third-party notices, one-line runner with tagged prerelease acceptance, `install-all`, `uninstall-all`, guarded release publication, documentation, and deferred Docker publication are implemented and awaiting owner review.  Not released: requires merge, `install.sh` on `main`, fresh immutable release assets, the `v1.0.6-rc.1` prerelease, Raspberry Pi 3 acceptance with `PIHOLE_SPEEDTEST_RELEASE_TAG`, then the stable `v1.0.6` release from the same commit and bytes |
+| Version `1.0.6` release assets | Branch `release/v1.0.6-assets` | Build the deterministic bundle and render the bootstrap in the guarded, read-only GitHub Actions preparation workflow; review and merge them.  Not released: the `v1.0.6-rc.1` prerelease, Raspberry Pi 3 acceptance with `PIHOLE_SPEEDTEST_RELEASE_TAG`, and the stable `v1.0.6` release from the same commit and bytes remain open |
 
 ## Backlog
 

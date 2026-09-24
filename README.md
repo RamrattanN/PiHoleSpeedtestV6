@@ -93,11 +93,13 @@ Docker deployment is not supported in this release; it is planned future work.
 
 Version `1.0.5` is the owner-approved production baseline.  It is installed on
 the verified Raspberry Pi with the companion, 15-minute collection timer, and
-Pi-hole sidebar adapter active.  Version `1.0.6` is in preparation and
-unpublished; it adds canonical third-party notices, the one-line runner, and
-the `install-all` and `uninstall-all` bootstrap actions without changing the
-dashboard, charts, settings, collection schedule, database, or sidebar
-appearance.  The product provides:
+Pi-hole sidebar adapter active.  Version `1.0.6` is prepared on `main` and
+unpublished, awaiting its release assets and Raspberry Pi prerelease
+acceptance.  It carries the accepted version `1.0.5` Pi-hole-aligned chart
+corrections unchanged and adds canonical third-party notices, the one-line
+runner, and the `install-all` and `uninstall-all` bootstrap actions without
+changing the dashboard, charts, settings, collection schedule, database, or
+sidebar appearance.  The product provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;

@@ -94,6 +94,9 @@
   history and settings preserved.
 - [x] Prepare version `1.0.6` source with canonical third-party notices, the
   one-line runner, and the `install-all` and `uninstall-all` actions.
+- [x] Merge version `1.0.6` source and `install.sh` to `main`.
+- [ ] Build, review, and commit the immutable version `1.0.6` bundle and
+  rendered bootstrap.
 - [ ] Publish a release bundle that carries `THIRD_PARTY_NOTICES.md` beside
   the product `LICENSE`.
 - [x] Add tagged prerelease selection to the runner and guarded GitHub
