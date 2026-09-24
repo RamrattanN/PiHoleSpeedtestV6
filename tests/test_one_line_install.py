@@ -298,16 +298,13 @@ class RunnerHarness:
         self.root = Path(root)
         self.bin = self.root / "bin"
         self.bin.mkdir()
-        self.served = self.root / "served"
-        self.served.mkdir()
+        self.releases = self.root / "releases"
+        self.served = self.releases / "latest" / "download"
+        self.served.mkdir(parents=True)
         self.log = self.root / "bootstrap.log"
+        self.url_log = self.root / "urls.log"
         self.bootstrap = self.served / "pihole-speedtest-v6-bootstrap.sh"
-        self.publish_bootstrap(
-            "#!/usr/bin/env bash\n"
-            'repository="RamrattanN/PiHoleSpeedtestV6"\n'
-            "# install-all|uninstall-all|install|uninstall\n"
-            f'echo "$*" >> "{self.log}"\n'
-        )
+        self.publish_bootstrap(self.fake_bootstrap())
         write_executable(
             self.bin / "curl",
             f"""
@@ -317,13 +314,15 @@ class RunnerHarness:
 
             args = sys.argv[1:]
             url = args[-1]
-            prefix = "https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/latest/download/"
+            with open({str(self.url_log)!r}, "a", encoding="utf-8") as log:
+                log.write(url + "\\n")
+            prefix = "https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/"
             if not url.startswith(prefix) or "--proto" not in args:
                 sys.exit(22)
-            source = {str(self.served)!r} + "/" + url[len(prefix):]
+            source = {str(self.releases)!r} + "/" + url[len(prefix):]
             try:
                 shutil.copyfile(source, args[args.index("--output") + 1])
-            except FileNotFoundError:
+            except (FileNotFoundError, IsADirectoryError):
                 sys.exit(22)
             """,
         )
@@ -335,18 +334,37 @@ class RunnerHarness:
             """,
         )
 
-    def publish_bootstrap(self, content, checksum=None):
-        self.bootstrap.write_text(content, encoding="utf-8")
+    def fake_bootstrap(self, version=VERSION):
+        return (
+            "#!/usr/bin/env bash\n"
+            'repository="RamrattanN/PiHoleSpeedtestV6"\n'
+            f'version="{version}"\n'
+            "# install-all|uninstall-all|install|uninstall\n"
+            f'echo "$*" >> "{self.log}"\n'
+        )
+
+    def publish_bootstrap(self, content, checksum=None, release="latest/download"):
+        directory = self.releases / release
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / "pihole-speedtest-v6-bootstrap.sh").write_text(content, encoding="utf-8")
         digest = checksum or hashlib.sha256(content.encode("utf-8")).hexdigest()
-        (self.served / "pihole-speedtest-v6-bootstrap.sh.sha256").write_text(
+        (directory / "pihole-speedtest-v6-bootstrap.sh.sha256").write_text(
             f"{digest}  pihole-speedtest-v6-bootstrap.sh\n", encoding="utf-8"
         )
 
-    def run(self, *args, uid="1000"):
+    def urls(self):
+        if not self.url_log.exists():
+            return []
+        return self.url_log.read_text(encoding="utf-8").splitlines()
+
+    def run(self, *args, uid="1000", tag=None):
         environment = dict(os.environ)
         environment["PATH"] = f"{self.bin}:{environment['PATH']}"
         environment["FAKE_UID"] = uid
         environment["TMPDIR"] = str(self.root)
+        environment.pop("PIHOLE_SPEEDTEST_RELEASE_TAG", None)
+        if tag is not None:
+            environment["PIHOLE_SPEEDTEST_RELEASE_TAG"] = tag
         return subprocess.run(
             ["bash", "-s", "--", *args],
             input=RUNNER.read_text(encoding="utf-8"),
@@ -380,9 +398,14 @@ class RunnerStaticTests(unittest.TestCase):
         self.assertTrue(runner.startswith("#!/usr/bin/env bash\n"))
         self.assertIn("set -euo pipefail", runner)
         self.assertIn(
-            'release_url="https://github.com/${repository}/releases/latest/download"',
+            'latest_release_url="https://github.com/${repository}/releases/latest/download"',
             runner,
         )
+        self.assertIn(
+            'tagged_release_url="https://github.com/${repository}/releases/download"',
+            runner,
+        )
+        self.assertIn('repository="RamrattanN/PiHoleSpeedtestV6"', runner)
         self.assertIn("--proto '=https' --tlsv1.2", runner)
         self.assertLess(
             code.index("sha256sum --check"), code.index('bash "$bootstrap"')
@@ -477,6 +500,157 @@ class RunnerBehaviourTests(unittest.TestCase):
         self.harness.run()
 
         self.assertEqual(list(Path(self.temporary.name).glob("pihole-speedtest-install.*")), [])
+
+
+class RunnerReleaseTagTests(unittest.TestCase):
+    RELEASES = "https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/"
+    ASSETS = ("pihole-speedtest-v6-bootstrap.sh.sha256", "pihole-speedtest-v6-bootstrap.sh")
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.harness = RunnerHarness(self.temporary.name)
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def expected_urls(self, release):
+        return [f"{self.RELEASES}{release}/{asset}" for asset in self.ASSETS]
+
+    def test_default_and_empty_tag_use_latest_stable_release(self):
+        self.assertEqual(self.harness.run().returncode, 0)
+        self.assertEqual(self.harness.run(tag="").returncode, 0)
+
+        self.assertEqual(self.harness.urls(), self.expected_urls("latest/download") * 2)
+        self.assertEqual(self.harness.calls(), ["install-all", "install-all"])
+
+    def test_prerelease_tag_uses_exact_tagged_release(self):
+        release = "download/v1.0.6-rc.1"
+        self.harness.publish_bootstrap(self.harness.fake_bootstrap("1.0.6"), release=release)
+        result = self.harness.run(tag="v1.0.6-rc.1")
+
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("explicitly selected release v1.0.6-rc.1", result.stdout)
+        self.assertEqual(self.harness.urls(), self.expected_urls(release))
+        self.assertEqual(self.harness.calls(), ["install-all"])
+
+    def test_stable_tag_uses_exact_tagged_release(self):
+        release = "download/v1.0.6"
+        self.harness.publish_bootstrap(self.harness.fake_bootstrap("1.0.6"), release=release)
+        result = self.harness.run(tag="v1.0.6")
+
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.harness.urls(), self.expected_urls(release))
+
+    def test_tagged_release_keeps_actions_and_options(self):
+        release = "download/v1.0.6-rc.1"
+        self.harness.publish_bootstrap(self.harness.fake_bootstrap("1.0.6"), release=release)
+        self.assertEqual(self.harness.run("uninstall", tag="v1.0.6-rc.1").returncode, 0)
+        self.assertEqual(
+            self.harness.run(
+                "install", "--interval-minutes", "60",
+                "--pihole-origin", "https://pihole.example.net",
+                tag="v1.0.6-rc.1",
+            ).returncode,
+            0,
+        )
+
+        self.assertEqual(
+            self.harness.calls(),
+            [
+                "uninstall-all",
+                "install-all --interval-minutes 60 --pihole-origin https://pihole.example.net",
+            ],
+        )
+
+    def test_invalid_tags_fail_before_any_request_or_execution(self):
+        invalid = [
+            "1.0.6",
+            "v1.0",
+            "v01.0.6",
+            "v1.0.6-rc.0",
+            "v1.0.6-beta.1",
+            "v1.0.6 ",
+            " v1.0.6",
+            "v1.0.6 v1.0.7",
+            "v1.0.6\nv1.0.7",
+            "v1.0.6/",
+            "v1.0.6/../latest",
+            "../v1.0.6",
+            "..",
+            "v1.0.6;id",
+            "v1.0.6$(id)",
+            "`id`",
+            "v1.0.6|cat",
+            "v1.0.6&",
+            "v1.0.6?x=1",
+            "v1.0.6#fragment",
+            "v1.0.6%2F..",
+            "latest",
+            "https://example.com/v1.0.6",
+            "//example.com/v1.0.6",
+        ]
+        for tag in invalid:
+            with self.subTest(tag=tag):
+                result = self.harness.run(tag=tag)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertIn("PIHOLE_SPEEDTEST_RELEASE_TAG must be a release tag", result.stdout)
+        self.assertEqual(self.harness.urls(), [])
+        self.assertEqual(self.harness.calls(), [])
+
+    def test_tagged_bootstrap_must_match_the_tag_version(self):
+        release = "download/v1.0.6"
+        self.harness.publish_bootstrap(self.harness.fake_bootstrap("1.0.5"), release=release)
+        result = self.harness.run(tag="v1.0.6")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("does not match release v1.0.6", result.stdout)
+        self.assertEqual(self.harness.calls(), [])
+
+    def test_missing_tagged_release_executes_nothing(self):
+        result = self.harness.run(tag="v9.9.9")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Download failed", result.stdout)
+        self.assertEqual(self.harness.calls(), [])
+
+    def test_documented_pipeline_forms_pass_the_tag_to_bash(self):
+        release = "download/v1.0.6-rc.1"
+        self.harness.publish_bootstrap(self.harness.fake_bootstrap("1.0.6"), release=release)
+        environment = dict(os.environ)
+        environment["PATH"] = f"{self.harness.bin}:{environment['PATH']}"
+        environment["TMPDIR"] = str(self.harness.root)
+        environment["RUNNER"] = str(RUNNER)
+        environment.pop("PIHOLE_SPEEDTEST_RELEASE_TAG", None)
+        for pipeline in (
+            'cat "$RUNNER" | PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.1 bash',
+            'cat "$RUNNER" |\n  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.1 \\\n  bash -s -- uninstall',
+        ):
+            result = subprocess.run(
+                ["/bin/sh", "-c", pipeline],
+                env=environment,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=60,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout)
+
+        self.assertEqual(self.harness.calls(), ["install-all", "uninstall-all"])
+        self.assertEqual(self.harness.urls(), self.expected_urls(release) * 2)
+
+    def test_truncated_bootstrap_executes_nothing(self):
+        content = self.harness.fake_bootstrap()
+        release = "download/v1.0.6-rc.1"
+        self.harness.publish_bootstrap(
+            content[: len(content) // 2],
+            checksum=hashlib.sha256(content.encode("utf-8")).hexdigest(),
+            release=release,
+        )
+        result = self.harness.run(tag="v1.0.6-rc.1")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("checksum verification failed", result.stdout)
+        self.assertEqual(self.harness.calls(), [])
 
 
 class BootstrapStaticTests(unittest.TestCase):

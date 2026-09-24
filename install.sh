@@ -4,8 +4,13 @@
 #   curl -fsSL https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh | bash -s -- uninstall
 #
-# Downloads the production bootstrap and its published checksum from the latest
-# GitHub Release, verifies the bootstrap, and runs it as the current user.  The
+# Prerelease acceptance selects one exact release tag instead of the latest
+# stable release:
+#
+#   curl -fsSL https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh | PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.1 bash
+#
+# Downloads the production bootstrap and its published checksum from the
+# selected GitHub Release, verifies the bootstrap, and runs it as the current user.  The
 # bootstrap verifies the complete release bundle from an immutable commit and
 # uses sudo only for privileged phases.  The whole script is read before main
 # runs, so a truncated download executes nothing.
@@ -13,7 +18,10 @@ set -euo pipefail
 
 repository="RamrattanN/PiHoleSpeedtestV6"
 asset_name="pihole-speedtest-v6-bootstrap.sh"
-release_url="https://github.com/${repository}/releases/latest/download"
+latest_release_url="https://github.com/${repository}/releases/latest/download"
+tagged_release_url="https://github.com/${repository}/releases/download"
+# vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-rc.N, without leading zeros.
+release_tag_pattern='^v(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})(-rc\.[1-9][0-9]{0,3})?$'
 runner_url="https://raw.githubusercontent.com/${repository}/main/install.sh"
 max_bytes=1048576
 work_dir=""
@@ -28,6 +36,9 @@ Actions:
              --companion-url URL, and --interval-minutes NUMBER.
   uninstall  Remove the sidebar pages and the companion.  Measurement history,
              settings, backups, and recovery evidence are preserved.
+
+Set PIHOLE_SPEEDTEST_RELEASE_TAG to one release tag, such as v1.0.6-rc.1, to
+run that exact release instead of the latest stable release.
 
 Permanent data deletion is a separate verified action.  See
 https://github.com/${repository}/blob/main/docs/CURL-INSTALLATION.md
@@ -77,6 +88,19 @@ main() {
     *) echo "Unknown action: $action" >&2; usage >&2; exit 2 ;;
   esac
 
+  release_tag="${PIHOLE_SPEEDTEST_RELEASE_TAG:-}"
+  expected_version=""
+  if [ -z "$release_tag" ]; then
+    release_url="$latest_release_url"
+  elif [[ "$release_tag" =~ $release_tag_pattern ]]; then
+    release_url="$tagged_release_url/$release_tag"
+    expected_version="${release_tag#v}"
+    expected_version="${expected_version%%-rc.*}"
+    echo "Using explicitly selected release $release_tag instead of the latest stable release."
+  else
+    fail "PIHOLE_SPEEDTEST_RELEASE_TAG must be a release tag such as v1.0.6 or v1.0.6-rc.1."
+  fi
+
   if [ "$(id -u)" -eq 0 ]; then
     fail "Run this command as a regular user with sudo rights, not as root."
   fi
@@ -116,6 +140,11 @@ main() {
   then
     fail "Verified bootstrap is not a rendered Pi-hole Speedtest release bootstrap."
   fi
+  if [ -n "$expected_version" ] &&
+    ! grep -Fqx "version=\"$expected_version\"" "$bootstrap"
+  then
+    fail "Verified bootstrap does not match release $release_tag."
+  fi
 
   echo "Verified production bootstrap: $expected_sha256"
   status=0
@@ -123,7 +152,7 @@ main() {
   if [ "$status" -ne 0 ]; then
     echo >&2
     echo "The $action action stopped with status $status.  User data was not deleted." >&2
-    echo "Review the message above, then retry: curl -fsSL $runner_url | bash -s -- $action" >&2
+    echo "Review the message above, then retry: curl -fsSL $runner_url | ${release_tag:+PIHOLE_SPEEDTEST_RELEASE_TAG=$release_tag }bash -s -- $action" >&2
     echo "Checksum-pinned commands: https://github.com/${repository}/blob/main/docs/CURL-INSTALLATION.md" >&2
   fi
   exit "$status"
