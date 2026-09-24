@@ -132,6 +132,36 @@ def approved_override_violations(read_bytes):
     )
 
 
+SHALLOW_HISTORY_REASON = (
+    "Full Git history is required for release provenance; the authoritative "
+    "prepare-release-assets workflow performs this check with fetch-depth: 0."
+)
+
+
+def require_full_history(repo):
+    shallow = git("rev-parse", "--is-shallow-repository", cwd=repo).stdout.strip()
+    if shallow == "true":
+        raise unittest.SkipTest(SHALLOW_HISTORY_REASON)
+    if shallow != "false":
+        raise AssertionError(f"Unexpected shallow-repository state: {shallow!r}")
+
+
+def verify_bundle_lineage(repo, bundle_relative, source_commit):
+    """Return the commit that added the bundle after proving its parent is the source."""
+    require_full_history(repo)
+    added = git("log", "--diff-filter=A", "--format=%H", "--", bundle_relative, cwd=repo)
+    commits = added.stdout.split()
+    if not commits:
+        raise AssertionError(f"{bundle_relative} was never added in this history.")
+    asset_commit = commits[-1]
+    parent = git("rev-parse", f"{asset_commit}^", cwd=repo).stdout.strip()
+    if parent != source_commit:
+        raise AssertionError(
+            f"Bundle commit {asset_commit} has parent {parent}, not source {source_commit}."
+        )
+    return asset_commit
+
+
 def bootstrap_value(text, name):
     match = re.search(rf'^{name}="([^"]*)"$', text, flags=re.MULTILINE)
     return match.group(1) if match else None
@@ -293,13 +323,8 @@ class ReleaseAssetTests(unittest.TestCase):
             with self.subTest(member=name):
                 self.assertEqual(PRIVATE_IPV4.findall(text), [])
 
-    def test_bundle_source_commit_is_its_parent_when_history_is_available(self):
-        relative = f"release/{BUNDLE.name}"
-        added = git("log", "--diff-filter=A", "--format=%H", "--", relative, check=False)
-        commits = added.stdout.split()
-        if added.returncode or not commits:
-            self.skipTest("Bundle history is unavailable in this checkout.")
-        self.assertEqual(git("rev-parse", f"{commits[-1]}^").stdout.strip(), self.marker)
+    def test_bundle_source_commit_is_its_parent(self):
+        verify_bundle_lineage(ROOT, f"release/{BUNDLE.name}", self.marker)
 
     def test_rendered_bootstrap_references_this_bundle(self):
         text = BOOTSTRAP.read_text(encoding="utf-8")
@@ -314,9 +339,79 @@ class ReleaseAssetTests(unittest.TestCase):
         self.assertRegex(bootstrap_value(text, "asset_commit"), r"^[0-9a-f]{40}$")
         self.assertEqual(PRIVATE_IPV4.findall(text), [])
         subprocess.run(["bash", "-n", str(BOOTSTRAP)], check=True)
-        added = git("log", "--diff-filter=A", "--format=%H", "--", f"release/{BUNDLE.name}", check=False)
-        if added.returncode == 0 and added.stdout.split():
-            self.assertEqual(bootstrap_value(text, "asset_commit"), added.stdout.split()[-1])
+
+    def test_rendered_bootstrap_asset_commit_is_the_bundle_commit(self):
+        text = BOOTSTRAP.read_text(encoding="utf-8")
+        if bootstrap_value(text, "version") != RELEASE_VERSION:
+            self.skipTest("The version 1.0.6 bootstrap has not been rendered yet.")
+        asset_commit = verify_bundle_lineage(ROOT, f"release/{BUNDLE.name}", self.marker)
+        self.assertEqual(bootstrap_value(text, "asset_commit"), asset_commit)
+
+
+class BundleLineageCheckTests(unittest.TestCase):
+    """Exercise the provenance helper on full-history and shallow repositories."""
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.repo = Path(self.temporary.name) / "repo"
+        (self.repo / "release").mkdir(parents=True)
+        self.fixture_git("init", "-q")
+        (self.repo / "source.txt").write_text("source\n", encoding="utf-8")
+        self.source = self.commit("source")
+        (self.repo / "release" / "bundle.tar.gz").write_bytes(b"bundle")
+        self.asset = self.commit("bundle")
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def fixture_git(self, *args, cwd=None):
+        return subprocess.run(
+            [
+                "git",
+                "-c",
+                "maintenance.auto=false",
+                "-c",
+                "gc.auto=0",
+                "-c",
+                "user.name=Test",
+                "-c",
+                "user.email=test@example.invalid",
+                *args,
+            ],
+            cwd=cwd or self.repo, check=True, stdout=subprocess.PIPE, text=True,
+        ).stdout.strip()
+
+    def commit(self, message):
+        self.fixture_git("add", "-A")
+        self.fixture_git("commit", "-q", "-m", message)
+        return self.fixture_git("rev-parse", "HEAD")
+
+    def test_full_history_runs_the_provenance_assertion(self):
+        self.assertEqual(
+            verify_bundle_lineage(self.repo, "release/bundle.tar.gz", self.source), self.asset
+        )
+
+    def test_invalid_full_history_lineage_fails(self):
+        (self.repo / "source.txt").write_text("later\n", encoding="utf-8")
+        later = self.commit("later")
+        with self.assertRaisesRegex(AssertionError, "not source"):
+            verify_bundle_lineage(self.repo, "release/bundle.tar.gz", later)
+        with self.assertRaisesRegex(AssertionError, "was never added"):
+            verify_bundle_lineage(self.repo, "release/other.tar.gz", self.source)
+
+    def test_git_errors_fail_instead_of_skipping(self):
+        with self.assertRaises(subprocess.CalledProcessError):
+            verify_bundle_lineage(Path(self.temporary.name), "release/bundle.tar.gz", self.source)
+
+    def test_shallow_repository_skips_with_the_explicit_reason(self):
+        shallow = Path(self.temporary.name) / "shallow"
+        self.fixture_git(
+            "-c", "protocol.file.allow=always", "clone", "-q", "--depth", "1",
+            self.repo.resolve().as_uri(), str(shallow), cwd=self.temporary.name,
+        )
+        with self.assertRaises(unittest.SkipTest) as raised:
+            verify_bundle_lineage(shallow, "release/bundle.tar.gz", self.source)
+        self.assertEqual(str(raised.exception), SHALLOW_HISTORY_REASON)
 
 
 class PrepareWorkflowSafetyTests(unittest.TestCase):
@@ -335,7 +430,7 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
         self.assertNotRegex(self.code, r"\bwrite\b")
         self.assertNotIn("secrets.", self.code)
         self.assertIn("persist-credentials: false", self.code)
-        self.assertIn("if: github.head_ref == 'release/v1.0.6-assets'", self.code)
+        self.assertIn("if: github.head_ref == 'release/v1.0.6-assets-2'", self.code)
         self.assertIn(f"REVIEWED_BASE: {REVIEWED_BASE}", self.code)
 
     def test_workflow_cannot_push_tag_release_publish_or_install(self):
@@ -462,13 +557,13 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
         self.git("commit", "-q", "--allow-empty", "-m", message)
         return self.git("rev-parse", "HEAD")
 
-    def run_step(self, name, head_ref="release/v1.0.6-assets", base=None):
+    def run_step(self, name, head_ref="release/v1.0.6-assets-2", base=None):
         output = self.runner_temp / "github_output"
         output.write_text("", encoding="utf-8")
         environment = dict(os.environ)
         environment.update(
             RELEASE_VERSION=RELEASE_VERSION,
-            RELEASE_BRANCH="release/v1.0.6-assets",
+            RELEASE_BRANCH="release/v1.0.6-assets-2",
             REVIEWED_BASE=self.base,
             BUNDLE=f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz",
             BOOTSTRAP="pihole-speedtest-v6-bootstrap.sh",
@@ -499,10 +594,13 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
         self.assertEqual(self.guard().returncode, 0)
 
     def test_guard_rejects_the_wrong_branch(self):
-        result = self.guard(head_ref="feature/other")
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("Only release/v1.0.6-assets may prepare release assets", result.stdout)
+        for head_ref in ("feature/other", "release/v1.0.6-assets", "release/v1.0.6-assets-3"):
+            with self.subTest(head_ref=head_ref):
+                result = self.guard(head_ref=head_ref)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    "Only release/v1.0.6-assets-2 may prepare release assets", result.stdout
+                )
 
     def test_guard_rejects_a_changed_base(self):
         result = self.guard(base="f" * 40)
