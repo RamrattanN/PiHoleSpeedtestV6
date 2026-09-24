@@ -31,13 +31,15 @@ detailed acceptance criteria for active engineering work.
   verified.
 - Publish version `1.0.1` source, pass GitHub CI run 50, and publish its
   deterministic bundle plus checksum-pinned bootstrap.
+- Correct mixed-cadence bar widths so every timestamp column retains a subtle
+  delimiter, and publish the installed runtime version discreetly in Setup.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Production chart-gap correction | Version `1.0.1` | Remove synthetic zero points, preserve blank outage spans, pass CI, and complete owner visual acceptance |
+| Production `1.0.2` acceptance | Version `1.0.2` | Verify adaptive bar spacing, the Setup version label, blank outage spans, and collection continuity on Raspberry Pi 3 |
 
 ## Backlog
 

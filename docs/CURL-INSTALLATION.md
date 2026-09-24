@@ -2,7 +2,7 @@
 
 ## Status
 
-Version `1.0.1` is the production maintenance release.  Its immutable bundle and
+Version `1.0.2` is the production maintenance release.  Its immutable bundle and
 checksum-pinned bootstrap are published for Raspberry Pi installation,
 adapter management, and data-preserving removal.  Reboot, interrupted-install,
 and explicit purge acceptance remain tracked in issue #3.

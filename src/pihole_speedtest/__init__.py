@@ -1,3 +1,3 @@
 """Pi-hole Speedtest v6 companion."""
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"

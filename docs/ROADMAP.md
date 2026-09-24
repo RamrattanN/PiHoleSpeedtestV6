@@ -77,6 +77,8 @@
 - [ ] Complete owner acceptance of production maintenance version `1.0.1`,
   which leaves substantial collection outages blank without inserting
   synthetic rows into measurement history.
+- [ ] Complete owner acceptance of version `1.0.2` bar delimiters and the
+  runtime-derived Setup version label.
 - [ ] Prove Pi-hole update failure isolation on the live service boundary.
 
 ## Release

@@ -107,6 +107,21 @@ function chartBarSpacing(timeline, xPositions) {
     : (spacings[middle - 1] + spacings[middle]) / 2;
 }
 
+function chartBarGroupWidth(timeline, xPositions, index, measuredSpacing) {
+  const localSpacings = [];
+  for (const neighbor of [index - 1, index + 1]) {
+    if (neighbor < 0 || neighbor >= xPositions.length) continue;
+    const elapsed = Math.abs(timeline.timestamps[index] - timeline.timestamps[neighbor]);
+    if (!Number.isFinite(elapsed) || elapsed <= 0 || elapsed > timeline.gapThresholdMs) continue;
+    const spacing = Math.abs(xPositions[index] - xPositions[neighbor]);
+    if (spacing > 0) localSpacings.push(spacing);
+  }
+  const availableSpacing = localSpacings.length
+    ? Math.min(measuredSpacing, ...localSpacings)
+    : measuredSpacing;
+  return Math.max(1, Math.min(18, availableSpacing * 0.72));
+}
+
 function drawBarGroup(context, x, chartBottom, bars, groupWidth) {
   const heights = bars.map((bar) => bar.height);
   const nearlyEqual = Math.max(...heights) - Math.min(...heights) <= 3;
@@ -193,8 +208,8 @@ function drawChart(records, options) {
 
   if (chartMode === "bar") {
     const measuredSpacing = chartBarSpacing(timeline, xPositions);
-    const groupWidth = Math.max(1, Math.min(18, measuredSpacing * 0.76));
     plottedRecords.forEach((record, index) => {
+      const groupWidth = chartBarGroupWidth(timeline, xPositions, index, measuredSpacing);
       const bars = options.series.map((series, seriesIndex) => ({
         color: series.color,
         height: chartHeight * values[seriesIndex][index] / maximum,
@@ -429,6 +444,7 @@ async function load() {
     byId("collection-frequency").value = String(settings.collection_interval_minutes);
     const latest = allRecords[allRecords.length - 1];
     healthElement.textContent = `Healthy - ${formatMeasurementCount(health.measurements)}`; healthElement.className = "health ok";
+    setText("app-version", `version ${health.version}`);
     if (latest) { setText("latest-download", formatNumber(latest.download_mbps)); setText("latest-upload", formatNumber(latest.upload_mbps)); setText("latest-latency", formatNumber(latest.latency_ms)); setText("latest-jitter", formatNumber(latest.jitter_ms)); }
     renderTable(allRecords); renderCharts();
   } catch (error) {

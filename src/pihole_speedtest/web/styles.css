@@ -293,6 +293,13 @@ button, .button-link { display: inline-block; padding: 10px 14px; text-decoratio
 .danger-button { border-color: #b95353; background: #7d2929; }
 button:disabled { cursor: not-allowed; opacity: 0.5; }
 .form-message { min-height: 1.2em; color: #9db0c2; }
+.app-version {
+  margin: 14px 4px 0;
+  color: #6f8598;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  text-align: right;
+}
 dialog {
   width: min(620px, calc(100% - 32px));
   padding: 24px;

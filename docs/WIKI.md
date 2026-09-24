@@ -42,8 +42,9 @@ v6.6 integration baseline.  The companion service, collection timer, embedded
 dashboard, and independently reversible sidebar adapter have completed live
 acceptance.
 
-Version `1.0.1` is the production maintenance line.  It removes synthetic zero
+Version `1.0.2` is the production maintenance line.  It removes synthetic zero
 points, leaves substantial collection outages blank, and breaks line charts
 across those outages while preserving the underlying measurement history
-exactly.  Its source passed GitHub CI run 50, and its immutable bundle and
-checksum-pinned bootstrap are published.
+exactly.  It also preserves visible delimiters between mixed-cadence bars and
+shows the installed runtime version discreetly in Setup.  Live owner acceptance
+of this maintenance revision remains pending.

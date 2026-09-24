@@ -2,7 +2,7 @@
 
 The dashboard companion service, 15-minute automated collection, and optional
 Pi-hole navigation adapter passed live verification on the Raspberry Pi.
-Version `1.0.1` is the production maintenance line.
+Version `1.0.2` is the production maintenance line.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
@@ -126,7 +126,7 @@ evidence under `/var/lib/pihole-speedtest-upgrade-recovery/`.
 
 ## Checksum-verified curl installation and removal
 
-Version `1.0.1` contains the release installer, data-preserving uninstaller,
+Version `1.0.2` contains the release installer, data-preserving uninstaller,
 separate purge command, deterministic bundle builder, and immutable-bootstrap
 renderer.  The bootstrap verifies the complete bundle before invoking `sudo`;
 it never pipes a mutable branch into a privileged shell.
