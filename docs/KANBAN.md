@@ -74,7 +74,7 @@ detailed acceptance criteria for active engineering work.
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Version `1.0.6` release preparation | Branch `release/v1.0.6` | Canonical third-party notices, one-line runner, `install-all`, `uninstall-all`, documentation, and deferred Docker publication are implemented and awaiting owner review.  Not released: requires merge, fresh immutable release assets, a GitHub Release carrying the bootstrap and its checksum, and Raspberry Pi 3 acceptance |
+| Version `1.0.6` release preparation | Branch `release/v1.0.6` | Canonical third-party notices, one-line runner with tagged prerelease acceptance, `install-all`, `uninstall-all`, guarded release publication, documentation, and deferred Docker publication are implemented and awaiting owner review.  Not released: requires merge, `install.sh` on `main`, fresh immutable release assets, the `v1.0.6-rc.1` prerelease, Raspberry Pi 3 acceptance with `PIHOLE_SPEEDTEST_RELEASE_TAG`, then the stable `v1.0.6` release from the same commit and bytes |
 
 ## Backlog
 

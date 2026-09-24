@@ -59,10 +59,24 @@ reverse proxy, or nonstandard origin can be supplied with
 
 ## Fully pinned installation
 
-The convenience command trusts the latest GitHub Release for the bootstrap and
-its checksum.  For independently pinned installation, use the immutable
-commands, trust anchors, and recovery contract in the
+The convenience command trusts the latest stable GitHub Release for the
+bootstrap and its checksum.  For independently pinned installation, use the
+immutable commands, trust anchors, and recovery contract in the
 [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
+
+## Prerelease acceptance
+
+Release candidates are tested with the same runner by selecting one exact
+release tag.  The ordinary command above never selects a prerelease.
+
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.1 bash
+```
+
+The tag rules, uninstall form, and full release sequence are in the
+[checksum-verified curl workflow](docs/CURL-INSTALLATION.md#release-selection).
 
 ## Supported environment
 

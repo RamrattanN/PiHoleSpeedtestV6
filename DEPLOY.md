@@ -139,8 +139,11 @@ and the root `install.sh` convenience runner.  The runner performs no
 privileged operation; it verifies the release bootstrap against its published
 checksum and runs it as the current user.  Each `1.0.6` or later release must
 attach the rendered `pihole-speedtest-v6-bootstrap.sh` and its `.sha256` file
-as GitHub Release assets.  Docker image publication is deferred and cannot run
-from a GitHub Release.
+as GitHub Release assets.  `scripts/publish_github_release.sh` validates and
+publishes those assets: first a `vX.Y.Z-rc.N` prerelease for Raspberry Pi
+acceptance through `PIHOLE_SPEEDTEST_RELEASE_TAG`, then the stable `vX.Y.Z`
+release from the same commit with byte-identical assets.  Docker image
+publication is deferred and cannot run from a GitHub Release.
 
 Immutable production command syntax and the complete trust, preservation,
 rollback, and acceptance contract are maintained in
