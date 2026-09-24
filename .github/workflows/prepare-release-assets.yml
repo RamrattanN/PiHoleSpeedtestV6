@@ -70,6 +70,7 @@ jobs:
             case "$path" in
               .github/workflows/prepare-release-assets.yml|\
               tests/test_release_asset_preparation.py|\
+              tests/test_release_publication.py|\
               README.md|DEPLOY.md|\
               docs/CURL-INSTALLATION.md|docs/KANBAN.md|docs/QA-AND-ACCEPTANCE.md|\
               docs/ROADMAP.md|docs/WIKI.md|\
@@ -178,6 +179,10 @@ jobs:
             echo "::error::Bundle contains a generated release archive or rendered bootstrap."
             exit 1
           fi
+          if grep -Eq "^$root/data(/|\$)|admin\.token" "$RUNNER_TEMP/members.txt"; then
+            echo "::error::Bundle contains local data or a token file."
+            exit 1
+          fi
           if grep -Ev "^$root(/|\$)" "$RUNNER_TEMP/members.txt"; then
             echo "::error::Bundle contains entries outside $root."
             exit 1
@@ -201,6 +206,7 @@ jobs:
           mkdir "$RUNNER_TEMP/artifact"
           cp "$BUNDLE_DIR/$BUNDLE" "$BUNDLE_DIR/$BUNDLE.sha256" "$RUNNER_TEMP/artifact/"
           test "$(ls -A "$RUNNER_TEMP/artifact" | LC_ALL=C sort | tr '\n' ' ')" = "$BUNDLE $BUNDLE.sha256 "
+          test -z "$(git ls-files -- data/)"
 
       - name: "Stages B and C: render and verify the bootstrap"
         if: steps.stage.outputs.stage != 'A'
@@ -229,6 +235,7 @@ jobs:
           cp "$rendered" "$RUNNER_TEMP/artifact/$BOOTSTRAP"
           (cd "$RUNNER_TEMP/artifact" && sha256sum "$BOOTSTRAP" > "$BOOTSTRAP.sha256")
           test "$(ls -A "$RUNNER_TEMP/artifact" | LC_ALL=C sort | tr '\n' ' ')" = "$BOOTSTRAP $BOOTSTRAP.sha256 "
+          test -z "$(git ls-files -- data/)"
           echo "BOOTSTRAP_SHA256=$(cut -c1-64 "$RUNNER_TEMP/artifact/$BOOTSTRAP.sha256")" >> "$GITHUB_ENV"
 
       - name: "Stage C: verify the committed bootstrap and dry-run publication"

@@ -41,7 +41,15 @@ RELEASE_ALLOWLIST = {
     f"release/pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz.sha256",
     "release/pihole-speedtest-v6-bootstrap.sh",
 }
-# Ordered partition of every tracked file outside the allowlist.
+# Files outside the allowlist that carry an exact owner-approved change.  Each is
+# pinned to its complete corrected content and excluded from the group digests.
+APPROVED_OVERRIDES = {
+    # Disable automatic git maintenance in temporary-repository fixtures.
+    "tests/test_release_publication.py": (
+        "c2d78c5aa02bd45b8d728abced5b046c0590dc4a85c47c9b34fe4cb760aa50bb"
+    ),
+}
+# Ordered partition of every tracked file outside the allowlist and overrides.
 PROTECTED_GROUPS = [
     ("chart", ("src/pihole_speedtest/web/", "web/")),
     ("runtime", ("src/", "deploy/")),
@@ -63,7 +71,7 @@ BASELINE_DIGESTS = {
     "licensing": ("d2daa9886b45795f3a4fb46f63e64ee976ee5a5d6023164a9a735fa38eef1d07", 2),
     "docker": ("51898daa73be46eb2dfa82700dedc02a9fd29370a81f2f9ca65160156cec60b3", 4),
     "workflows": ("ca2d8e4d6a3353f9fd3d1fc0cc60204a612f8101d69f57aef22287995bad6987", 2),
-    "tests": ("fc83f5a0d36c8fcf7ffd3abbf065bcbdcad832c0f220a8220d4c10f3ff67ec2d", 17),
+    "tests": ("0602b5563a6c27bc3d367a39bfac654e944f864734a8e399a9c7858336e4f0d8", 16),
     "published-releases": ("dd860ea23f231664df1c844b1417a444d6b395412ed98e135c80935abae33c4b", 14),
     "other": ("79d3cf5e77a934e246dba795ba1933bce37c0f778f16f7d7525dd4d172534106", 7),
 }
@@ -115,6 +123,15 @@ def protected_group(path):
     raise AssertionError(path)
 
 
+def approved_override_violations(read_bytes):
+    """Return overrides whose content is not the exact approved correction."""
+    return sorted(
+        path
+        for path, digest in APPROVED_OVERRIDES.items()
+        if hashlib.sha256(read_bytes(path)).hexdigest() != digest
+    )
+
+
 def bootstrap_value(text, name):
     match = re.search(rf'^{name}="([^"]*)"$', text, flags=re.MULTILINE)
     return match.group(1) if match else None
@@ -148,10 +165,28 @@ class ReleaseScopeTests(unittest.TestCase):
         self.assertIn('"version": __version__', server)
         self.assertNotRegex(__version__, r"dev")
 
+    def test_approved_overrides_match_their_exact_correction(self):
+        self.assertEqual(
+            approved_override_violations(lambda path: (ROOT / path).read_bytes()), []
+        )
+        entries = tracked_files()
+        for path in APPROVED_OVERRIDES:
+            self.assertEqual(entries[path][0], "100644", path)
+
+    def test_any_further_override_edit_is_rejected(self):
+        for path in APPROVED_OVERRIDES:
+            original = (ROOT / path).read_bytes()
+            for altered in (original + b"\n", original.replace(b"gc.auto=0", b"gc.auto=1"), b""):
+                with self.subTest(path=path, size=len(altered)):
+                    self.assertEqual(approved_override_violations(lambda _: altered), [path])
+
     def test_protected_files_match_the_reviewed_baseline(self):
+        self.assertEqual(
+            approved_override_violations(lambda path: (ROOT / path).read_bytes()), []
+        )
         groups = {}
         for path, (mode, blob) in tracked_files().items():
-            if path in RELEASE_ALLOWLIST:
+            if path in RELEASE_ALLOWLIST or path in APPROVED_OVERRIDES:
                 continue
             groups.setdefault(protected_group(path), []).append(f"{mode} {blob} {path}\n")
         for name, (digest, count) in BASELINE_DIGESTS.items():
@@ -174,7 +209,12 @@ class ReleaseScopeTests(unittest.TestCase):
             self.skipTest("Reviewed baseline history is unavailable in this checkout.")
         changed = set(git("diff", "--name-only", REVIEWED_BASE).stdout.split())
         changed |= set(git("ls-files", "--others", "--exclude-standard").stdout.split())
-        self.assertEqual(sorted(changed - RELEASE_ALLOWLIST), [])
+        self.assertEqual(sorted(changed - RELEASE_ALLOWLIST - set(APPROVED_OVERRIDES)), [])
+
+    def test_local_data_is_never_tracked(self):
+        self.assertEqual(git("ls-files", "--", "data/").stdout, "")
+        ignored = git("check-ignore", "-q", "--no-index", "data/admin.token", check=False)
+        self.assertEqual(ignored.returncode, 0, "data/ must remain ignored")
 
     def test_release_documents_do_not_claim_publication_or_acceptance(self):
         claim = re.compile(
@@ -235,6 +275,8 @@ class ReleaseAssetTests(unittest.TestCase):
         self.assertRegex(self.marker, r"^[0-9a-f]{40}$")
         for name in self.members:
             self.assertTrue(name == self.root or name.startswith(f"{self.root}/"), name)
+            self.assertFalse(name.startswith(f"{self.root}/data/"), name)
+            self.assertNotIn("admin.token", name)
             self.assertNotRegex(name, r"/release/.*\.tar\.gz(\.sha256)?$")
             self.assertFalse(name.endswith("/release/pihole-speedtest-v6-bootstrap.sh"), name)
 
@@ -349,6 +391,16 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
             'grep -Fqx "Validation only.  Nothing was tagged, created, or uploaded."', self.code
         )
 
+    def test_workflow_allowlist_matches_the_release_policy(self):
+        guard = self.code.split("case \"$path\" in", 1)[1].split("*)", 1)[0]
+        listed = set(re.findall(r"[A-Za-z0-9_./-]+\.(?:yml|py|md|gz|sha256|sh)", guard))
+
+        self.assertEqual(listed, RELEASE_ALLOWLIST | set(APPROVED_OVERRIDES))
+
+    def test_workflow_keeps_local_data_out_of_bundles_and_artifacts(self):
+        self.assertIn('grep -Eq "^$root/data(/|\\$)|admin\\.token"', self.code)
+        self.assertEqual(self.code.count('test -z "$(git ls-files -- data/)"'), 2)
+
     def test_licence_checks_use_repository_files_not_minified_headers(self):
         self.assertNotIn("chart.min.js |", self.code)
         self.assertNotIn("@kurkle", self.code)
@@ -390,7 +442,18 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
 
     def git(self, *args):
         return subprocess.run(
-            ["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid", *args],
+            [
+                "git",
+                "-c",
+                "maintenance.auto=false",
+                "-c",
+                "gc.auto=0",
+                "-c",
+                "user.name=Test",
+                "-c",
+                "user.email=test@example.invalid",
+                *args,
+            ],
             cwd=self.repo, check=True, stdout=subprocess.PIPE, text=True,
         ).stdout.strip()
 
