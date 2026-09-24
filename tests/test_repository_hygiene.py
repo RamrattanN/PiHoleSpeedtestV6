@@ -1,6 +1,8 @@
+import hashlib
 import re
 import subprocess
 import unittest
+import zipfile
 from pathlib import Path
 
 
@@ -33,6 +35,22 @@ SOFTWARE.
 """
 PRODUCT_COPYRIGHT = "Copyright (c) 2026 Nilesh Ramrattan"
 INHERITED_COPYRIGHT = "Copyright (c) 2018 Siddhu"
+# Git blob SHAs of the tagged upstream LICENSE.md files for the bundled versions.
+CANONICAL_LICENSES = {
+    "https://github.com/chartjs/Chart.js/blob/v4.5.0/LICENSE.md": (
+        "f216610fd7edadc57a11668b3ca5b7a400e5b96e",
+        "Copyright (c) 2014-2024 Chart.js Contributors",
+    ),
+    "https://github.com/kurkle/color/blob/v0.3.2/LICENSE.md": (
+        "ae411212bf290a8562b0c2c08bff8c1ca2fb4b49",
+        "Copyright (c) 2018-2021 Jukka Kurkela",
+    ),
+}
+# First-party snapshot of commit c12d4a4; any change requires a new notice audit.
+V6_PACKAGE_ZIP = ROOT / "Archive" / "PiHole_SpeedTest_v6_package.zip"
+V6_PACKAGE_ZIP_SHA256 = (
+    "9d22c77ddffeb52d3b51d1f271e4a9ffbe9fb5055bbc71b757f51367cda6914a"
+)
 
 
 def copyright_lines(text):
@@ -41,6 +59,18 @@ def copyright_lines(text):
         for line in text.splitlines()
         if line.strip().lower().startswith("copyright (c)")
     ]
+
+
+def reproduced_license(notice, source):
+    match = re.search(
+        rf"reproduced from\n<{re.escape(source)}>:\n\n```text\n(.*?)```", notice, re.S
+    )
+    return match.group(1) if match else None
+
+
+def git_blob_sha(text):
+    content = text.encode("utf-8")
+    return hashlib.sha1(b"blob %d\0" % len(content) + content).hexdigest()
 
 
 class RepositoryHygieneTests(unittest.TestCase):
@@ -72,7 +102,28 @@ class RepositoryHygieneTests(unittest.TestCase):
         for header in headers:
             retained = "\n".join(line[3:] for line in header.splitlines())
             self.assertIn(f"```text\n{retained}\n```", notice)
-        self.assertIn(MIT_TERMS, notice.split("## MIT License text for")[1])
+
+    def test_third_party_notice_reproduces_canonical_chart_licenses(self):
+        notice = (ROOT / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+
+        for source, (blob_sha, copyright_line) in CANONICAL_LICENSES.items():
+            reproduced = reproduced_license(notice, source)
+            self.assertIsNotNone(reproduced, source)
+            self.assertEqual(git_blob_sha(reproduced), blob_sha, source)
+            self.assertTrue(reproduced.startswith("The MIT License (MIT)\n\n"))
+            self.assertIn(f"\n{copyright_line}\n", reproduced)
+
+    def test_notice_scope_matches_audited_v6_package_archive(self):
+        notice = (ROOT / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+        digest = hashlib.sha256(V6_PACKAGE_ZIP.read_bytes()).hexdigest()
+        with zipfile.ZipFile(V6_PACKAGE_ZIP) as archive:
+            names = archive.namelist()
+
+        self.assertEqual(digest, V6_PACKAGE_ZIP_SHA256)
+        self.assertNotIn(V6_PACKAGE_ZIP.name, notice)
+        self.assertIn("`Archive/PiHole SpeedTest.zip`", notice)
+        for name in names:
+            self.assertNotRegex(name.lower(), r"licen[cs]e|notice|copying|chart")
 
     def test_product_and_third_party_licenses_are_not_confused(self):
         license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
@@ -81,7 +132,18 @@ class RepositoryHygieneTests(unittest.TestCase):
         for inherited in ("Siddhu", "arevindh", "Chart.js", "kurkle"):
             self.assertNotIn(inherited, license_text)
         self.assertNotIn(PRODUCT_COPYRIGHT, notice)
-        self.assertEqual(copyright_lines(notice), [INHERITED_COPYRIGHT])
+        inherited_section = notice.split("## arevindh/pihole-speedtest\n")[1].split(
+            "\n## "
+        )[0]
+        self.assertIn(INHERITED_COPYRIGHT, inherited_section)
+        self.assertEqual(notice.count("Siddhu"), 1)
+        self.assertEqual(
+            copyright_lines(notice),
+            [
+                INHERITED_COPYRIGHT,
+                *(line for _, line in CANONICAL_LICENSES.values()),
+            ],
+        )
 
     def test_repository_does_not_publish_private_ipv4_addresses(self):
         findings = []
