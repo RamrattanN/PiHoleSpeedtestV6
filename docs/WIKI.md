@@ -41,3 +41,7 @@ Version `0.1.0.dev4` is the owner-approved live Raspberry Pi and Pi-hole Web
 v6.6 integration baseline.  The companion service, collection timer, embedded
 dashboard, and independently reversible sidebar adapter have completed live
 acceptance.
+
+Version `1.0.0` is the production release line.  It renders missed scheduled
+intervals as zeroes on the charts while preserving the underlying measurement
+history exactly.

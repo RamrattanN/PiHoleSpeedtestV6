@@ -12,9 +12,11 @@ control while omitting the standalone dashboard's larger duplicate header and
 navigation.
 
 Charts retain their real time scale in the embedded view.  Missing scheduled
-measurements appear as labelled `No data` gaps, including historical periods
-when collection was disabled.  A gap indicates that no successful measurement
-was stored and does not, by itself, prove that the internet connection failed.
+measurements appear as derived zero-valued chart points, including historical
+periods when collection was disabled.  These display-only points are not added
+to SQLite history, the measurement table, health counts, or CSV exports.  A
+zero-valued scheduled point indicates that no successful measurement was
+stored and does not, by itself, prove that the internet connection failed.
 
 The adapter does not move measurement data into Pi-hole, change FTL, change
 DNS, or make Pi-hole responsible for collection and scheduling.

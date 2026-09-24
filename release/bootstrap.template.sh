@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repository="RamrattanN/PiHoleSpeedtestV6"
-version="0.1.0.dev5"
+version="1.0.0"
 source_commit="@SOURCE_COMMIT@"
 asset_commit="@ASSET_COMMIT@"
 bundle_sha256="@BUNDLE_SHA256@"

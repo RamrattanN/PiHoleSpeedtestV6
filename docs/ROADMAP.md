@@ -74,6 +74,9 @@
   under the recovery-backed approval gate.
 - [x] Complete owner acceptance of embedded branding, manual test controls,
   true timestamp gaps, and adaptive layered bars in version `0.1.0.dev4`.
+- [ ] Complete owner acceptance of production version `1.0.0`, which represents
+  missed scheduled intervals as derived zero-valued chart points without
+  inserting synthetic rows into measurement history.
 - [ ] Prove Pi-hole update failure isolation on the live service boundary.
 
 ## Release

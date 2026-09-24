@@ -30,6 +30,7 @@ detailed acceptance criteria for active engineering work.
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Publish immutable candidate assets, then pass install, rollback, uninstall, reinstall, reboot, and purge acceptance on Raspberry Pi 3 |
+| Production `1.0.0` promotion | Version `1.0.0` | Automated QA, owner visual acceptance of zero-valued missed intervals, guarded companion upgrade, immutable release assets, and documentation rebaseline |
 
 ## Backlog
 

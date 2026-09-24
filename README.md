@@ -6,10 +6,9 @@ Pi-hole upgrade cannot erase data or disable scheduled tests.
 
 ## Current status
 
-This branch records the owner-approved live development baseline, version
-`0.1.0.dev4`.  It is not yet a tagged production release.  Its dashboard and
-Pi-hole sidebar integration are the visual, interaction, and deployment
-baseline for subsequent Pi-hole Speedtest work.  It provides:
+Version `1.0.0` is the production release line.  Its dashboard and Pi-hole
+sidebar integration are the visual, interaction, and deployment baseline for
+subsequent Pi-hole Speedtest work.  It provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;
@@ -18,7 +17,8 @@ baseline for subsequent Pi-hole Speedtest work.  It provides:
 - a local API and Ramrattan Network Tools dashboard;
 - local web assets with no CDN dependency;
 - line and adaptive layered-bar charts with fixed-scale time-axis zoom and pan;
-- true timestamp spacing and labelled no-data gaps without fabricated values;
+- true timestamp spacing with missed scheduled intervals plotted as zero-valued
+  chart points without altering stored measurements;
 - chart mouseover details for measurement time and values;
 - optional table visibility and complete-history CSV export;
 - dashboard controls for manual speed tests, collection-frequency changes,
@@ -30,11 +30,11 @@ baseline for subsequent Pi-hole Speedtest work.  It provides:
 
 The approved companion service, 15-minute collection timer, and reversible
 Pi-hole Web v6.6 sidebar adapter are running on the verified Raspberry Pi 3
-baseline.  Version `0.1.0.dev4` is the latest owner-approved build.  Guarded
-installation and upgrade paths exist.  Version `0.1.0.dev5` is the current
-checksum-verified curl workflow engineering candidate; it is not yet the live
-approved baseline.  Immutable candidate commands and checksums are documented
-in [Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  Remaining
+baseline.  Version `1.0.0` promotes that implementation to the production
+release line and replaces labelled gap overlays with derived zero-valued chart
+points.  Guarded installation and upgrade paths exist.  Immutable download
+commands and checksums are documented in
+[Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  Remaining
 Raspberry Pi acceptance is tracked in
 [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
 

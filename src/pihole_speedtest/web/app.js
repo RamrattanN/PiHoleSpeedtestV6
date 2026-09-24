@@ -49,6 +49,36 @@ function chartMaximum(records, series, minimum) {
   return Math.ceil(Math.max(minimum, ...values) * 1.1);
 }
 
+function buildChartRecords(records) {
+  if (records.length < 2) return records.slice();
+  const intervalMs = collectionIntervalMinutes * 60 * 1000;
+  const plotted = [];
+  records.forEach((record, index) => {
+    if (index > 0) {
+      const previous = Date.parse(records[index - 1].recorded_at);
+      const current = Date.parse(record.recorded_at);
+      if (Number.isFinite(previous) && Number.isFinite(current) && current > previous) {
+        for (
+          let timestamp = previous + intervalMs;
+          timestamp < current - intervalMs / 2;
+          timestamp += intervalMs
+        ) {
+          plotted.push({
+            recorded_at: new Date(timestamp).toISOString(),
+            download_mbps: 0,
+            upload_mbps: 0,
+            latency_ms: 0,
+            jitter_ms: 0,
+            synthetic_zero: true,
+          });
+        }
+      }
+    }
+    plotted.push(record);
+  });
+  return plotted;
+}
+
 function chartTimeline(records) {
   const intervalMs = collectionIntervalMinutes * 60 * 1000;
   const timestamps = records.map((record) => Date.parse(record.recorded_at));
@@ -57,32 +87,17 @@ function chartTimeline(records) {
   const last = valid.length ? Math.max(...valid) : first;
   const start = records.length === 1 ? first - intervalMs / 2 : first;
   const end = records.length === 1 ? last + intervalMs / 2 : last;
-  const gaps = [];
-  for (let index = 1; index < timestamps.length; index += 1) {
-    const previous = timestamps[index - 1];
-    const current = timestamps[index];
-    if (!Number.isFinite(previous) || !Number.isFinite(current)) continue;
-    const elapsed = current - previous;
-    if (elapsed > intervalMs * 1.5) {
-      gaps.push({
-        start: previous + intervalMs / 2,
-        end: current - intervalMs / 2,
-      });
-    }
-  }
-  return { timestamps, start, end, duration: Math.max(end - start, 1), intervalMs, gaps };
+  return { timestamps, start, end, duration: Math.max(end - start, 1), intervalMs };
 }
 
 function formatAxisTime(timestamp) {
   return new Date(timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
-function chartNote(records, timeline) {
-  const measurementText = records.length === allRecords.length
+function chartNote(records) {
+  return records.length === allRecords.length
     ? formatMeasurementCount(records.length)
     : `${formatMeasurementCount(records.length)} shown of ${allRecords.length}`;
-  const gaps = timeline.gaps.length;
-  return gaps ? `${measurementText} - ${gaps} no-data ${gaps === 1 ? "gap" : "gaps"}` : measurementText;
 }
 
 function chartBarSpacing(timeline, xPositions) {
@@ -154,18 +169,19 @@ function drawChart(records, options) {
     return;
   }
 
-  const timeline = chartTimeline(records);
-  setText(options.noteId, chartNote(records, timeline));
+  const plottedRecords = buildChartRecords(records);
+  const timeline = chartTimeline(plottedRecords);
+  setText(options.noteId, chartNote(records));
   const padding = { top: 20, right: 16, bottom: 34, left: 46 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const maximum = chartMaximum(allRecords, options.series, options.minimumMaximum);
-  const values = options.series.map((series) => records.map((record) => Number(record[series.field]) || 0));
+  const values = options.series.map((series) => plottedRecords.map((record) => Number(record[series.field]) || 0));
   const xForTimestamp = (timestamp) => padding.left + chartWidth * (timestamp - timeline.start) / timeline.duration;
   const xPositions = timeline.timestamps.map((timestamp, index) => Number.isFinite(timestamp)
     ? xForTimestamp(timestamp)
-    : padding.left + chartWidth * index / Math.max(records.length - 1, 1));
-  chartStates.set(options.canvasId, { records, options, padding, chartWidth, chartHeight, xPositions });
+    : padding.left + chartWidth * index / Math.max(plottedRecords.length - 1, 1));
+  chartStates.set(options.canvasId, { records: plottedRecords, options, padding, chartWidth, chartHeight, xPositions });
   context.strokeStyle = "#263747";
   context.fillStyle = "#8fa4b8";
   context.font = "12px system-ui";
@@ -175,20 +191,6 @@ function drawChart(records, options) {
     context.beginPath(); context.moveTo(padding.left, y); context.lineTo(width - padding.right, y); context.stroke();
     context.fillText((maximum - maximum * line / 4).toFixed(0), 7, y + 4);
   }
-
-  timeline.gaps.forEach((gap) => {
-    const left = xForTimestamp(gap.start);
-    const right = xForTimestamp(gap.end);
-    context.fillStyle = "rgb(255 138 138 / 9%)";
-    context.fillRect(left, padding.top, Math.max(1, right - left), chartHeight);
-    if (right - left >= 52) {
-      context.fillStyle = "#ff9b9b";
-      context.font = "11px system-ui";
-      context.textAlign = "center";
-      context.fillText("No data", (left + right) / 2, padding.top + 15);
-      context.textAlign = "start";
-    }
-  });
 
   context.fillStyle = "#8fa4b8";
   context.font = "11px system-ui";
@@ -204,7 +206,7 @@ function drawChart(records, options) {
   if (chartMode === "bar") {
     const measuredSpacing = chartBarSpacing(timeline, xPositions);
     const groupWidth = Math.max(1, Math.min(18, measuredSpacing * 0.76));
-    records.forEach((record, index) => {
+    plottedRecords.forEach((record, index) => {
       const bars = options.series.map((series, seriesIndex) => ({
         color: series.color,
         height: chartHeight * values[seriesIndex][index] / maximum,
@@ -228,8 +230,7 @@ function drawChart(records, options) {
       const y = padding.top + chartHeight - chartHeight * value / maximum;
       const previous = index > 0 ? timeline.timestamps[index - 1] : null;
       const current = timeline.timestamps[index];
-      const breaksLine = index === 0 || !Number.isFinite(previous) || !Number.isFinite(current)
-        || current - previous > timeline.intervalMs * 1.5;
+      const breaksLine = index === 0 || !Number.isFinite(previous) || !Number.isFinite(current);
       points.push({ x, y }); breaksLine ? context.moveTo(x, y) : context.lineTo(x, y);
     });
     context.stroke(); context.fillStyle = series.color;

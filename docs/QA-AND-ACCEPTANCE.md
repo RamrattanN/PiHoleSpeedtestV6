@@ -37,6 +37,12 @@ The accepted interface is documented in
 changes must preserve its required behaviors or receive explicit owner
 approval for a revised baseline.
 
+Version `1.0.0` is the production promotion.  It removes labelled gap overlays
+and derives zero-valued chart points for missed scheduled intervals.  QA must
+confirm that these points affect only chart rendering and do not alter SQLite
+history, health counts, the measurement table, or CSV exports before owner
+visual acceptance and live upgrade.
+
 ## Gate 2: read-only Pi preflight
 
 Capture without modifying the Raspberry Pi:
