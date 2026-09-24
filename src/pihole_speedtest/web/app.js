@@ -4,10 +4,13 @@ const byId = (id) => document.getElementById(id);
 let allRecords = [];
 let zoomStart = 0;
 let zoomEnd = 0;
+let defaultWindowActive = true;
 let collectionIntervalMinutes = 60;
 let chartMode = localStorage.getItem("pihole-speedtest-chart-mode") || "line";
 const chartStates = new Map();
+const DEFAULT_CHART_WINDOW_MS = 24 * 60 * 60 * 1000;
 const BAR_GROUP_GAP_PX = 2;
+const BAR_GROUP_MAX_WIDTH_PX = 14;
 
 function requestedView() {
   return window.location.hash === "#setup" ? "setup" : "overview";
@@ -66,8 +69,12 @@ function chartTimeline(records) {
   const cadenceMs = Math.max(intervalMs, medianDelta);
   const first = valid.length ? Math.min(...valid) : 0;
   const last = valid.length ? Math.max(...valid) : first;
-  const start = records.length === 1 ? first - intervalMs / 2 : first;
-  const end = records.length === 1 ? last + intervalMs / 2 : last;
+  let start = records.length === 1 ? first - intervalMs / 2 : first;
+  let end = records.length === 1 ? last + intervalMs / 2 : last;
+  if (defaultWindowActive && valid.length) {
+    end = last;
+    start = end - DEFAULT_CHART_WINDOW_MS;
+  }
   return {
     timestamps,
     start,
@@ -80,10 +87,15 @@ function chartTimeline(records) {
 }
 
 function formatAxisTime(timestamp) {
-  return new Date(timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return new Date(timestamp).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }
 
 function chartNote(records) {
+  if (defaultWindowActive) return `${formatMeasurementCount(records.length)} - last 24 hours`;
   return records.length === allRecords.length
     ? formatMeasurementCount(records.length)
     : `${formatMeasurementCount(records.length)} shown of ${allRecords.length}`;
@@ -108,20 +120,27 @@ function chartBarSpacing(timeline, xPositions) {
     : (spacings[middle - 1] + spacings[middle]) / 2;
 }
 
-function chartBarGroupWidth(timeline, xPositions, index, measuredSpacing) {
-  const localSpacings = [];
-  for (const neighbor of [index - 1, index + 1]) {
-    if (neighbor < 0 || neighbor >= xPositions.length) continue;
-    const elapsed = Math.abs(timeline.timestamps[index] - timeline.timestamps[neighbor]);
-    if (!Number.isFinite(elapsed) || elapsed <= 0 || elapsed > timeline.gapThresholdMs) continue;
-    const spacing = Math.abs(xPositions[index] - xPositions[neighbor]);
-    if (spacing > 0) localSpacings.push(spacing);
-  }
-  const availableSpacing = localSpacings.length
-    ? Math.min(measuredSpacing, ...localSpacings)
-    : measuredSpacing;
+function chartBarGroupWidth(timeline, chartWidth, measuredSpacing) {
+  const expectedSpacing = chartWidth * timeline.intervalMs / timeline.duration;
+  const availableSpacing = Math.min(expectedSpacing, measuredSpacing);
   const reservedGap = Math.min(BAR_GROUP_GAP_PX, availableSpacing * 0.5);
-  return Math.max(0.1, availableSpacing - reservedGap);
+  return Math.max(0.1, Math.min(BAR_GROUP_MAX_WIDTH_PX, availableSpacing - reservedGap));
+}
+
+function chartTimeTicks(timeline, chartWidth) {
+  const hourMs = 60 * 60 * 1000;
+  const durationHours = timeline.duration / hourMs;
+  const targetTicks = Math.max(2, Math.floor(chartWidth / 64));
+  const minimumHours = durationHours / targetTicks;
+  const stepHours = [1, 2, 3, 4, 6, 12, 24, 48, 72, 168]
+    .find((candidate) => candidate >= minimumHours) || 168;
+  const stepMs = stepHours * hourMs;
+  const firstTick = Math.ceil(timeline.start / stepMs) * stepMs;
+  const ticks = [];
+  for (let timestamp = firstTick; timestamp <= timeline.end; timestamp += stepMs) {
+    ticks.push(timestamp);
+  }
+  return ticks;
 }
 
 function drawBarGroup(context, x, chartBottom, bars, groupWidth) {
@@ -197,21 +216,24 @@ function drawChart(records, options) {
     context.fillText((maximum - maximum * line / 4).toFixed(0), 7, y + 4);
   }
 
+  const timeTicks = chartTimeTicks(timeline, chartWidth);
   context.fillStyle = "#8fa4b8";
   context.font = "11px system-ui";
-  for (let tick = 0; tick <= 4; tick += 1) {
-    const timestamp = timeline.start + timeline.duration * tick / 4;
+  timeTicks.forEach((timestamp) => {
     const label = formatAxisTime(timestamp);
-    const x = padding.left + chartWidth * tick / 4;
-    context.textAlign = tick === 0 ? "start" : tick === 4 ? "right" : "center";
+    const x = xForTimestamp(timestamp);
+    context.strokeStyle = "#202d39";
+    context.beginPath(); context.moveTo(x, padding.top); context.lineTo(x, padding.top + chartHeight); context.stroke();
+    context.fillStyle = "#8fa4b8";
+    context.textAlign = "center";
     context.fillText(label, x, height - 7);
-  }
+  });
   context.textAlign = "start";
 
   if (chartMode === "bar") {
     const measuredSpacing = chartBarSpacing(timeline, xPositions);
+    const groupWidth = chartBarGroupWidth(timeline, chartWidth, measuredSpacing);
     plottedRecords.forEach((record, index) => {
-      const groupWidth = chartBarGroupWidth(timeline, xPositions, index, measuredSpacing);
       const bars = options.series.map((series, seriesIndex) => ({
         color: series.color,
         height: chartHeight * values[seriesIndex][index] / maximum,
@@ -299,8 +321,9 @@ function showChartTooltip(event, canvas) {
 function changeZoom(action) {
   const total = allRecords.length;
   if (total < 2) return;
-  if (action === "reset") { zoomStart = 0; zoomEnd = total; }
+  if (action === "reset") { setDefaultZoomRange(); }
   else {
+    defaultWindowActive = false;
     const current = zoomEnd - zoomStart;
     const next = action === "in" ? Math.max(5, Math.floor(current * 0.75)) : Math.min(total, Math.ceil(current / 0.75));
     const center = (zoomStart + zoomEnd) / 2;
@@ -315,7 +338,22 @@ function panZoom(deltaPixels, width) {
   if (visible >= allRecords.length || width <= 0) return;
   const shift = Math.round(-deltaPixels / width * visible);
   const nextStart = Math.max(0, Math.min(allRecords.length - visible, zoomStart + shift));
+  defaultWindowActive = false;
   zoomStart = nextStart; zoomEnd = nextStart + visible; renderCharts();
+}
+
+function setDefaultZoomRange() {
+  zoomEnd = allRecords.length;
+  if (!allRecords.length) {
+    zoomStart = 0;
+    defaultWindowActive = true;
+    return;
+  }
+  const latest = Date.parse(allRecords[allRecords.length - 1].recorded_at);
+  const cutoff = latest - DEFAULT_CHART_WINDOW_MS;
+  const firstVisible = allRecords.findIndex((record) => Date.parse(record.recorded_at) >= cutoff);
+  zoomStart = firstVisible < 0 ? Math.max(0, allRecords.length - 1) : firstVisible;
+  defaultWindowActive = true;
 }
 
 async function postJson(path, payload) {
@@ -441,7 +479,8 @@ async function load() {
     ]);
     if (!healthResponse.ok || !resultsResponse.ok || !settingsResponse.ok) throw new Error("Dashboard API returned an error");
     const health = await healthResponse.json(); const results = await resultsResponse.json(); const settings = await settingsResponse.json();
-    allRecords = Array.isArray(results.records) ? results.records : []; zoomStart = 0; zoomEnd = allRecords.length;
+    allRecords = Array.isArray(results.records) ? results.records : [];
+    setDefaultZoomRange();
     collectionIntervalMinutes = Number(settings.collection_interval_minutes) || 60;
     byId("collection-frequency").value = String(settings.collection_interval_minutes);
     const latest = allRecords[allRecords.length - 1];

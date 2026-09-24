@@ -2,7 +2,8 @@
 
 The dashboard companion service, 15-minute automated collection, and optional
 Pi-hole navigation adapter passed live verification on the Raspberry Pi.
-Version `1.0.4` is the production maintenance line.
+Version `1.0.4` is the installed production maintenance line.  Version `1.0.5`
+is the release-blocking visual and installer-cleanup candidate.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is

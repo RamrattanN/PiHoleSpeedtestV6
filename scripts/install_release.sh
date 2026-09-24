@@ -111,6 +111,7 @@ created_application=0
 created_environment=0
 created_units=0
 installation_complete=0
+package_source=""
 
 for path in "$application_dir" "$environment_path" "$dashboard_unit_path" "$collection_unit_path" "$timer_unit_path"; do
   if [ -e "$path" ]; then
@@ -132,6 +133,9 @@ fi
 
 rollback() {
   status=$?
+  if [ -n "$package_source" ] && [ -d "$package_source" ]; then
+    rm -rf -- "$package_source"
+  fi
   if [ "$status" -eq 0 ] || [ "$installation_complete" -eq 1 ]; then
     return
   fi
@@ -182,7 +186,11 @@ created_user=1
 install -d -m 0755 -o root -g root "$application_dir"
 created_application=1
 python3 -m venv "$application_dir/venv"
-"$application_dir/venv/bin/python" -m pip install "$source_root"
+package_source="$(mktemp -d /var/tmp/pihole-speedtest-package.XXXXXX)"
+cp -a "$source_root/." "$package_source/"
+"$application_dir/venv/bin/python" -m pip install "$package_source"
+rm -rf -- "$package_source"
+package_source=""
 
 install -d -m 0750 -o "$service_user" -g "$service_user" "$data_dir"
 install -d -m 0750 -o "$service_user" -g "$service_user" "$data_dir/backups" "$data_dir/migration"

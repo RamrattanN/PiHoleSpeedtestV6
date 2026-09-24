@@ -15,6 +15,17 @@ PRIVATE_IPV4 = re.compile(
 
 
 class RepositoryHygieneTests(unittest.TestCase):
+    def test_mit_license_identifies_current_owner(self):
+        license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+        project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+        self.assertTrue(license_text.startswith("MIT License\n"))
+        copyright_lines = [
+            line for line in license_text.splitlines() if "copyright" in line.lower()
+        ]
+        self.assertEqual(copyright_lines, ["Copyright (c) 2026 Nilesh Ramrattan"])
+        self.assertIn("License :: OSI Approved :: MIT License", project)
+
     def test_repository_does_not_publish_private_ipv4_addresses(self):
         findings = []
         tracked_files = subprocess.run(

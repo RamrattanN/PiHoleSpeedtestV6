@@ -67,6 +67,15 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertNotIn("adapter-install", installer)
         self.assertNotIn("/var/www/html", installer)
 
+    def test_install_builds_outside_the_unprivileged_bootstrap_workspace(self):
+        installer = self.read(INSTALLER)
+
+        self.assertIn("mktemp -d /var/tmp/pihole-speedtest-package.XXXXXX", installer)
+        self.assertIn('cp -a "$source_root/." "$package_source/"', installer)
+        self.assertIn('pip install "$package_source"', installer)
+        self.assertIn('rm -rf -- "$package_source"', installer)
+        self.assertNotIn('pip install "$source_root"', installer)
+
     def test_uninstall_preserves_data_and_refuses_installed_adapter(self):
         uninstaller = self.read(UNINSTALLER)
 

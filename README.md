@@ -6,9 +6,8 @@ Pi-hole upgrade cannot erase data or disable scheduled tests.
 
 ## Current status
 
-Version `1.0.4` is the production maintenance line.  Its dashboard and Pi-hole
-sidebar integration are the visual, interaction, and deployment baseline for
-subsequent Pi-hole Speedtest work.  It provides:
+Version `1.0.4` is the installed production maintenance line.  Version `1.0.5`
+is the release-blocking visual-alignment candidate.  The product provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;
@@ -30,10 +29,11 @@ subsequent Pi-hole Speedtest work.  It provides:
 
 The approved companion service, 15-minute collection timer, and reversible
 Pi-hole Web v6.6 sidebar adapter are running on the verified Raspberry Pi 3
-baseline.  Version `1.0.4` removes synthetic zero points, breaks line charts
-across substantial collection outages, preserves a consistent two-pixel gap
-between neighboring bar groups across mixed collection cadences, and shows the
-installed version discreetly at the bottom of Setup.  Its checksum-verified
+baseline.  Version `1.0.5` replaces the irregular mixed-cadence default with a
+Pi-hole-style 24-hour chart, responsive hourly grid, uniform bar geometry, and
+blank outage intervals while retaining zoom access to older history.  It also
+corrects post-install cleanup so a successful installation cannot be reported
+as failed.  The checksum-verified
 uninstaller discovers and validates the installed source commit, allowing the
 current bootstrap to remove any supported installed version.
 Guarded installation and upgrade paths exist.  Immutable download

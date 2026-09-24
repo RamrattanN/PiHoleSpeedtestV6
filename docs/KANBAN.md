@@ -50,13 +50,20 @@ detailed acceptance criteria for active engineering work.
 - Publish version `1.0.4` source after GitHub CI run 63 passed, then publish
   and independently download-verify its deterministic bundle and
   checksum-pinned bootstrap.
+- Install version `1.0.4` with 98,716 measurements preserved, verify the
+  adapter, services, timer, SQLite integrity, and continued collection at
+  measurement 98,717.
+- Reject version `1.0.4` visual acceptance because its mixed-cadence bar chart
+  does not match the Pi-hole dashboard presentation.
+- Identify the post-install cleanup false failure caused by privileged package
+  build artifacts in the bootstrap workspace.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Production `1.0.4` acceptance | Version `1.0.4` | Verify cross-version reinstall, consistent bar gaps, the Setup version label, blank outage spans, and collection continuity on Raspberry Pi 3 |
+| Production `1.0.5` acceptance | Version `1.0.5` | Verify the 24-hour hourly grid, uniform bar geometry, blank outage spans, Setup version label, clean bootstrap exit, and collection continuity on Raspberry Pi 3 |
 
 ## Backlog
 

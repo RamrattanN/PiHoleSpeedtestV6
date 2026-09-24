@@ -1,12 +1,13 @@
 # Approved dashboard baseline
 
 > Version `0.1.0.dev4` remains the approved historical baseline described on
-> this page.  Version `1.0.4` is the production maintenance release awaiting
-> live owner acceptance.  It keeps
+> this page.  Version `1.0.5` is the release-blocking visual-alignment candidate
+> awaiting live owner acceptance.  It keeps
 > substantial collection outages blank and breaks line charts across them
 > without adding labels, shaded overlays, or synthetic measurements, restores
-> a consistent two-pixel gap between neighboring bar groups across mixed
-> collection cadences, and shows the installed version discreetly in Setup.
+> a Pi-hole-style 24-hour hourly grid with uniform bar geometry and blank outage
+> spans, retains older history through zooming, and shows the installed version
+> discreetly in Setup.
 > This page will be rebaselined only after owner visual acceptance on the
 > Raspberry Pi.
 
