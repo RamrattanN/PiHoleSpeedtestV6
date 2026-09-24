@@ -6,7 +6,7 @@ Pi-hole upgrade cannot erase data or disable scheduled tests.
 
 ## Current status
 
-Version `1.0.3` is the production maintenance line.  Its dashboard and Pi-hole
+Version `1.0.4` is the production maintenance line.  Its dashboard and Pi-hole
 sidebar integration are the visual, interaction, and deployment baseline for
 subsequent Pi-hole Speedtest work.  It provides:
 
@@ -30,10 +30,12 @@ subsequent Pi-hole Speedtest work.  It provides:
 
 The approved companion service, 15-minute collection timer, and reversible
 Pi-hole Web v6.6 sidebar adapter are running on the verified Raspberry Pi 3
-baseline.  Version `1.0.3` removes synthetic zero points, breaks line charts
+baseline.  Version `1.0.4` removes synthetic zero points, breaks line charts
 across substantial collection outages, preserves a consistent two-pixel gap
 between neighboring bar groups across mixed collection cadences, and shows the
-installed version discreetly at the bottom of Setup.
+installed version discreetly at the bottom of Setup.  Its checksum-verified
+uninstaller discovers and validates the installed source commit, allowing the
+current bootstrap to remove any supported installed version.
 Guarded installation and upgrade paths exist.  Immutable download
 commands and checksums are documented in
 [Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  Remaining

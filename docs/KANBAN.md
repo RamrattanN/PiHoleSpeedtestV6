@@ -37,16 +37,23 @@ detailed acceptance criteria for active engineering work.
   checksum, and checksum-pinned bootstrap after GitHub CI run 54 passed.
 - Complete owner review of version `1.0.2` and identify inconsistent visible
   gaps between mixed-cadence bar groups.
-- Publish the immutable version `1.0.3` source after GitHub CI run 58 passed,
-  followed by its deterministic bundle, checksum, and checksum-pinned
-  bootstrap.
+- Publish the immutable version `1.0.3` source after GitHub CI run 58 passed.
+- Reject the version `1.0.3` release asset after live checksum verification
+  correctly failed closed before privileged installation.
+- Correct release packaging so generated bundles never contain prior release
+  bundles or generated bootstraps, and verify the downloaded immutable bytes
+  before documenting a release.
+- Complete the version `1.0.2` data-preserving curl uninstall acceptance test
+  with 98,716 measurements and the 15-minute setting preserved exactly.
+- Identify and correct the bootstrap limitation that tied uninstall to the
+  bootstrap release instead of the verified installed release.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Production `1.0.3` acceptance | Version `1.0.3` | Verify consistent bar gaps, the Setup version label, blank outage spans, and collection continuity on Raspberry Pi 3 |
+| Production `1.0.4` acceptance | Version `1.0.4` | Verify cross-version reinstall, consistent bar gaps, the Setup version label, blank outage spans, and collection continuity on Raspberry Pi 3 |
 
 ## Backlog
 

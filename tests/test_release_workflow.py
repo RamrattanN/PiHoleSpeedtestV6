@@ -44,6 +44,15 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn('--expected-installed-commit "$installed_commit"', bootstrap)
         self.assertIn("Installed companion commit could not be verified", bootstrap)
 
+    def test_bootstrap_uninstalls_the_verified_installed_version(self):
+        bootstrap = self.read(BOOTSTRAP)
+
+        self.assertIn("read_installed_commit()", bootstrap)
+        self.assertIn("Installed companion manifest could not be found", bootstrap)
+        self.assertIn('installed_commit="$(read_installed_commit)"', bootstrap)
+        self.assertIn('--expected-commit "$installed_commit"', bootstrap)
+        self.assertNotIn('--expected-commit "$source_commit"', bootstrap)
+
     def test_install_fails_closed_and_keeps_adapter_separate(self):
         installer = self.read(INSTALLER)
 
@@ -100,6 +109,9 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("gzip -n", builder)
         self.assertIn("sha256sum", builder)
         self.assertIn("release/SOURCE-COMMIT", builder)
+        self.assertIn("':(exclude)release/*.tar.gz'", builder)
+        self.assertIn("':(exclude)release/*.tar.gz.sha256'", builder)
+        self.assertIn("':(exclude)release/pihole-speedtest-v6-bootstrap.sh'", builder)
 
 
 if __name__ == "__main__":

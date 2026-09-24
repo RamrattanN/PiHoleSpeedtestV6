@@ -1,7 +1,7 @@
 # Approved dashboard baseline
 
 > Version `0.1.0.dev4` remains the approved historical baseline described on
-> this page.  Version `1.0.3` is the production maintenance candidate.  It keeps
+> this page.  Version `1.0.4` is the production maintenance candidate.  It keeps
 > substantial collection outages blank and breaks line charts across them
 > without adding labels, shaded overlays, or synthetic measurements, restores
 > a consistent two-pixel gap between neighboring bar groups across mixed

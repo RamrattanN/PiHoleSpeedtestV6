@@ -2,10 +2,12 @@
 
 ## Status
 
-Version `1.0.3` is the production maintenance release.  Its immutable bundle and
-checksum-pinned bootstrap are published for Raspberry Pi installation,
-adapter management, and data-preserving removal.  Reboot, interrupted-install,
-and explicit purge acceptance remain tracked in issue #3.
+Version `1.0.4` is the production maintenance candidate.  Version `1.0.3` is
+withdrawn because live download verification correctly detected that its
+published bundle bytes did not match its embedded checksum.  Do not use the
+version `1.0.3` bootstrap.  Version `1.0.4` additionally supports uninstalling
+any verified installed version.  Reboot, interrupted-install, and explicit
+purge acceptance remain tracked in issue #3.
 
 ## Trust chain
 

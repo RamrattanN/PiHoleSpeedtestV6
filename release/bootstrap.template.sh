@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repository="RamrattanN/PiHoleSpeedtestV6"
-version="1.0.3"
+version="1.0.4"
 source_commit="@SOURCE_COMMIT@"
 asset_commit="@ASSET_COMMIT@"
 bundle_sha256="@BUNDLE_SHA256@"
@@ -64,6 +64,22 @@ if [ ! -f "$source_marker" ] || [ "$(tr -d '\r\n' < "$source_marker")" != "$sour
   exit 1
 fi
 
+read_installed_commit() {
+  installed_manifest="/var/lib/pihole-speedtest/install-manifest.txt"
+  if ! sudo test -f "$installed_manifest"; then
+    echo "STOP: Installed companion manifest could not be found." >&2
+    return 1
+  fi
+  installed_commit="$(
+    sudo sed -n 's/^source_commit=//p' "$installed_manifest"
+  )"
+  if ! [[ "$installed_commit" =~ ^[0-9a-f]{40}$ ]]; then
+    echo "STOP: Installed companion commit could not be verified." >&2
+    return 1
+  fi
+  printf '%s\n' "$installed_commit"
+}
+
 case "$action" in
   install)
     sudo bash "$source_root/scripts/install_release.sh" \
@@ -74,8 +90,9 @@ case "$action" in
       echo "STOP: uninstall does not accept additional options." >&2
       exit 2
     fi
+    installed_commit="$(read_installed_commit)"
     sudo bash "$source_root/scripts/uninstall_release.sh" \
-      --expected-commit "$source_commit"
+      --expected-commit "$installed_commit"
     ;;
   install-adapter)
     pihole_origin=""
@@ -96,14 +113,7 @@ case "$action" in
       pihole_origin="${pihole_origin:-http://${device_address}}"
       companion_url="${companion_url:-http://${device_address}:8765}"
     fi
-    installed_commit="$(
-      sudo sed -n 's/^source_commit=//p' \
-        /var/lib/pihole-speedtest/install-manifest.txt
-    )"
-    if ! [[ "$installed_commit" =~ ^[0-9a-f]{40}$ ]]; then
-      echo "STOP: Installed companion commit could not be verified." >&2
-      exit 1
-    fi
+    installed_commit="$(read_installed_commit)"
     sudo bash "$source_root/scripts/install_pihole_adapter.sh" \
       --expected-source-commit "$source_commit" \
       --expected-installed-commit "$installed_commit" \

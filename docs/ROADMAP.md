@@ -79,9 +79,10 @@
   synthetic rows into measurement history.
 - [x] Complete owner review of version `1.0.2` bar delimiters and the
   runtime-derived Setup version label.
-- [ ] Complete owner acceptance of version `1.0.3`, which retains a consistent
+- [ ] Complete owner acceptance of version `1.0.4`, which retains a consistent
   two-pixel gap between neighboring bar groups across mixed collection
-  cadences.
+  cadences and allows the current verified bootstrap to uninstall any supported
+  installed version.
 - [ ] Prove Pi-hole update failure isolation on the live service boundary.
 
 ## Release

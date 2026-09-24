@@ -67,7 +67,11 @@ work_dir="$(mktemp -d)"
 trap 'rm -rf -- "$work_dir"' EXIT
 mkdir -p "$work_dir/$bundle_root/release" "$output_directory"
 
-git -C "$source_root" archive "$archive_commit" |
+git -C "$source_root" archive "$archive_commit" -- \
+  . \
+  ':(exclude)release/*.tar.gz' \
+  ':(exclude)release/*.tar.gz.sha256' \
+  ':(exclude)release/pihole-speedtest-v6-bootstrap.sh' |
   tar -x -C "$work_dir/$bundle_root"
 printf '%s\n' "$source_commit" > "$work_dir/$bundle_root/release/SOURCE-COMMIT"
 
