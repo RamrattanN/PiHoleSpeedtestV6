@@ -1,14 +1,14 @@
 # Deployment status
 
-The dashboard companion service and 15-minute automated collection passed
-their approval-gated installation and live verification on the Raspberry Pi.
-The live Pi-hole navigation adapter remains blocked behind its separate gate.
+The dashboard companion service, 15-minute automated collection, and optional
+Pi-hole navigation adapter passed live verification on the Raspberry Pi.
+Version `1.0.0` is the production release line.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
-retained only as historical source.  Guarded companion installation and upgrade
-workflows now exist, while the supported release installer, uninstaller,
-backup, and restore contract remains open.
+retained only as historical source.  Guarded companion installation, upgrade,
+and data-preserving removal workflows now exist.  Full backup and restore
+acceptance remains open.
 
 Do not run `./mod`, `scripts/mod.sh`, or `scripts/install_dashboard.sh` on a
 live Pi-hole from this development branch.
@@ -35,7 +35,7 @@ pihole-speedtest serve --database ./data/speedtest.db --host 127.0.0.1 --port 87
 - schedule: systemd timer
 - integration: optional and reversible Pi-hole v6 adapter
 
-Development systemd units now exist under `deploy/systemd/` for:
+Systemd units are maintained under `deploy/systemd/` for:
 
 - an always-on dashboard at LAN port `8765`;
 - a one-shot official Ookla collection service;
@@ -45,10 +45,10 @@ Development systemd units now exist under `deploy/systemd/` for:
 - an unprivileged `pihole-speedtest` service account;
 - process locking that refuses overlapping collections.
 
-The dashboard and collection timer now run without an interactive Terminal
-session.  The live companion is owner-approved at commit
-`897e7d2a8e699f65e762ab6a8908f002443f2abb`.  Complete uninstall, general
-backup, restore, and reboot procedures still require release-level acceptance.
+The dashboard and collection timer run without an interactive Terminal
+session.  Production source commit
+`494f45f23f8c14f8ccd6eff40c1e71a9c277be71` passed GitHub CI run 46.  General
+backup, restore, and final reboot acceptance remain tracked release work.
 
 The authoritative deployment gates are in
 [`docs/QA-AND-ACCEPTANCE.md`](docs/QA-AND-ACCEPTANCE.md).
@@ -124,16 +124,15 @@ measurement history, the active collection schedule, and the installed Pi-hole
 adapter state preserved.  Each guarded upgrade retains timestamped recovery
 evidence under `/var/lib/pihole-speedtest-upgrade-recovery/`.
 
-## Checksum-verified curl installation and removal candidate
+## Checksum-verified curl installation and removal
 
-Version `0.1.0.dev5` contains the release installer, data-preserving
-uninstaller, separate purge command, deterministic bundle builder, and
-immutable-bootstrap renderer.  The bootstrap verifies the complete bundle
-before invoking `sudo`; it never pipes a mutable branch into a privileged
-shell.
+Version `1.0.0` contains the release installer, data-preserving uninstaller,
+separate purge command, deterministic bundle builder, and immutable-bootstrap
+renderer.  The bootstrap verifies the complete bundle before invoking `sudo`;
+it never pipes a mutable branch into a privileged shell.
 
-Immutable candidate command syntax and the complete trust, preservation,
+Immutable production command syntax and the complete trust, preservation,
 rollback, and acceptance contract are maintained in
-[Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  The commands are
-not supported until the Raspberry Pi 3 acceptance sequence in
-[issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) passes.
+[Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  Remaining
+Raspberry Pi acceptance is tracked in
+[issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).

@@ -24,13 +24,15 @@ detailed acceptance criteria for active engineering work.
 - Rebaseline version `0.1.0.dev4` as the owner-approved live baseline with
   embedded branding, manual testing, true timestamp gaps, and adaptive layered
   bars.
+- Promote version `1.0.0`, pass GitHub CI run 46, and publish an immutable
+  production bundle plus checksum-pinned bootstrap.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Publish immutable candidate assets, then pass install, rollback, uninstall, reinstall, reboot, and purge acceptance on Raspberry Pi 3 |
-| Production `1.0.0` promotion | Version `1.0.0` | Automated QA, owner visual acceptance of zero-valued missed intervals, guarded companion upgrade, immutable release assets, and documentation rebaseline |
+| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
+| Production `1.0.0` live upgrade | Version `1.0.0` | Run the guarded upgrade and verify data, timer, dashboard, adapter, and Pi-hole health |
 
 ## Backlog
 
@@ -47,8 +49,8 @@ detailed acceptance criteria for active engineering work.
 
 - No future Pi-hole Web modification without version, checksum, health,
   recovery, and exact-removal verification plus explicit owner approval.
-- No curl command may be documented as supported until immutable-source and
+- No future curl release may be documented without immutable-source and
   checksum verification, rollback, uninstall preservation, and Raspberry Pi 3
-  acceptance pass.
+  acceptance evidence.
 - No purge of measurement history, settings, backups, or recovery evidence
   without a separate explicit owner action.

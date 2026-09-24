@@ -26,10 +26,10 @@
 - [x] Build guarded staged installation and companion upgrade flows.
 - [x] Build the data-preserving release uninstaller and separate explicit purge
   flow.
-- [ ] Complete checksum-verified curl install and uninstall entry points with
+- [x] Complete checksum-verified curl install and uninstall entry points with
   GitHub-hosted instructions ([issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3)).
 - [x] Add deterministic release-bundle and immutable-bootstrap build tooling.
-- [ ] Publish immutable release assets and record both SHA-256 trust anchors.
+- [x] Publish immutable release assets and record both SHA-256 trust anchors.
 - [ ] Pass uninstall and reinstall acceptance with history and settings
   preserved.
 - [x] Add a rollback-guarded dashboard-only staged installer.
@@ -74,7 +74,7 @@
   under the recovery-backed approval gate.
 - [x] Complete owner acceptance of embedded branding, manual test controls,
   true timestamp gaps, and adaptive layered bars in version `0.1.0.dev4`.
-- [ ] Complete owner acceptance of production version `1.0.0`, which represents
+- [x] Complete owner acceptance of production version `1.0.0`, which represents
   missed scheduled intervals as derived zero-valued chart points without
   inserting synthetic rows into measurement history.
 - [ ] Prove Pi-hole update failure isolation on the live service boundary.

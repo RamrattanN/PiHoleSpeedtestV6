@@ -42,6 +42,7 @@ v6.6 integration baseline.  The companion service, collection timer, embedded
 dashboard, and independently reversible sidebar adapter have completed live
 acceptance.
 
-Version `1.0.0` is the production release line.  It renders missed scheduled
-intervals as zeroes on the charts while preserving the underlying measurement
-history exactly.
+Version `1.0.0` is the production release line.  Its source passed GitHub CI
+run 46, and its immutable bundle and checksum-pinned installer are published.
+It renders missed scheduled intervals as zeroes on the charts while preserving
+the underlying measurement history exactly.

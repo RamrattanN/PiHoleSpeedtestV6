@@ -2,10 +2,10 @@
 
 ## Status
 
-Version `0.1.0.dev5` introduces the release workflow candidate.  The immutable
-bundle and bootstrap are published for Raspberry Pi acceptance.  This is not a
-supported production installation method until the complete install, adapter,
-removal, reinstall, reboot, and purge boundaries pass on Raspberry Pi 3.
+Version `1.0.0` is the production release line.  Its immutable bundle and
+checksum-pinned bootstrap are published for Raspberry Pi installation,
+adapter management, and data-preserving removal.  Reboot, interrupted-install,
+and explicit purge acceptance remain tracked in issue #3.
 
 ## Trust chain
 
@@ -23,17 +23,17 @@ It will:
 
 No branch-based curl command is supported.
 
-## Candidate trust anchors
+## Production trust anchors
 
 | Item | Immutable value |
 | --- | --- |
-| Application source commit | `03453bc9f8743b0f3881dde2a82fba874d9ce9da` |
-| Bundle asset commit | `f7454b07849a38e54bf0d8e37d2ca70dd9933f63` |
-| Bundle SHA-256 | `d552f112d52ed53cf0644200ddcf294b482c62a3b72299e9b810e8a0c9dacfac` |
-| Bootstrap commit | `38e576ac1deb036d46ed53fcbed2f245540ccfcc` |
-| Bootstrap SHA-256 | `39b025849e446c4819de7d03fdff810ff9f6544c2700f93da33c3e00da6ae71d` |
+| Application source commit | `494f45f23f8c14f8ccd6eff40c1e71a9c277be71` |
+| Bundle asset commit | `2b41b5204f31ef47b7e5be1a0abc2abbbeafd63b` |
+| Bundle SHA-256 | `cfdbdcb6f09ade6b6ccd72e9f258ca55b9aef70ebca31a432851e0c58dbffde7` |
+| Bootstrap commit | `68da2ce7f66659663298145ea19c3a077130ae0c` |
+| Bootstrap SHA-256 | `aef8b19b11473648054d1aa30abe360435bd9c290418e61a4d68927a741cd9b3` |
 
-## Candidate install command
+## Production install command
 
 Run this on the Raspberry Pi.  It downloads and verifies the bootstrap before
 the bootstrap downloads and verifies the complete bundle.  `sudo` is invoked
@@ -44,9 +44,9 @@ bootstrap=/tmp/pihole-speedtest-v6-bootstrap.sh && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
   --output "$bootstrap" \
-  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/38e576ac1deb036d46ed53fcbed2f245540ccfcc/release/pihole-speedtest-v6-bootstrap.sh && \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/68da2ce7f66659663298145ea19c3a077130ae0c/release/pihole-speedtest-v6-bootstrap.sh && \
 printf '%s  %s\n' \
-  '39b025849e446c4819de7d03fdff810ff9f6544c2700f93da33c3e00da6ae71d' \
+  'aef8b19b11473648054d1aa30abe360435bd9c290418e61a4d68927a741cd9b3' \
   "$bootstrap" | sha256sum --check --status - && \
 bash "$bootstrap" install
 ```
@@ -54,7 +54,7 @@ bash "$bootstrap" install
 The default capture interval is 15 minutes.  A supported alternative can be
 selected by adding, for example, `--interval-minutes 60` after `install`.
 
-## Candidate sidebar install command
+## Sidebar install command
 
 After the companion installation passes, use the already verified bootstrap:
 
@@ -76,7 +76,7 @@ bash /tmp/pihole-speedtest-v6-bootstrap.sh install-adapter \
   --companion-url https://speedtest.example.net
 ```
 
-## Candidate removal commands
+## Removal commands
 
 If the sidebar adapter is installed, remove and verify that independent layer
 first:
@@ -92,7 +92,7 @@ bash /tmp/pihole-speedtest-v6-bootstrap.sh uninstall
 ```
 
 If `/tmp` has been cleared, repeat the download and bootstrap checksum steps
-from the candidate install command, then replace the final `install` action
+from the production install command, then replace the final `install` action
 with the required removal action.
 
 Permanent deletion remains a separate command and must never be combined with
