@@ -2,7 +2,7 @@
 
 ## Status
 
-Version `1.0.4` is the production maintenance candidate.  Version `1.0.3` is
+Version `1.0.4` is the production maintenance release.  Version `1.0.3` is
 withdrawn because live download verification correctly detected that its
 published bundle bytes did not match its embedded checksum.  Do not use the
 version `1.0.3` bootstrap.  Version `1.0.4` additionally supports uninstalling
@@ -29,11 +29,11 @@ No branch-based curl command is supported.
 
 | Item | Immutable value |
 | --- | --- |
-| Application source commit | `8db8852cd4b47bf2c7024ec9c08277a1b87ae2f2` |
-| Bundle asset commit | `c34765a28b76abc7f184f6ff155da2bd91a9f99b` |
-| Bundle SHA-256 | `d29e7aaee356bd422347363079f2b327face738f9adff93fd5dc392c3444b42a` |
-| Bootstrap commit | `152468821249f0fdbf3bd28e0150444446559337` |
-| Bootstrap SHA-256 | `4151a8a3e6faa541f6938c536e8eab5bd0bde9cec9ba7a369960d68bd3c8a21d` |
+| Application source commit | `b3e36096d30c96f79a8df46945bc6db4483826af` |
+| Bundle asset commit | `6c3878b56a92b79719d1015bac4cf394b3b276d8` |
+| Bundle SHA-256 | `3506e503823dcde66bcd7dc7971a1fe26225eb2e2d7ce96e1e31dc35e1b97903` |
+| Bootstrap commit | `72192929a7d53c35b252e8ec55f02f477f6d4b0d` |
+| Bootstrap SHA-256 | `e40405958a6a035df3a0e23c8fea91221fbed4ea64172120da0d22a22e98e775` |
 
 ## Production install command
 
@@ -46,9 +46,9 @@ bootstrap=/tmp/pihole-speedtest-v6-bootstrap.sh && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
   --output "$bootstrap" \
-  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/152468821249f0fdbf3bd28e0150444446559337/release/pihole-speedtest-v6-bootstrap.sh && \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/72192929a7d53c35b252e8ec55f02f477f6d4b0d/release/pihole-speedtest-v6-bootstrap.sh && \
 printf '%s  %s\n' \
-  '4151a8a3e6faa541f6938c536e8eab5bd0bde9cec9ba7a369960d68bd3c8a21d' \
+  'e40405958a6a035df3a0e23c8fea91221fbed4ea64172120da0d22a22e98e775' \
   "$bootstrap" | sha256sum --check --status - && \
 bash "$bootstrap" install
 ```

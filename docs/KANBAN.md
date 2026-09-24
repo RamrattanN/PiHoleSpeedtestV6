@@ -47,6 +47,9 @@ detailed acceptance criteria for active engineering work.
   with 98,716 measurements and the 15-minute setting preserved exactly.
 - Identify and correct the bootstrap limitation that tied uninstall to the
   bootstrap release instead of the verified installed release.
+- Publish version `1.0.4` source after GitHub CI run 63 passed, then publish
+  and independently download-verify its deterministic bundle and
+  checksum-pinned bootstrap.
 
 ## In progress
 
