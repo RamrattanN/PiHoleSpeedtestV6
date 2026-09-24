@@ -27,11 +27,11 @@ No branch-based curl command is supported.
 
 | Item | Immutable value |
 | --- | --- |
-| Application source commit | `7ff95d8cccba9a0927c2730216b761f469ac5720` |
-| Bundle asset commit | `8b8a9658461b5ee3aa6519e495de22e567ee79ae` |
-| Bundle SHA-256 | `2b9db886c22962ef97f78bcbf5dc3aba717841777d2491744f4e3999d1d188b9` |
-| Bootstrap commit | `9bb07db3c52a22a00a0cb666e992e3b77ef1f969` |
-| Bootstrap SHA-256 | `d4a51bd0c96854462672d212bdfe77053725b0eb34783292947f74f630f52b5e` |
+| Application source commit | `6c86318e202d136ae6c01346a223407cbff791e1` |
+| Bundle asset commit | `dc20e3ef607e7a144948703cfeccca3592839106` |
+| Bundle SHA-256 | `125655939bf882fcf607965fabec5fab173b332f2f570b680dc88949f5af72a1` |
+| Bootstrap commit | `4156faddcdaa67b022a98bc36f2c39dadc0827ea` |
+| Bootstrap SHA-256 | `ff8ca1f596b2a53b75ec761a849404467ef084694dbf59346af934270459a321` |
 
 ## Production install command
 
@@ -44,9 +44,9 @@ bootstrap=/tmp/pihole-speedtest-v6-bootstrap.sh && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
   --output "$bootstrap" \
-  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/9bb07db3c52a22a00a0cb666e992e3b77ef1f969/release/pihole-speedtest-v6-bootstrap.sh && \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/4156faddcdaa67b022a98bc36f2c39dadc0827ea/release/pihole-speedtest-v6-bootstrap.sh && \
 printf '%s  %s\n' \
-  'd4a51bd0c96854462672d212bdfe77053725b0eb34783292947f74f630f52b5e' \
+  'ff8ca1f596b2a53b75ec761a849404467ef084694dbf59346af934270459a321' \
   "$bootstrap" | sha256sum --check --status - && \
 bash "$bootstrap" install
 ```

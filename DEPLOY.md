@@ -47,7 +47,7 @@ Systemd units are maintained under `deploy/systemd/` for:
 
 The dashboard and collection timer run without an interactive Terminal
 session.  Production source commit
-`7ff95d8cccba9a0927c2730216b761f469ac5720` passed GitHub CI run 50.  General
+`6c86318e202d136ae6c01346a223407cbff791e1` passed GitHub CI run 54.  General
 backup, restore, and final reboot acceptance remain tracked release work.
 
 The authoritative deployment gates are in

@@ -1,10 +1,12 @@
 # Approved dashboard baseline
 
 > Version `0.1.0.dev4` remains the approved historical baseline described on
-> this page.  Version `1.0.1` is the production maintenance revision.  It keeps
+> this page.  Version `1.0.2` is the production maintenance candidate.  It keeps
 > substantial collection outages blank and breaks line charts across them
-> without adding labels, shaded overlays, or synthetic measurements.  This
-> page will be rebaselined only after owner visual acceptance.
+> without adding labels, shaded overlays, or synthetic measurements, restores
+> subtle spacing between mixed-cadence bars, and shows the installed version
+> discreetly in Setup.  This page will be rebaselined only after owner visual
+> acceptance on the Raspberry Pi.
 
 ## Decision
 

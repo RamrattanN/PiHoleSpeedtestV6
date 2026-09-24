@@ -33,6 +33,8 @@ detailed acceptance criteria for active engineering work.
   deterministic bundle plus checksum-pinned bootstrap.
 - Correct mixed-cadence bar widths so every timestamp column retains a subtle
   delimiter, and publish the installed runtime version discreetly in Setup.
+- Publish the immutable version `1.0.2` source, deterministic bundle, bundle
+  checksum, and checksum-pinned bootstrap after GitHub CI run 54 passed.
 
 ## In progress
 
