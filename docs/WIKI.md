@@ -45,4 +45,5 @@ acceptance.
 Version `1.0.1` is the production maintenance line.  It removes synthetic zero
 points, leaves substantial collection outages blank, and breaks line charts
 across those outages while preserving the underlying measurement history
-exactly.
+exactly.  Its source passed GitHub CI run 50, and its immutable bundle and
+checksum-pinned bootstrap are published.

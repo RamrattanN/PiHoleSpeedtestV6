@@ -47,7 +47,7 @@ Systemd units are maintained under `deploy/systemd/` for:
 
 The dashboard and collection timer run without an interactive Terminal
 session.  Production source commit
-`494f45f23f8c14f8ccd6eff40c1e71a9c277be71` passed GitHub CI run 46.  General
+`7ff95d8cccba9a0927c2730216b761f469ac5720` passed GitHub CI run 50.  General
 backup, restore, and final reboot acceptance remain tracked release work.
 
 The authoritative deployment gates are in
@@ -126,7 +126,7 @@ evidence under `/var/lib/pihole-speedtest-upgrade-recovery/`.
 
 ## Checksum-verified curl installation and removal
 
-Version `1.0.0` contains the release installer, data-preserving uninstaller,
+Version `1.0.1` contains the release installer, data-preserving uninstaller,
 separate purge command, deterministic bundle builder, and immutable-bootstrap
 renderer.  The bootstrap verifies the complete bundle before invoking `sudo`;
 it never pipes a mutable branch into a privileged shell.

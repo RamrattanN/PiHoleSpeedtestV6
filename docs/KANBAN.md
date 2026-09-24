@@ -29,6 +29,8 @@ detailed acceptance criteria for active engineering work.
 - Upgrade the live Raspberry Pi companion to version `1.0.0` with 98,713
   measurements, SQLite integrity, services, timer, adapter, and Pi-hole health
   verified.
+- Publish version `1.0.1` source, pass GitHub CI run 50, and publish its
+  deterministic bundle plus checksum-pinned bootstrap.
 
 ## In progress
 

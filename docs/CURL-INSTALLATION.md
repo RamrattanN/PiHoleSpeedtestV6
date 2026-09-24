@@ -2,7 +2,7 @@
 
 ## Status
 
-Version `1.0.0` is the production release line.  Its immutable bundle and
+Version `1.0.1` is the production maintenance release.  Its immutable bundle and
 checksum-pinned bootstrap are published for Raspberry Pi installation,
 adapter management, and data-preserving removal.  Reboot, interrupted-install,
 and explicit purge acceptance remain tracked in issue #3.
@@ -27,11 +27,11 @@ No branch-based curl command is supported.
 
 | Item | Immutable value |
 | --- | --- |
-| Application source commit | `494f45f23f8c14f8ccd6eff40c1e71a9c277be71` |
-| Bundle asset commit | `2b41b5204f31ef47b7e5be1a0abc2abbbeafd63b` |
-| Bundle SHA-256 | `cfdbdcb6f09ade6b6ccd72e9f258ca55b9aef70ebca31a432851e0c58dbffde7` |
-| Bootstrap commit | `68da2ce7f66659663298145ea19c3a077130ae0c` |
-| Bootstrap SHA-256 | `aef8b19b11473648054d1aa30abe360435bd9c290418e61a4d68927a741cd9b3` |
+| Application source commit | `7ff95d8cccba9a0927c2730216b761f469ac5720` |
+| Bundle asset commit | `8b8a9658461b5ee3aa6519e495de22e567ee79ae` |
+| Bundle SHA-256 | `2b9db886c22962ef97f78bcbf5dc3aba717841777d2491744f4e3999d1d188b9` |
+| Bootstrap commit | `9bb07db3c52a22a00a0cb666e992e3b77ef1f969` |
+| Bootstrap SHA-256 | `d4a51bd0c96854462672d212bdfe77053725b0eb34783292947f74f630f52b5e` |
 
 ## Production install command
 
@@ -44,9 +44,9 @@ bootstrap=/tmp/pihole-speedtest-v6-bootstrap.sh && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
   --output "$bootstrap" \
-  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/68da2ce7f66659663298145ea19c3a077130ae0c/release/pihole-speedtest-v6-bootstrap.sh && \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/9bb07db3c52a22a00a0cb666e992e3b77ef1f969/release/pihole-speedtest-v6-bootstrap.sh && \
 printf '%s  %s\n' \
-  'aef8b19b11473648054d1aa30abe360435bd9c290418e61a4d68927a741cd9b3' \
+  'd4a51bd0c96854462672d212bdfe77053725b0eb34783292947f74f630f52b5e' \
   "$bootstrap" | sha256sum --check --status - && \
 bash "$bootstrap" install
 ```
