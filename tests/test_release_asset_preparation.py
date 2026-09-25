@@ -1,7 +1,7 @@
 """Release scope, drift, and workflow-safety controls for version 1.0.6.
 
 The scope lock applies to the 1.0.6 release line only: it pins every file
-outside the release allowlist to the reviewed baseline d56407d.  Bumping the
+outside the release allowlist to the reviewed baseline ba76cd1.  Bumping the
 project version ends the lock for later development.
 """
 
@@ -20,11 +20,11 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 PREPARE = WORKFLOWS / "prepare-release-assets.yml"
 RELEASE_VERSION = "1.0.6"
-# Content baseline for the scope lock: the reviewed rc.4 merge on main.
-REVIEWED_BASE = "d56407dde427b3d010d3bd6987c35fc5021b33a9"
+# Content baseline for the scope lock: the reviewed rc.5 merge on main.
+REVIEWED_BASE = "ba76cd12ac4de7ecd3b25ccb23772f56a032e413"
 # Pull request base for the current recut, pinned by the preparation workflow.
 PR_BASE = REVIEWED_BASE
-RELEASE_BRANCH = "fix/v1.0.6-https"
+RELEASE_BRANCH = "fix/v1.0.6-https-recovery"
 # Assets recut before publication; they must never be reused.
 SUPERSEDED_SHA256 = {
     "40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce",
@@ -45,11 +45,14 @@ SUPERSEDED_SHA256 = {
     # Published rc.4 assets remain historical evidence and cannot be reused for rc.5.
     "7cbd9f088d4ee9676d1c09619d52478b1e3dc1130cdc922bcecedddcec394d2a",
     "81e0f27302d01cd4dab51e194c40b3ceff7019ef9e9111e95fc0f2176e95a1cc",
+    # Published rc.5 assets remain historical evidence and cannot be reused for rc.6.
+    "4d67f41e3b12268c5690c5237240787d753afc95a0678a4496ccbd7f2db28fcc",
+    "3af1b4290b00d1b06f07356312f5ba3b7837f07b9059330f60725bd48ce919c7",
 }
 # The superseded bundle on main (source commit, SHA-256) that this recut replaces.
 INHERITED_BUNDLE = (
-    "107002350bd5c6f63bf44f1266b69d6d21633702",
-    "7cbd9f088d4ee9676d1c09619d52478b1e3dc1130cdc922bcecedddcec394d2a",
+    "c050bc627315b3a43f85af5d1f7ff43801a66f9e",
+    "4d67f41e3b12268c5690c5237240787d753afc95a0678a4496ccbd7f2db28fcc",
 )
 BUNDLE = ROOT / "release" / f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz"
 BOOTSTRAP = ROOT / "release" / "pihole-speedtest-v6-bootstrap.sh"
@@ -75,21 +78,14 @@ RELEASE_ALLOWLIST = {
 # Files outside the allowlist that carry an exact owner-approved change.  Each is
 # pinned to its complete corrected content and excluded from the group digests.
 APPROVED_OVERRIDES = {
-    # The owner-approved rc.5 HTTPS correction and its exact tests.
-    "deploy/systemd/pihole-speedtest-dashboard-tls.service": "eca597ab7897840044fb39daf03fc289f54de6f0c10c7bcbbf1ec27790fbf1e9",
-    "release/bootstrap.template.sh": "a10388715b7bb65ee8f336ecc41b54bec9c25107fb501fecd068c593ef455b24",
-    "scripts/install_pihole_adapter.sh": "c5ac99de710825e71c1e45f58b3bfc934fbac8a8c51fcd3dac65b2477e447127",
-    "scripts/install_release.sh": "597ecf9786ebcacaa114086ca24b22d3901b478b1b3cab1688b1cfab45212cb7",
-    "src/pihole_speedtest/cli.py": "5a4cdf8f53b5ce58286ccc1bed9d2e62b07c25d97b76dedaf0eefde72ea9e753",
-    "src/pihole_speedtest/server.py": "7d080f2a3afd9cddd64c584813403731f5d64bf3406c58573e989c37edd622cf",
-    "tests/test_one_line_install.py": "1964d54d228612f70d4cc4dddc61f8c037cd3702a67fb129e4b66724309becff",
-    "tests/test_release_documentation.py": "10794ec4e1d31726254b28ad5559c4a0dc2755877bb2fff9291ac9f3484206af",
-    "tests/test_release_workflow.py": "71712c5f1c11980fcbafff3ee48af4c44ccffc772c0987c3f7d69a5369140611",
-    "tests/test_server.py": "abbd68fb2c93828e7453d99d5831782160df8240f666bd12eefd20b95f33f93d",
-    "tests/test_systemd_assets.py": "2bffbbc6d7b54c718267c5f566a4373b149fd4cb0c43f7e593c72bcba68f6584",
+    # The owner-approved rc.6 HTTPS recovery correction and its exact tests.
+    "release/bootstrap.template.sh": "c4023ab253120828a11cf19525cfdbc883adfa2e23ebf95fbaa772f3a6d39e36",
+    "scripts/install_pihole_adapter.sh": "64f220109f2426a736e2d905d30f285edfd333dbc18c12f825ec5f1a8a13184f",
+    "tests/test_one_line_install.py": "efdafd4f0550bd8698ebf8003649fc66f5c0def02ce9ac6300e87265103488fd",
+    "tests/test_release_documentation.py": "a1b6d6180478dfc5df04a75f229e7705db10f82144205a63b62effecdf909ae1",
+    "tests/test_systemd_assets.py": "0a892ef0825d8376a4d7a2784c10a067bbd0f82af40ce263eab8112ad508720d",
 }
 APPROVED_OVERRIDE_MODES = {path: "100644" for path in APPROVED_OVERRIDES}
-APPROVED_OVERRIDE_MODES["scripts/install_release.sh"] = "100755"
 # Ordered partition of every tracked file outside the allowlist and overrides.
 PROTECTED_GROUPS = [
     ("chart", ("src/pihole_speedtest/web/", "web/")),
@@ -106,13 +102,13 @@ PROTECTED_GROUPS = [
 # sha256 over sorted "mode blob path" lines at the reviewed baseline, and file count.
 BASELINE_DIGESTS = {
     "chart": ("2f3f87c3a6d2b79f090c9e52773c0e1f1556ab0a299e562c3e5fd99eaea427a1", 8),
-    "runtime": ("c436b24c108aa45d3e0c96dcd11f23be387034ee2a78f20f60323576e97931a5", 13),
-    "installer": ("292eaffdb1b8fb6fd4aefb33da26294071c85bbf4a46885b302023c97655d755", 17),
+    "runtime": ("56968d841b7a2bdab8927cff16aee7c9572ca006f43d97d62db96fcded77f4b5", 16),
+    "installer": ("21f30a73d32dc0dcecaa725919dc7f9104019ff44c207ad804570fd97560429e", 18),
     "version-and-template": ("964524da306c583f48c692469effc1e2ec51498e3c0539a7df80d1d84a27df4a", 1),
     "licensing": ("d2daa9886b45795f3a4fb46f63e64ee976ee5a5d6023164a9a735fa38eef1d07", 2),
     "docker": ("51898daa73be46eb2dfa82700dedc02a9fd29370a81f2f9ca65160156cec60b3", 4),
     "workflows": ("ca2d8e4d6a3353f9fd3d1fc0cc60204a612f8101d69f57aef22287995bad6987", 2),
-    "tests": ("841702f8290e44092878fc7ef0a35dd62cf4244dbe1052bae311cc37612b4348", 13),
+    "tests": ("f152f3f1f35fe45733745e5aa22244da4209bb1069880ba20ae2a9462e7012f0", 15),
     "published-releases": ("dd860ea23f231664df1c844b1417a444d6b395412ed98e135c80935abae33c4b", 14),
     "other": ("3ec5663d54549afade020ac123e2ee7b01beb784c53a4e37efb996f2479990a7", 6),
 }

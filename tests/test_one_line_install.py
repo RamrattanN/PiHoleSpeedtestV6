@@ -83,6 +83,16 @@ set_manifest() {
 
 FAKE_SCRIPTS = {
     "install_release.sh": """
+        source_commit="$2"
+        pihole_origin=""
+        companion_url=""
+        while [ "$#" -gt 0 ]; do
+          case "$1" in
+            --pihole-origin) pihole_origin="$2"; shift 2 ;;
+            --companion-url) companion_url="$2"; shift 2 ;;
+            *) shift ;;
+          esac
+        done
         if [ -e "$F/opt/pihole-speedtest" ]; then echo "STOP: exists" >&2; exit 1; fi
         mkdir -p "$F/opt/pihole-speedtest" "$units" "$data" "$F/etc/default" \\
           "$F/state/active" "$F/state/enabled"
@@ -96,7 +106,8 @@ FAKE_SCRIPTS = {
           "$F/state/active/pihole-speedtest-collect.timer" \\
           "$F/state/enabled/pihole-speedtest-dashboard.service" \\
           "$F/state/enabled/pihole-speedtest-collect.timer"
-        printf 'installed_at=now\\nsource_commit=%s\\npihole_adapter_installed=false\\n' "$2" > "$manifest"
+        printf 'installed_at=now\\nsource_commit=%s\\npihole_origin=%s\\ncompanion_url=%s\\npihole_adapter_installed=false\\n' \
+          "$source_commit" "$pihole_origin" "$companion_url" > "$manifest"
         """,
     "uninstall_release.sh": """
         if ! grep -q '^pihole_adapter_installed=false$' "$manifest"; then exit 1; fi
@@ -795,7 +806,8 @@ class BootstrapBehaviourTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Install the Pi-hole sidebar adapter", result.stdout)
-        self.assertIn("install-adapter", result.stdout)
+        self.assertIn("rerun the same checksum-verified install command", result.stdout)
+        self.assertNotIn("bash /tmp/", result.stdout)
         self.assertEqual(sidebar.read_text(encoding="utf-8"), "original sidebar\n")
         self.assertTrue(self.harness.path("opt/pihole-speedtest").is_dir())
         self.assertTrue(self.harness.path("var/lib/pihole-speedtest/speedtest.db").is_file())
@@ -815,6 +827,21 @@ class BootstrapBehaviourTests(unittest.TestCase):
         self.assertFalse(self.harness.path("var/www/html/admin/speedtest.lp").exists())
         self.assertTrue(self.harness.path("opt/pihole-speedtest").is_dir())
         self.assertIn("no sidebar adapter changes", result.stdout)
+
+    def test_standalone_adapter_reuses_installed_https_origins(self):
+        self.install_all(
+            "--pihole-origin", "https://pi.hole",
+            "--companion-url", "https://pi.hole:8765",
+        )
+        self.assertEqual(self.harness.run("remove-adapter").returncode, 0)
+        self.harness.clear_phases()
+
+        result = self.harness.run("install-adapter")
+        log = (self.harness.fake / "phases.log").read_text(encoding="utf-8")
+
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("--pihole-origin https://pi.hole", log)
+        self.assertIn("--companion-url https://pi.hole:8765", log)
 
     def test_uninstall_all_removes_adapter_first_and_preserves_data(self):
         self.install_all()

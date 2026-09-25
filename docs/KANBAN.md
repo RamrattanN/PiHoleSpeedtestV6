@@ -96,8 +96,8 @@ detailed acceptance criteria for active engineering work.
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Live install, uninstall, repeat, pinned bootstrap, scheduled collection, reboot continuity, rc.3 chart zoom, and rc.4 timing acceptance passed.  Complete rc.5 HTTPS acceptance, rollback, and isolated disposable-data purge before stable publication |
-| Version `1.0.6` release candidate 5 | Branch `fix/v1.0.6-https` | Detect native Pi-hole HTTPS, serve the companion over HTTPS using the Pi-hole certificate through a restricted systemd credential, enforce matching schemes and certificate identity, preserve HTTP installations, recut verified assets, and complete Raspberry Pi acceptance.  Stable `v1.0.6` remains held |
+| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Live install, uninstall, repeat, pinned bootstrap, scheduled collection, reboot continuity, rc.3 chart zoom, and rc.4 timing acceptance passed.  rc.5 proved native companion HTTPS but exposed a plain-HTTP final adapter evidence check.  Complete rc.6 HTTPS acceptance, rollback, and isolated disposable-data purge before stable publication |
+| Version `1.0.6` release candidate 6 | Branch `fix/v1.0.6-https-recovery` | Make final adapter evidence scheme-aware, reuse installed origins for standalone adapter recovery, remove transient bootstrap paths from recovery guidance, preserve HTTP installations, recut verified assets, and complete Raspberry Pi acceptance.  Stable `v1.0.6` remains held |
 
 ## Backlog
 

@@ -4,12 +4,13 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_CANDIDATE = "v1.0.6-rc.5"
+CURRENT_CANDIDATE = "v1.0.6-rc.6"
 SUPERSEDED_CANDIDATES = (
     "v1.0.6-rc.1",
     "v1.0.6-rc.2",
     "v1.0.6-rc.3",
     "v1.0.6-rc.4",
+    "v1.0.6-rc.5",
 )
 RELEASE_DOCUMENTS = (
     "README.md",
@@ -101,6 +102,7 @@ class ReleaseDocumentationTests(unittest.TestCase):
                 self.assertIn("`v1.0.6-rc.2`", text)
                 self.assertIn("`v1.0.6-rc.3`", text)
                 self.assertIn("`v1.0.6-rc.4`", text)
+                self.assertIn("`v1.0.6-rc.5`", text)
                 self.assertIn("superseded for acceptance", text)
         for name in RELEASE_DOCUMENTS + ("docs/KANBAN.md",):
             sentences = re.split(r"(?<=[.!?])\s+", normalized(read(name)))

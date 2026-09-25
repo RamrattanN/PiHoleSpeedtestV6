@@ -76,8 +76,12 @@ passed visual and runner acceptance, but its completion-time chart chronology
 is superseded for acceptance.  `v1.0.6-rc.4` corrected chart chronology and
 retained completion timestamps, but its HTTP-only companion could not be
 embedded from a Pi-hole page opened over HTTPS.  It is superseded for
-acceptance and remains published as historical evidence.  `v1.0.6-rc.5` is
-the current acceptance candidate after publication.  It serves the companion
-over HTTPS when Pi-hole uses its native TLS certificate and retains the
-one-line `install-all` and `uninstall-all` actions.  Raspberry Pi acceptance of
-rc.5 and the stable release remain open.
+acceptance and remains published as historical evidence.  `v1.0.6-rc.5`
+served the companion over HTTPS when Pi-hole used its native TLS certificate,
+but its final adapter evidence capture sent plain HTTP to the TLS listener and
+rolled the adapter back safely.  It is superseded for acceptance and remains
+published as historical evidence.  `v1.0.6-rc.6` is the current acceptance
+candidate after publication.  It makes adapter evidence scheme-aware, reuses
+installed origins for recovery, and retains the one-line `install-all` and
+`uninstall-all` actions.  Raspberry Pi acceptance of rc.6 and the stable
+release remain open.
