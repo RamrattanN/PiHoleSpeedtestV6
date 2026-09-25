@@ -26,8 +26,8 @@ concurrency:
 
 env:
   RELEASE_VERSION: "1.0.6"
-  RELEASE_BRANCH: fix/v1.0.6-https
-  REVIEWED_BASE: d56407dde427b3d010d3bd6987c35fc5021b33a9
+  RELEASE_BRANCH: fix/v1.0.6-https-recovery
+  REVIEWED_BASE: ba76cd12ac4de7ecd3b25ccb23772f56a032e413
   # Superseded, never-published assets that must not be reused.
   SUPERSEDED_SHA256: >-
     40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce
@@ -43,14 +43,16 @@ env:
     cf699eb50583551ad40db7399bb3e88ec458018629f91ee219b38b161ac315b4
     7cbd9f088d4ee9676d1c09619d52478b1e3dc1130cdc922bcecedddcec394d2a
     81e0f27302d01cd4dab51e194c40b3ceff7019ef9e9111e95fc0f2176e95a1cc
-  PRERELEASE_TAG: v1.0.6-rc.5
+    4d67f41e3b12268c5690c5237240787d753afc95a0678a4496ccbd7f2db28fcc
+    3af1b4290b00d1b06f07356312f5ba3b7837f07b9059330f60725bd48ce919c7
+  PRERELEASE_TAG: v1.0.6-rc.6
   REPOSITORY: RamrattanN/PiHoleSpeedtestV6
   BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
   BOOTSTRAP: pihole-speedtest-v6-bootstrap.sh
 
 jobs:
   prepare:
-    if: github.head_ref == 'fix/v1.0.6-https'
+    if: github.head_ref == 'fix/v1.0.6-https-recovery'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -87,15 +89,9 @@ jobs:
               .github/workflows/prepare-release-assets.yml|\
               tests/test_release_asset_preparation.py|\
               release/bootstrap.template.sh|\
-              deploy/systemd/pihole-speedtest-dashboard-tls.service|\
               scripts/install_pihole_adapter.sh|\
-              scripts/install_release.sh|\
-              src/pihole_speedtest/cli.py|\
-              src/pihole_speedtest/server.py|\
               tests/test_release_documentation.py|\
               tests/test_one_line_install.py|\
-              tests/test_release_workflow.py|\
-              tests/test_server.py|\
               tests/test_systemd_assets.py|\
               README.md|DEPLOY.md|\
               docs/CURL-INSTALLATION.md|docs/KANBAN.md|docs/QA-AND-ACCEPTANCE.md|\

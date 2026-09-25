@@ -167,6 +167,14 @@ class SystemdAssetTests(unittest.TestCase):
         self.assertIn("pihole_adapter_installed=true", installer)
         self.assertIn("pihole_adapter_manifest=", installer)
         self.assertIn("adapter-remove", installer)
+        self.assertIn(
+            'companion_curl /api/health > "$recovery_dir/health.after.json"',
+            installer,
+        )
+        self.assertNotIn(
+            'curl -fsS http://127.0.0.1:8765/api/health >',
+            installer,
+        )
         self.assertNotIn("192.168.", installer)
 
     def test_adapter_removal_uses_verified_manifest_and_records_absence(self):

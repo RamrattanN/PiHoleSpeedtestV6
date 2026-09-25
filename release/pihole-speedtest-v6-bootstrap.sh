@@ -3,9 +3,9 @@ set -euo pipefail
 
 repository="RamrattanN/PiHoleSpeedtestV6"
 version="1.0.6"
-source_commit="c050bc627315b3a43f85af5d1f7ff43801a66f9e"
-asset_commit="3a95e71643fc4386146b95543c43d31699ddb902"
-bundle_sha256="4d67f41e3b12268c5690c5237240787d753afc95a0678a4496ccbd7f2db28fcc"
+source_commit="897f114b4b9a4eac833ae55cf2ae73debe59f0db"
+asset_commit="3a5d547a800ce4c86b0970c72215e9145e4c42de"
+bundle_sha256="7d7e33b12fdb9605465373b92a8c970be2818ce0757397254d740d15b679a54d"
 bundle_name="pihole-speedtest-v6-${version}.tar.gz"
 bundle_url="https://raw.githubusercontent.com/${repository}/${asset_commit}/release/${bundle_name}"
 
@@ -439,7 +439,7 @@ companion_failure() {
   echo >&2
   echo "STOP: install-all failed during $current_phase" >&2
   echo "Measurement history, settings, and recovery evidence were preserved." >&2
-  echo "Remove the product while keeping data: bash $0 uninstall-all" >&2
+  echo "To remove the product while keeping data, use the checksum-verified uninstall runner." >&2
   current_phase=""
   exit 1
 }
@@ -462,8 +462,8 @@ adapter_failure() {
   fi
   echo "The companion, measurement history, settings, and recovery evidence were preserved." >&2
   echo "Dashboard: $companion_url/" >&2
-  echo "After resolving the problem, retry the sidebar: bash $0 install-adapter" >&2
-  echo "Or remove the product while keeping data: bash $0 uninstall-all" >&2
+  echo "After resolving the problem, rerun the same checksum-verified install command." >&2
+  echo "To remove the product while keeping data, use the checksum-verified uninstall runner." >&2
   current_phase=""
   exit 1
 }
@@ -600,14 +600,15 @@ case "$action" in
         *) echo "Unknown adapter option: $1" >&2; exit 2 ;;
       esac
     done
+    if [ -z "$pihole_origin" ]; then
+      pihole_origin="$(manifest_value pihole_origin)"
+    fi
+    if [ -z "$companion_url" ]; then
+      companion_url="$(manifest_value companion_url)"
+    fi
     if [ -z "$pihole_origin" ] || [ -z "$companion_url" ]; then
-      device_address="$(hostname -I 2>/dev/null | awk '{print $1}')"
-      if [ -z "$device_address" ]; then
-        echo "STOP: Device address could not be detected.  Supply both origins." >&2
-        exit 1
-      fi
-      pihole_origin="${pihole_origin:-http://${device_address}}"
-      companion_url="${companion_url:-http://${device_address}:8765}"
+      echo "STOP: Installed origins could not be read.  Supply both origins explicitly." >&2
+      exit 1
     fi
     installed_commit="$(read_installed_commit)"
     sudo bash "$source_root/scripts/install_pihole_adapter.sh" \

@@ -26,9 +26,13 @@ superseded for acceptance and remains published as historical evidence.
 `v1.0.6-rc.4` records actual start and completion times and charts scheduled
 tests at their configured collection slot.  Its HTTP-only companion could not
 be embedded when Pi-hole was opened over HTTPS, so rc.4 is superseded for
-acceptance and remains published as historical evidence.  `v1.0.6-rc.5` is the
-current acceptance candidate after publication.  It adds HTTPS companion
-service and adapter support while retaining the rc.4 timing behavior.  Version `1.0.6` adds the one-line convenience runner, its
+acceptance and remains published as historical evidence.  `v1.0.6-rc.5` added
+HTTPS companion service, but its final adapter evidence capture sent plain HTTP
+to the TLS listener and safely rolled the adapter back.  It is superseded for
+acceptance and remains published as historical evidence.  `v1.0.6-rc.6` is the
+current acceptance candidate after publication.  It makes adapter evidence
+scheme-aware and reuses installed origins for recovery while retaining the rc.4
+timing behavior.  Version `1.0.6` adds the one-line convenience runner, its
 prerelease acceptance override, guarded release publication, and the
 `install-all` and `uninstall-all` bootstrap actions described below.  Its
 production trust anchors will be recorded here only after the stable release is
@@ -101,7 +105,7 @@ GitHub resolves `releases/latest` only to the latest stable release, never to a
 prerelease, so publishing a prerelease cannot silently replace the stable
 release used by the ordinary command.
 
-After rc.5 is published, prerelease acceptance uses
+After rc.6 is published, prerelease acceptance uses
 `PIHOLE_SPEEDTEST_RELEASE_TAG` to select one exact
 release, downloaded from
 `https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/download/<tag>/`:
@@ -109,19 +113,19 @@ release, downloaded from
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.5 bash
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.6 bash
 ```
 
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.5 \
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.6 \
   bash -s -- uninstall
 ```
 
 The tag must match
 `^v(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})(-rc\.[1-9][0-9]{0,3})?$`,
-for example `v1.0.6` or `v1.0.6-rc.5`.  Anything else, including whitespace,
+for example `v1.0.6` or `v1.0.6-rc.6`.  Anything else, including whitespace,
 slashes, `..`, URLs, query strings, fragments, and shell syntax, stops the
 runner before any download.  The repository and GitHub host are fixed.  An
 empty value behaves exactly like no override.  The runner prints a notice when
@@ -139,11 +143,11 @@ prerelease acceptance reuses the accepted commit and bytes.
    with `scripts/render_release_bootstrap.sh`, and commit the rendered
    `release/pihole-speedtest-v6-bootstrap.sh`.  That bootstrap commit is the
    release commit.
-4. Publish the current release candidate, `v1.0.6-rc.5` for this release,
+4. Publish the current release candidate, `v1.0.6-rc.6` for this release,
    from the exact release commit with `scripts/publish_github_release.sh`.
 5. On the Raspberry Pi, run the one-line installation, health, timer, sidebar,
    data-preservation, uninstall, and reinstall acceptance with
-   `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.5`.
+   `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.6`.
 6. Preserve the acceptance evidence.
 7. Make no source or asset changes after successful prerelease acceptance.
 8. Publish the final `v1.0.6` release from the same accepted commit with
@@ -162,6 +166,8 @@ and runner behavior, while its completion-time chronology finding requires
 rc.4.
 `v1.0.6-rc.4` remains published as historical evidence of corrected chart
 chronology, while its HTTPS embedding finding requires rc.5.
+`v1.0.6-rc.5` remains published as historical evidence of native companion
+HTTPS, while its plain-HTTP final evidence capture requires rc.6.
 
 `releases/latest` must continue to resolve only the latest stable release.  A
 prerelease must never be marked as the latest release.
@@ -192,7 +198,7 @@ Validate without contacting GitHub, creating a tag, or uploading anything:
 ```bash
 scripts/publish_github_release.sh \
   --kind prerelease \
-  --tag v1.0.6-rc.5 \
+  --tag v1.0.6-rc.6 \
   --expected-commit "$release_commit" \
   --bootstrap-sha256 "$bootstrap_sha256" \
   --asset-dir "$asset_dir"
@@ -210,10 +216,10 @@ matches the bootstrap's embedded checksum.
 
 Publication adds `--publish` and a kind-specific confirmation:
 
-- prerelease: `--confirm 'PUBLISH PRERELEASE v1.0.6-rc.5'`, published with
+- prerelease: `--confirm 'PUBLISH PRERELEASE v1.0.6-rc.6'`, published with
   `--prerelease --latest=false`;
 - production: `--kind production --tag v1.0.6 --accepted-prerelease
-  v1.0.6-rc.5 --confirm 'PUBLISH PRODUCTION v1.0.6'`, published with
+  v1.0.6-rc.6 --confirm 'PUBLISH PRODUCTION v1.0.6'`, published with
   `--latest`.
 
 Prerelease tags must end in `-rc.N` and production tags must not, so one
@@ -243,8 +249,9 @@ phases.  Neither action deletes user data.
 If the sidebar phases fail, the adapter installer's own rollback restores the
 Pi-hole web files; any adapter recorded by this run is also removed through its
 verified manifest.  The companion, database, settings, and recovery evidence are
-kept, and the output names the failed phase with the `install-adapter` retry and
-`uninstall-all` recovery commands.
+kept, and the outer one-line runner prints a valid checksum-verified retry
+command.  The temporary bootstrap path is never presented as a durable recovery
+command because the runner removes it on exit.
 
 `uninstall-all`:
 
@@ -315,7 +322,9 @@ bash /tmp/pihole-speedtest-v6-bootstrap.sh install-adapter
 
 The adapter action verifies the companion commit recorded by the installed
 manifest.  It does not assume that the companion and bootstrap were published
-from the same source commit, and it does not upgrade the companion.
+from the same source commit, and it does not upgrade the companion.  When no
+origins are supplied, it reuses the exact Pi-hole and companion origins recorded
+by the installed manifest, including native HTTPS installations.
 
 Automatic origin detection supports a typical HTTP installation opened by the
 Pi's primary address and a native Pi-hole HTTPS installation using the
@@ -426,5 +435,5 @@ Still required:
 - reboot with dashboard and timer continuity;
 - explicit purge test using disposable data only;
 - version `1.0.6` `install-all`, `uninstall-all`, and one-line runner
-  acceptance on Raspberry Pi 3 against the `v1.0.6-rc.5` prerelease, followed
+  acceptance on Raspberry Pi 3 against the `v1.0.6-rc.6` prerelease, followed
   by final verification of the stable release.

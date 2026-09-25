@@ -112,10 +112,14 @@
 - [x] Publish `v1.0.6-rc.4` with scheduled-slot chart chronology, actual start
   and completion timestamps, and safe legacy-history fallback.  Its HTTPS
   embedding defect supersedes it for acceptance.
-- [ ] Publish `v1.0.6-rc.5` with native Pi-hole HTTPS detection, companion TLS,
-  matching-scheme enforcement, and secure certificate delivery.  Complete
+- [x] Publish `v1.0.6-rc.5` with native Pi-hole HTTPS detection, companion TLS,
+  matching-scheme enforcement, and secure certificate delivery.  Its final
+  adapter evidence capture incorrectly used plain HTTP against the TLS listener,
+  so the adapter rolled back safely and rc.5 is superseded for acceptance.
+- [ ] Publish `v1.0.6-rc.6` with scheme-aware adapter evidence, installed-origin
+  reuse for standalone recovery, and durable retry guidance.  Complete
   Raspberry Pi acceptance using
-  `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.5`.
+  `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.6`.
 - [ ] Publish the stable `v1.0.6` release from the accepted commit with
   byte-identical assets and verify the ordinary command resolves it.
 - [ ] Tag the first supported v6 release.

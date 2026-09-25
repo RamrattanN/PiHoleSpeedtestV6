@@ -178,8 +178,8 @@ remained operational.
 Automated tests exercise the runner, the rendered bootstrap, and the release
 publication validation against stubbed system commands and throwaway
 repositories.  Before version `1.0.6` replaces version `1.0.5`, the following
-must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.5`
-prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.5` with the exact
+must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.6`
+prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.6` with the exact
 one-line runner from `main`.  Prerelease `v1.0.6-rc.1` was published and
 accepted on the Raspberry Pi for upgrade, data preservation, services, sidebar,
 and charts.  It exposed a collection scheduling defect, a 15-minute setting
@@ -210,9 +210,12 @@ The current candidate must show:
 - a repeated `uninstall-all` changes nothing, and a following `install-all`
   reuses the preserved data;
 - a sidebar failure leaves the companion, data, and Pi-hole web files intact
-  and prints the failed phase and recovery commands.
+  and the outer runner prints a valid checksum-verified retry command without a
+  transient bootstrap path;
+- HTTPS adapter evidence is captured through the TLS health endpoint, and a
+  standalone adapter retry reuses the installed HTTPS origins.
 
-Release candidate `v1.0.6-rc.5` must additionally show at least three
+Release candidate `v1.0.6-rc.6` must additionally show at least three
 consecutive scheduled collections about 15 minutes apart with no alternating
 `"not due"` skips in the collector journal, complete one documented uninstall
 and reinstall and one repeat installation, and keep genuine outages as empty
