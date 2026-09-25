@@ -261,6 +261,7 @@ install_output="$($application_cli adapter-install \
   --web-root "$web_root" \
   --web-version v6.6 \
   --companion-url "$companion_url" \
+  --pihole-origin "$pihole_origin" \
   --backup-root "$backup_root")"
 adapter_manifest="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["manifest"])' <<<"$install_output")"
 if [ -z "$adapter_manifest" ] || [ ! -f "$adapter_manifest" ]; then

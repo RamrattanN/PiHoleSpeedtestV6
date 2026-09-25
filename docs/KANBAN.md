@@ -96,8 +96,8 @@ detailed acceptance criteria for active engineering work.
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Live install, uninstall, repeat, pinned bootstrap, scheduled collection, reboot continuity, rc.3 chart zoom, and rc.4 timing acceptance passed.  rc.5 proved native companion HTTPS but exposed a plain-HTTP final adapter evidence check.  Complete rc.6 HTTPS acceptance, rollback, and isolated disposable-data purge before stable publication |
-| Version `1.0.6` release candidate 6 | Branch `fix/v1.0.6-https-recovery` | Make final adapter evidence scheme-aware, reuse installed origins for standalone adapter recovery, remove transient bootstrap paths from recovery guidance, preserve HTTP installations, recut verified assets, and complete Raspberry Pi acceptance.  Stable `v1.0.6` remains held |
+| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Live install, uninstall, repeat, pinned bootstrap, scheduled collection, reboot continuity, rc.3 chart zoom, rc.4 timing, and rc.6 native HTTPS embedding passed.  Complete rc.7 adaptive HTTP and HTTPS wrapper acceptance, rollback, and isolated disposable-data purge before stable publication |
+| Version `1.0.6` release candidate 7 | Branch `fix/v1.0.6-https-redirect` | Keep HTTP-only installations on HTTP.  On HTTPS-enabled Pi-hole, load canonical HTTPS directly and redirect HTTP or alternate-origin wrapper access to the configured HTTPS origin before the iframe loads.  Preserve the strict frame policy, recut verified assets, and complete Raspberry Pi acceptance.  Stable `v1.0.6` remains held |
 
 ## Backlog
 
