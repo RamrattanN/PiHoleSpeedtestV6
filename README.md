@@ -6,9 +6,13 @@ so a Pi-hole upgrade cannot erase data or disable scheduled tests.  Optional
 sidebar pages open the dashboard from inside the Pi-hole web interface.
 
 > **Release status:** the one-line commands below are introduced by version
-> `1.0.6`, which is in preparation and has not been published.  Until its
-> GitHub Release exists, the runner stops safely without changing anything.
-> Version `1.0.5` remains available through the
+> `1.0.6`.  Production `v1.0.6` is held and unpublished, so the ordinary
+> command stops safely without changing anything.  Prerelease
+> `v1.0.6-rc.1` was published and accepted on the Raspberry Pi for upgrade,
+> data preservation, services, sidebar, and charts; it exposed a 15-minute
+> collection scheduling defect and is superseded for acceptance.
+> `v1.0.6-rc.2`, which corrects collection scheduling, is the current
+> acceptance candidate.  Version `1.0.5` remains available through the
 > [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
 
 ## Quick install
@@ -67,12 +71,13 @@ immutable commands, trust anchors, and recovery contract in the
 ## Prerelease acceptance
 
 Release candidates are tested with the same runner by selecting one exact
-release tag.  The ordinary command above never selects a prerelease.
+release tag.  The ordinary command above never selects a prerelease.  The
+current acceptance candidate is `v1.0.6-rc.2`:
 
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.1 bash
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.2 bash
 ```
 
 The tag rules, uninstall form, and full release sequence are in the
@@ -93,13 +98,18 @@ Docker deployment is not supported in this release; it is planned future work.
 
 Version `1.0.5` is the owner-approved production baseline.  It is installed on
 the verified Raspberry Pi with the companion, 15-minute collection timer, and
-Pi-hole sidebar adapter active.  Version `1.0.6` is prepared on `main` and
-unpublished, awaiting its release assets and Raspberry Pi prerelease
-acceptance.  It carries the accepted version `1.0.5` Pi-hole-aligned chart
-corrections unchanged and adds canonical third-party notices, the one-line
-runner, and the `install-all` and `uninstall-all` bootstrap actions without
-changing the dashboard, charts, settings, collection schedule, database, or
-sidebar appearance.  The product provides:
+Pi-hole sidebar adapter active.  Production `v1.0.6` is held.  Prerelease
+`v1.0.6-rc.1` was published and accepted on the Raspberry Pi for upgrade, data
+preservation, services, sidebar, and charts.  It exposed a collection
+scheduling defect, a 15-minute setting recording about every 30 minutes, so it
+is superseded for acceptance and remains published as immutable historical
+evidence.  `v1.0.6-rc.2` is the current acceptance candidate.  Version `1.0.6`
+carries the accepted version `1.0.5` Pi-hole-aligned chart corrections
+unchanged, adds canonical third-party notices, the one-line runner, and the
+`install-all` and `uninstall-all` bootstrap actions, and corrects collection
+scheduling so a 15-minute setting collects on every 15-minute timer run,
+without changing the dashboard, charts, settings, database, or sidebar
+appearance.  The product provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;

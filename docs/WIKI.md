@@ -64,10 +64,15 @@ installed sidebar adapter.
 Its curl uninstall and reinstall acceptance preserved measurement history and
 settings, and the owner accepted the restored dashboard and sidebar.
 
-Version `1.0.6` source is merged to `main` and has not been published.  It
-carries the accepted version `1.0.5` Pi-hole-aligned chart corrections
-unchanged and adds canonical third-party notices, the one-line runner, and the
-`install-all` and `uninstall-all` actions without changing accepted dashboard,
-chart, settings, schedule, database, or sidebar behavior.  Its immutable
-release assets, `v1.0.6-rc.1` prerelease acceptance on the Raspberry Pi, and the
-stable release remain open.
+Production `v1.0.6` is held and has not been published.  Prerelease
+`v1.0.6-rc.1` was published and accepted on the Raspberry Pi for upgrade, data
+preservation, services, sidebar, and charts.  It exposed a collection
+scheduling defect, a 15-minute setting recording about every 30 minutes, so it
+is superseded for acceptance and remains published as immutable historical
+evidence.  `v1.0.6-rc.2`, which corrects collection scheduling, is the current
+acceptance candidate.  Version `1.0.6` carries the accepted version `1.0.5`
+Pi-hole-aligned chart corrections unchanged and adds canonical third-party
+notices, the one-line runner, and the `install-all` and `uninstall-all` actions
+without changing accepted dashboard, chart, settings, database, or sidebar
+behavior.  Raspberry Pi acceptance of `v1.0.6-rc.2` and the stable release
+remain open.

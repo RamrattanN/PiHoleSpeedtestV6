@@ -35,6 +35,8 @@ env:
     84f39f17c01271f3554ce0fe4b26763f6aedc5f1434724abce4296201558ddae
     b356547c6171fd0978f04591211a725140c72e19f57a29d577011cb2df7a4abb
     c1e19a103f85e7c6fc35baee58f1aa6c48ede434a721d32fd842e91a175e2450
+    4b4ac3959240d05df9865eef4fabaa58556d8a86996c38956980eea567189144
+    c6ee26eb441d06e11ff3cd9d753876471799e7fda6b6e37903c21cd317437c64
   PRERELEASE_TAG: v1.0.6-rc.2
   REPOSITORY: RamrattanN/PiHoleSpeedtestV6
   BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
@@ -82,6 +84,7 @@ jobs:
               scripts/publish_github_release.sh|\
               src/pihole_speedtest/storage.py|\
               tests/test_collection_schedule.py|\
+              tests/test_release_documentation.py|\
               README.md|DEPLOY.md|\
               docs/CURL-INSTALLATION.md|docs/KANBAN.md|docs/QA-AND-ACCEPTANCE.md|\
               docs/ROADMAP.md|docs/WIKI.md|\
