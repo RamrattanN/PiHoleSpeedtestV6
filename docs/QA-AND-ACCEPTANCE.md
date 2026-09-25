@@ -200,6 +200,14 @@ one-line runner from `main`:
 - a sidebar failure leaves the companion, data, and Pi-hole web files intact
   and prints the failed phase and recovery commands.
 
+Release candidate `v1.0.6-rc.2` must additionally show at least three
+consecutive scheduled collections about 15 minutes apart with no alternating
+`"not due"` skips in the collector journal, complete one documented uninstall
+and reinstall and one repeat installation, and keep genuine outages as empty
+chart gaps rather than zero values.  As a visual check only, confirm at a
+normal browser viewport that the Download and upload chart's time labels do
+not overlap the Latency and jitter heading.
+
 Preserve the runner output, dashboard health responses, timer listings, adapter
 manifests, and recovery evidence as acceptance evidence.  After acceptance,
 change no source or asset.  The stable `v1.0.6` release must then be published

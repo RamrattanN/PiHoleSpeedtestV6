@@ -118,13 +118,25 @@ class Storage:
             ).fetchone()
         return None if row is None else str(row["recorded_at"])
 
-    def collection_is_due(self, interval_minutes: int) -> bool:
+    def collection_is_due(
+        self, interval_minutes: int, now: Optional[datetime] = None
+    ) -> bool:
+        """Return whether the current schedule slot has no measurement yet.
+
+        Slots are interval-length windows aligned to the UTC epoch, so the
+        timer's fixed quarter-hour runs each land in their own slot.  Comparing
+        slots rather than elapsed time keeps test duration and the timer's
+        randomized delay from marking the next scheduled run as not due.
+        """
         last = self.last_recorded_at()
         if last is None:
             return True
         recorded = datetime.fromisoformat(last.replace("Z", "+00:00"))
-        elapsed = datetime.now(timezone.utc) - recorded.astimezone(timezone.utc)
-        return elapsed.total_seconds() >= int(interval_minutes) * 60
+        current = now or datetime.now(timezone.utc)
+        slot_seconds = int(interval_minutes) * 60
+        last_slot = int(recorded.astimezone(timezone.utc).timestamp()) // slot_seconds
+        current_slot = int(current.astimezone(timezone.utc).timestamp()) // slot_seconds
+        return current_slot > last_slot
 
     def list_all(self) -> list[dict[str, object]]:
         self.initialize()

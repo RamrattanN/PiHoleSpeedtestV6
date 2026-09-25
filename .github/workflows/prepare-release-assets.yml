@@ -26,21 +26,23 @@ concurrency:
 
 env:
   RELEASE_VERSION: "1.0.6"
-  RELEASE_BRANCH: fix/v1.0.6-release-publication
-  REVIEWED_BASE: ba1c271af64f3883d790b14fa707372f452233f2
+  RELEASE_BRANCH: fix/v1.0.6-collection-schedule
+  REVIEWED_BASE: c833c6c0f8c401c280bd7b1099c8cb966450250d
   # Superseded, never-published assets that must not be reused.
   SUPERSEDED_SHA256: >-
     40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce
     59a67636376c918da111b6efba78715cc57f88929895faf0cfbb779b794a8844
     84f39f17c01271f3554ce0fe4b26763f6aedc5f1434724abce4296201558ddae
-  PRERELEASE_TAG: v1.0.6-rc.1
+    b356547c6171fd0978f04591211a725140c72e19f57a29d577011cb2df7a4abb
+    c1e19a103f85e7c6fc35baee58f1aa6c48ede434a721d32fd842e91a175e2450
+  PRERELEASE_TAG: v1.0.6-rc.2
   REPOSITORY: RamrattanN/PiHoleSpeedtestV6
   BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
   BOOTSTRAP: pihole-speedtest-v6-bootstrap.sh
 
 jobs:
   prepare:
-    if: github.head_ref == 'fix/v1.0.6-release-publication'
+    if: github.head_ref == 'fix/v1.0.6-collection-schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -78,6 +80,8 @@ jobs:
               tests/test_release_asset_preparation.py|\
               tests/test_release_publication.py|\
               scripts/publish_github_release.sh|\
+              src/pihole_speedtest/storage.py|\
+              tests/test_collection_schedule.py|\
               README.md|DEPLOY.md|\
               docs/CURL-INSTALLATION.md|docs/KANBAN.md|docs/QA-AND-ACCEPTANCE.md|\
               docs/ROADMAP.md|docs/WIKI.md|\

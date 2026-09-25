@@ -83,13 +83,21 @@ detailed acceptance criteria for active engineering work.
     superseded the PR #6 bundle `59a67636…` and bootstrap `84f39f17…` (branch
     `release/v1.0.6-assets-2`).
   No tag or GitHub Release was created from either set of assets.
+- Publish prerelease `v1.0.6-rc.1` and upgrade the Raspberry Pi 3 from
+  `1.0.5` with the one-line runner: history and settings were preserved,
+  exactly one timer ran with no cron collector, the sidebar was reinstalled,
+  and Pi-hole stayed healthy.  Acceptance found that a 15-minute setting
+  recorded only about every 30 minutes: the due check measured elapsed time
+  from the previous test's completion, so test duration and the timer's
+  randomized delay made every other run "not due" (52 measurements per day).
+  This behavior predates `1.0.6`.  Production `v1.0.6` is held.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
-| Version `1.0.6` release assets | Branch `fix/v1.0.6-release-publication` | Recut the deterministic bundle and bootstrap in the guarded preparation workflow after correcting the publication tool; review and merge them.  Not released: the `v1.0.6-rc.1` prerelease, Raspberry Pi 3 acceptance with `PIHOLE_SPEEDTEST_RELEASE_TAG`, and the stable `v1.0.6` release from the same commit and bytes remain open |
+| Version `1.0.6` release candidate 2 | Branch `fix/v1.0.6-collection-schedule` | Collection scheduling now uses schedule slots so each 15-minute timer run collects.  Recut the bundle and bootstrap in the guarded workflow, review and merge, then publish `v1.0.6-rc.2` and repeat Raspberry Pi 3 acceptance: upgrade from rc.1, three consecutive collections about 15 minutes apart, uninstall and reinstall, repeat installation, and Pi-hole health.  The stable `v1.0.6` release remains held |
 
 ## Backlog
 
