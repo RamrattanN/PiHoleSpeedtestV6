@@ -4,8 +4,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_CANDIDATE = "v1.0.6-rc.2"
-SUPERSEDED_CANDIDATE = "v1.0.6-rc.1"
+CURRENT_CANDIDATE = "v1.0.6-rc.3"
+SUPERSEDED_CANDIDATES = ("v1.0.6-rc.1", "v1.0.6-rc.2")
 RELEASE_DOCUMENTS = (
     "README.md",
     "DEPLOY.md",
@@ -66,12 +66,13 @@ class ReleaseDocumentationTests(unittest.TestCase):
         self.assertIn(f"--accepted-prerelease {CURRENT_CANDIDATE}", normalized(curl))
         self.assertIn("PUBLISH PRODUCTION v1.0.6", curl)
 
-    def test_no_actionable_command_uses_the_superseded_candidate(self):
+    def test_no_actionable_command_uses_a_superseded_candidate(self):
         for name in RELEASE_DOCUMENTS:
             text = normalized(read(name))
-            for pattern in actionable_patterns(SUPERSEDED_CANDIDATE):
-                with self.subTest(document=name, pattern=pattern):
-                    self.assertIsNone(re.search(pattern, text))
+            for candidate in SUPERSEDED_CANDIDATES:
+                for pattern in actionable_patterns(candidate):
+                    with self.subTest(document=name, pattern=pattern):
+                        self.assertIsNone(re.search(pattern, text))
 
     def test_acceptance_procedure_targets_the_current_candidate(self):
         qa = normalized(read("docs/QA-AND-ACCEPTANCE.md"))
@@ -87,16 +88,17 @@ class ReleaseDocumentationTests(unittest.TestCase):
                 self.assertIn(f"`{CURRENT_CANDIDATE}`", text)
                 self.assertIn("current acceptance candidate", text)
 
-    def test_superseded_candidate_is_described_historically(self):
+    def test_superseded_candidates_are_described_historically(self):
         for name in ("README.md", "docs/CURL-INSTALLATION.md", "docs/WIKI.md"):
             text = normalized(read(name))
             with self.subTest(document=name):
-                self.assertIn(f"`{SUPERSEDED_CANDIDATE}` was published and accepted", text)
+                self.assertIn("`v1.0.6-rc.1` was published and accepted", text)
+                self.assertIn("`v1.0.6-rc.2`", text)
                 self.assertIn("superseded for acceptance", text)
         for name in RELEASE_DOCUMENTS + ("docs/KANBAN.md",):
             sentences = re.split(r"(?<=[.!?])\s+", normalized(read(name)))
             for sentence in sentences:
-                if SUPERSEDED_CANDIDATE in sentence:
+                if any(candidate in sentence for candidate in SUPERSEDED_CANDIDATES):
                     with self.subTest(document=name, sentence=sentence[:80]):
                         self.assertNotRegex(sentence.lower(), r"withdrawn|deleted|removed")
 

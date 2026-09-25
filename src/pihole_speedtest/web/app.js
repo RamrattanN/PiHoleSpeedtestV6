@@ -10,7 +10,7 @@ let chartMode = localStorage.getItem("pihole-speedtest-chart-mode") || "line";
 const chartStates = new Map();
 const DEFAULT_CHART_WINDOW_MS = 24 * 60 * 60 * 1000;
 const BAR_GROUP_GAP_PX = 2;
-const BAR_GROUP_MAX_WIDTH_PX = 14;
+const BAR_GROUP_MAX_WIDTH_PX = 56;
 
 function requestedView() {
   return window.location.hash === "#setup" ? "setup" : "overview";
@@ -112,7 +112,7 @@ function chartBarSpacing(timeline, xPositions) {
     const spacing = xPositions[index] - xPositions[index - 1];
     if (spacing > 0) spacings.push(spacing);
   }
-  if (spacings.length === 0) return 12;
+  if (spacings.length === 0) return Infinity;
   spacings.sort((left, right) => left - right);
   const middle = Math.floor(spacings.length / 2);
   return spacings.length % 2
@@ -199,7 +199,7 @@ function drawChart(records, options) {
   const padding = { top: 20, right: 16, bottom: 34, left: 46 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
-  const maximum = chartMaximum(allRecords, options.series, options.minimumMaximum);
+  const maximum = chartMaximum(plottedRecords, options.series, options.minimumMaximum);
   const values = options.series.map((series) => plottedRecords.map((record) => Number(record[series.field]) || 0));
   const xForTimestamp = (timestamp) => padding.left + chartWidth * (timestamp - timeline.start) / timeline.duration;
   const xPositions = timeline.timestamps.map((timestamp, index) => Number.isFinite(timestamp)
@@ -232,8 +232,14 @@ function drawChart(records, options) {
 
   if (chartMode === "bar") {
     const measuredSpacing = chartBarSpacing(timeline, xPositions);
-    const groupWidth = chartBarGroupWidth(timeline, chartWidth, measuredSpacing);
     plottedRecords.forEach((record, index) => {
+      const nearestSpacing = Math.min(
+        index > 0 ? xPositions[index] - xPositions[index - 1] : Infinity,
+        index + 1 < xPositions.length ? xPositions[index + 1] - xPositions[index] : Infinity,
+      );
+      const groupWidth = chartBarGroupWidth(
+        timeline, chartWidth, Math.min(measuredSpacing, nearestSpacing),
+      );
       const bars = options.series.map((series, seriesIndex) => ({
         color: series.color,
         height: chartHeight * values[seriesIndex][index] / maximum,

@@ -69,10 +69,11 @@ Production `v1.0.6` is held and has not been published.  Prerelease
 preservation, services, sidebar, and charts.  It exposed a collection
 scheduling defect, a 15-minute setting recording about every 30 minutes, so it
 is superseded for acceptance and remains published as immutable historical
-evidence.  `v1.0.6-rc.2`, which corrects collection scheduling, is the current
-acceptance candidate.  Version `1.0.6` carries the accepted version `1.0.5`
-Pi-hole-aligned chart corrections unchanged and adds canonical third-party
-notices, the one-line runner, and the `install-all` and `uninstall-all` actions
-without changing accepted dashboard, chart, settings, database, or sidebar
-behavior.  Raspberry Pi acceptance of `v1.0.6-rc.2` and the stable release
-remain open.
+evidence.  `v1.0.6-rc.2` passed live runner, scheduling, data-preservation,
+and reboot checks, but its fixed y-axis and narrow zoomed bars did not pass
+owner visual acceptance.  `v1.0.6-rc.3` is the current acceptance candidate
+after publication.  It adds visible-range y-axis scaling and zoom-responsive
+bar widths without changing the collector, settings, database, or sidebar
+integration.  It also retains the one-line runner and the `install-all` and
+`uninstall-all` actions.  Raspberry Pi acceptance of rc.3 and the stable
+release remain open.

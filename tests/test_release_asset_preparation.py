@@ -1,7 +1,7 @@
 """Release scope, drift, and workflow-safety controls for version 1.0.6.
 
 The scope lock applies to the 1.0.6 release line only: it pins every file
-outside the release allowlist to the reviewed baseline e3582b2.  Bumping the
+outside the release allowlist to the reviewed baseline cbe8a21.  Bumping the
 project version ends the lock for later development.
 """
 
@@ -21,10 +21,10 @@ WORKFLOWS = ROOT / ".github" / "workflows"
 PREPARE = WORKFLOWS / "prepare-release-assets.yml"
 RELEASE_VERSION = "1.0.6"
 # Content baseline for the scope lock: the reviewed pre-release main commit.
-REVIEWED_BASE = "e3582b254b8a259ab8e9375ea06038aa6f00336e"
+REVIEWED_BASE = "cbe8a21f539c152abec4e71ed6c8129a089d8383"
 # Pull request base for the current recut, pinned by the preparation workflow.
-PR_BASE = "c833c6c0f8c401c280bd7b1099c8cb966450250d"
-RELEASE_BRANCH = "fix/v1.0.6-collection-schedule"
+PR_BASE = REVIEWED_BASE
+RELEASE_BRANCH = "fix/v1.0.6-chart-zoom"
 # Assets recut before publication; they must never be reused.
 SUPERSEDED_SHA256 = {
     "40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce",
@@ -36,11 +36,14 @@ SUPERSEDED_SHA256 = {
     # First rc.2 assets, superseded by the rc.2 documentation correction.
     "4b4ac3959240d05df9865eef4fabaa58556d8a86996c38956980eea567189144",
     "c6ee26eb441d06e11ff3cd9d753876471799e7fda6b6e37903c21cd317437c64",
+    # Published rc.2 assets remain historical evidence and cannot be reused for rc.3.
+    "ba04982ba7605a8ba7cf165de6fdab70d9fa7bb1b34bf2e8650386204a46ef85",
+    "dfc75dc7b775c18940a864e33a27be73c6c3fb449a61b2102d38dc65dbe663b3",
 }
 # The superseded bundle on main (source commit, SHA-256) that this recut replaces.
 INHERITED_BUNDLE = (
-    "a045fbad6b10f9fcdc7be5e134fcbda6d68c4517",
-    "b356547c6171fd0978f04591211a725140c72e19f57a29d577011cb2df7a4abb",
+    "23cbf8c88cce4caffde691f6aefb3f5ca470d0b8",
+    "ba04982ba7605a8ba7cf165de6fdab70d9fa7bb1b34bf2e8650386204a46ef85",
 )
 BUNDLE = ROOT / "release" / f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz"
 BOOTSTRAP = ROOT / "release" / "pihole-speedtest-v6-bootstrap.sh"
@@ -65,6 +68,13 @@ RELEASE_ALLOWLIST = {
 # Files outside the allowlist that carry an exact owner-approved change.  Each is
 # pinned to its complete corrected content and excluded from the group digests.
 APPROVED_OVERRIDES = {
+    # The owner-approved rc.3 chart correction; the two files are pinned exactly.
+    "src/pihole_speedtest/web/app.js": (
+        "d38a8f7bdb8a03d396ac6e9872a19cca15bb88a620b2824ff77547a8e83ed531"
+    ),
+    "tests/test_web_assets.py": (
+        "718dbc4e02e154f92ed7f6231fca265fb3924b94c4dbe2b3865931df9a22e0d7"
+    ),
     # Fixture git maintenance fix and publish-path regression tests.
     "tests/test_release_publication.py": (
         "a4305b9871debe9c08694225cc9a64941789d61a57839582d738c67d218836c2"
@@ -78,7 +88,7 @@ APPROVED_OVERRIDES = {
     ),
     # Actionable prerelease commands name the current candidate; rc.1 stays historical.
     "tests/test_release_documentation.py": (
-        "896f7838c83ec5502800c795b7871bad2de1b422df9308cc077740a49b1dfeb5"
+        "e6aeeb24942f680b935eb145d0f4f91c380fc24b3f7f0ee33f9429d0e5792f61"
     ),
     # Strict GitHub tag lookup: a 404 is absent; every other error fails closed.
     "scripts/publish_github_release.sh": (
@@ -86,6 +96,8 @@ APPROVED_OVERRIDES = {
     ),
 }
 APPROVED_OVERRIDE_MODES = {
+    "src/pihole_speedtest/web/app.js": "100644",
+    "tests/test_web_assets.py": "100644",
     "tests/test_release_publication.py": "100644",
     "scripts/publish_github_release.sh": "100755",
     "src/pihole_speedtest/storage.py": "100644",
@@ -107,14 +119,14 @@ PROTECTED_GROUPS = [
 ]
 # sha256 over sorted "mode blob path" lines at the reviewed baseline, and file count.
 BASELINE_DIGESTS = {
-    "chart": ("46b0f5b0b4c25aa09441d09912dfbb4c98374661d3f3072e42f5eda1eef690fc", 8),
+    "chart": ("415375bc1b22904dc4221ac7b4d9d41dc967c7ddf4599403171306219f8a0816", 7),
     "runtime": ("77a789e65b77715222872b09cebe62809af92bad5cdfd0cf3f18b1d6d7e666e5", 14),
     "installer": ("973f094eb9a697175548cc4666f45017ae54dc56b5c9d7a356ed5d4571537f4f", 18),
     "version-and-template": ("092537f50899ce69da3b8189ef7722786941a798dbf5f7b6fdd093e1192616a3", 2),
     "licensing": ("d2daa9886b45795f3a4fb46f63e64ee976ee5a5d6023164a9a735fa38eef1d07", 2),
     "docker": ("51898daa73be46eb2dfa82700dedc02a9fd29370a81f2f9ca65160156cec60b3", 4),
     "workflows": ("ca2d8e4d6a3353f9fd3d1fc0cc60204a612f8101d69f57aef22287995bad6987", 2),
-    "tests": ("accd83cbe5272479313df90c4f249abffd03d438d19e5ced9c22329924fcfdcd", 15),
+    "tests": ("f473749ad9a4161fe1f7037e63caf08d9d19324c99624c5ee60b9e7da7dbc198", 14),
     "published-releases": ("dd860ea23f231664df1c844b1417a444d6b395412ed98e135c80935abae33c4b", 14),
     "other": ("79d3cf5e77a934e246dba795ba1933bce37c0f778f16f7d7525dd4d172534106", 7),
 }
@@ -555,7 +567,7 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
         self.assertNotRegex(self.code, r"\bwrite\b")
         self.assertNotIn("secrets.", self.code)
         self.assertIn("persist-credentials: false", self.code)
-        self.assertIn("if: github.head_ref == 'fix/v1.0.6-collection-schedule'", self.code)
+        self.assertIn("if: github.head_ref == 'fix/v1.0.6-chart-zoom'", self.code)
         self.assertIn(f"REVIEWED_BASE: {PR_BASE}", self.code)
         self.assertIn(f"RELEASE_BRANCH: {RELEASE_BRANCH}", self.code)
         for digest in SUPERSEDED_SHA256:
@@ -616,7 +628,7 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
 
     def test_workflow_allowlist_matches_the_release_policy(self):
         guard = self.code.split("case \"$path\" in", 1)[1].split("*)", 1)[0]
-        listed = set(re.findall(r"[A-Za-z0-9_./-]+\.(?:yml|py|md|gz|sha256|sh)", guard))
+        listed = set(re.findall(r"[A-Za-z0-9_./-]+\.(?:yml|py|js|md|gz|sha256|sh)", guard))
 
         self.assertEqual(listed, RELEASE_ALLOWLIST | set(APPROVED_OVERRIDES))
 
@@ -685,13 +697,13 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
         self.git("commit", "-q", "--allow-empty", "-m", message)
         return self.git("rev-parse", "HEAD")
 
-    def run_step(self, name, head_ref="fix/v1.0.6-collection-schedule", base=None):
+    def run_step(self, name, head_ref=RELEASE_BRANCH, base=None):
         output = self.runner_temp / "github_output"
         output.write_text("", encoding="utf-8")
         environment = dict(os.environ)
         environment.update(
             RELEASE_VERSION=RELEASE_VERSION,
-            RELEASE_BRANCH="fix/v1.0.6-collection-schedule",
+            RELEASE_BRANCH=RELEASE_BRANCH,
             REVIEWED_BASE=self.base,
             BUNDLE=f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz",
             BOOTSTRAP="pihole-speedtest-v6-bootstrap.sh",
@@ -733,7 +745,7 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
                 result = self.guard(head_ref=head_ref)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn(
-                    "Only fix/v1.0.6-collection-schedule may prepare release assets", result.stdout
+                    f"Only {RELEASE_BRANCH} may prepare release assets", result.stdout
                 )
 
     def test_guard_rejects_a_changed_base(self):
