@@ -101,6 +101,11 @@ detailed acceptance criteria for active engineering work.
 
 ## Backlog
 
+- Rescale each chart's y-axis when its visible range changes.  Use the highest
+  visible value across that chart's series, plus a small headroom margin, so a
+  ping or jitter spike outside the current zoom no longer flattens the values
+  in view.  Recalculate after zooming, panning, resetting zoom, and loading
+  new results; keep the underlying measurements and time gaps unchanged.
 - Restart and reboot acceptance with collection continuity.
 - Full backup and restore exercise.
 - Pi-hole update failure-isolation exercise after sidebar integration.
