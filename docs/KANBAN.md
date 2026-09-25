@@ -91,13 +91,25 @@ detailed acceptance criteria for active engineering work.
   from the previous test's completion, so test duration and the timer's
   randomized delay made every other run "not due" (52 measurements per day).
   This behavior predates `1.0.6`.  Production `v1.0.6` is held.
+- Publish prereleases `v1.0.6-rc.2` through `v1.0.6-rc.7`, preserving each
+  superseded candidate as immutable historical evidence.  Release candidate
+  7 passed owner visual acceptance, adaptive HTTP-to-HTTPS wrapper behavior,
+  checksum-pinned and one-line installation, repeat installation, scheduled
+  collection, timestamp, uninstall, repeat-uninstall, reinstall, reboot, and
+  isolated disposable-data purge acceptance on the Raspberry Pi 3.  The final
+  live count reached 98,807 measurements with SQLite integrity `ok`; settings
+  retained SHA-256 `425db05c...`, and the isolated purge left the live data
+  directory, services, and health unchanged.
+- Add Pi-hole's local Antonio 100, regular, and 700 font files to the companion
+  and apply the LCARS font stack to both DOM text and canvas axis labels.  rc.7
+  remains immutable historical evidence and is superseded for final acceptance.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Live install, uninstall, repeat, pinned bootstrap, scheduled collection, reboot continuity, rc.3 chart zoom, rc.4 timing, and rc.6 native HTTPS embedding passed.  Complete rc.7 adaptive HTTP and HTTPS wrapper acceptance, rollback, and isolated disposable-data purge before stable publication |
-| Version `1.0.6` release candidate 7 | Branch `fix/v1.0.6-https-redirect` | Keep HTTP-only installations on HTTP.  On HTTPS-enabled Pi-hole, load canonical HTTPS directly and redirect HTTP or alternate-origin wrapper access to the configured HTTPS origin before the iframe loads.  Preserve the strict frame policy, recut verified assets, and complete Raspberry Pi acceptance.  Stable `v1.0.6` remains held |
+| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Release candidate 7 passed the complete functional Raspberry Pi acceptance sequence.  Preserve those results while completing rc.8 Chrome split-view font acceptance |
+| Version `1.0.6` release candidate 8 | Branch `fix/v1.0.6-pihole-fonts` | Publish the verified rc.8 assets, confirm Pi-hole's Antonio typography on Overview, Setup, and both chart axes, then repeat the short health, timer, data-integrity, and install checks.  Stable `v1.0.6` remains held |
 
 ## Backlog
 

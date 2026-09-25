@@ -30,7 +30,7 @@
   GitHub-hosted instructions ([issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3)).
 - [x] Add deterministic release-bundle and immutable-bootstrap build tooling.
 - [x] Publish immutable release assets and record both SHA-256 trust anchors.
-- [ ] Pass uninstall and reinstall acceptance with history and settings
+- [x] Pass uninstall and reinstall acceptance with history and settings
   preserved.
 - [x] Add a rollback-guarded dashboard-only staged installer.
 - [x] Add a data-preserving dashboard-only removal command.
@@ -40,7 +40,7 @@
 - [x] Pass a guarded live companion upgrade with history preserved.
 - [x] Restore and verify Linux interface labels when Ookla omits the interface
   name.
-- [ ] Pass restart and reboot acceptance with collection continuity.
+- [x] Pass restart and reboot acceptance with collection continuity.
 - [ ] Pass isolated Raspberry Pi 3 testing on a temporary port and database.
 
 ## Product capability
@@ -87,7 +87,9 @@
 
 ## Release
 
-- [ ] Pass the complete acceptance plan on Raspberry Pi 3.
+- [x] Pass the complete version `1.0.6-rc.7` acceptance plan on Raspberry Pi
+  3, including HTTP and HTTPS wrappers, scheduled-slot timing, uninstall and
+  reinstall, reboot continuity, and isolated disposable-data purge.
 - [x] Reconcile repository documentation and Wiki navigation with the accepted
   live implementation.
 - [x] Pass version `1.0.5` curl uninstall and reinstall acceptance with
@@ -95,9 +97,9 @@
 - [x] Prepare version `1.0.6` source with canonical third-party notices, the
   one-line runner, and the `install-all` and `uninstall-all` actions.
 - [x] Merge version `1.0.6` source and `install.sh` to `main`.
-- [ ] Build, review, and commit the immutable version `1.0.6` bundle and
+- [x] Build, review, and commit the immutable version `1.0.6` bundle and
   rendered bootstrap.
-- [ ] Publish a release bundle that carries `THIRD_PARTY_NOTICES.md` beside
+- [x] Publish a prerelease bundle that carries `THIRD_PARTY_NOTICES.md` beside
   the product `LICENSE`.
 - [x] Add tagged prerelease selection to the runner and guarded GitHub
   Release publication tooling.
@@ -119,10 +121,12 @@
 - [x] Publish `v1.0.6-rc.6` with scheme-aware adapter evidence, installed-origin
   reuse for standalone recovery, and durable retry guidance.  Native HTTPS
   embedding passed, but HTTP Pi-hole access displayed a rejected iframe.
-- [ ] Publish `v1.0.6-rc.7` with adaptive HTTP-only behavior and canonical HTTPS
-  redirects for HTTPS-enabled Pi-hole installations.  Complete
-  Raspberry Pi acceptance using
-  `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.7`.
+- [x] Publish `v1.0.6-rc.7` with adaptive HTTP-only behavior and canonical HTTPS
+  redirects for HTTPS-enabled Pi-hole installations, then complete Raspberry
+  Pi acceptance using the tagged rc.7 runner.
+- [ ] Publish `v1.0.6-rc.8` with Pi-hole's Antonio LCARS font stack for the
+  companion interface and chart canvases, then complete Chrome split-view
+  visual acceptance using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.8`.
 - [ ] Publish the stable `v1.0.6` release from the accepted commit with
   byte-identical assets and verify the ordinary command resolves it.
 - [ ] Tag the first supported v6 release.

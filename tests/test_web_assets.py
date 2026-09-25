@@ -88,6 +88,24 @@ assert.equal(results.loneBar, 56);
             self.assertNotIn("https://", content, name)
             self.assertNotIn("//cdn.", content, name)
 
+    def test_companion_uses_pihole_lcars_font_stack(self):
+        web = files("pihole_speedtest").joinpath("web")
+        styles = web.joinpath("styles.css").read_text(encoding="utf-8")
+        script = web.joinpath("app.js").read_text(encoding="utf-8")
+
+        for weight in ("100", "regular", "700"):
+            font = web.joinpath(
+                "fonts", f"antonio-v19-latin-{weight}.woff2"
+            ).read_bytes()
+            self.assertTrue(font.startswith(b"wOF2"), weight)
+        self.assertIn('--pihole-font-family: Antonio, Oswald', styles)
+        self.assertIn('font-family: var(--pihole-font-family)', styles)
+        self.assertEqual(styles.count('@font-face'), 3)
+        self.assertIn("const PIHOLE_FONT_STACK", script)
+        self.assertIn('context.font = `400 12px ${PIHOLE_FONT_STACK}`', script)
+        self.assertIn('context.font = `400 11px ${PIHOLE_FONT_STACK}`', script)
+        self.assertIn("await document.fonts.ready", script)
+
     def test_single_measurement_chart_has_visible_point(self):
         script = (
             files("pihole_speedtest")

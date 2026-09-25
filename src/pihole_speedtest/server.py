@@ -27,6 +27,15 @@ ASSETS = {
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
     "/styles.css": ("styles.css", "text/css; charset=utf-8"),
     "/ramrattan-logo.png": ("ramrattan-logo.png", "image/png"),
+    "/fonts/antonio-v19-latin-100.woff2": (
+        "fonts/antonio-v19-latin-100.woff2", "font/woff2"
+    ),
+    "/fonts/antonio-v19-latin-regular.woff2": (
+        "fonts/antonio-v19-latin-regular.woff2", "font/woff2"
+    ),
+    "/fonts/antonio-v19-latin-700.woff2": (
+        "fonts/antonio-v19-latin-700.woff2", "font/woff2"
+    ),
 }
 
 

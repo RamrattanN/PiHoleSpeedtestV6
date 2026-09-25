@@ -24,8 +24,12 @@ sidebar pages open the dashboard from inside the Pi-hole web interface.
 > passed native HTTPS embedding, but an HTTP Pi-hole URL displayed a rejected
 > iframe instead of upgrading to the canonical HTTPS page.  rc.6 is superseded
 > for acceptance and remains published as historical evidence.  `v1.0.6-rc.7`
-> adds the canonical redirect and is the current acceptance candidate once
-> published.  Version `1.0.5` remains available through the
+> added the canonical redirect and passed complete Raspberry Pi acceptance,
+> but Chrome split view exposed companion typography that did not match the
+> Pi-hole LCARS theme.  rc.7 is superseded for acceptance and remains
+> published as historical evidence.  `v1.0.6-rc.8` is the current acceptance
+> candidate and uses Pi-hole's Antonio font stack throughout the companion.
+> Version `1.0.5` remains available through the
 > [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
 
 ## Quick install
@@ -97,12 +101,12 @@ immutable commands, trust anchors, and recovery contract in the
 
 Release candidates are tested with the same runner by selecting one exact
 release tag.  The ordinary command above never selects a prerelease.  The
-current acceptance candidate after publication is `v1.0.6-rc.7`:
+current acceptance candidate is `v1.0.6-rc.8`:
 
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.7 bash
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.8 bash
 ```
 
 The tag rules, uninstall form, and full release sequence are in the
@@ -142,12 +146,17 @@ published as historical evidence.  `v1.0.6-rc.6` corrected that recovery
 defect and passed native HTTPS embedding, but an HTTP Pi-hole URL displayed a
 rejected iframe instead of upgrading to the canonical HTTPS page.  It is
 superseded for acceptance and remains published as historical evidence.
-`v1.0.6-rc.7` adds that canonical redirect and is the current acceptance
-candidate once published.  Version `1.0.6` carries the accepted version `1.0.5` Pi-hole-aligned
+`v1.0.6-rc.7` added that canonical redirect and passed complete Raspberry Pi
+acceptance, but Chrome split view exposed mismatched companion typography.
+It is superseded for acceptance and remains published as historical evidence.
+`v1.0.6-rc.8` uses Pi-hole's Antonio font stack for the companion interface and
+chart canvases and is the current acceptance candidate.  Version `1.0.6`
+carries the accepted version `1.0.5` Pi-hole-aligned
 chart presentation, the rc.3 zoom corrections, and rc.4 scheduled-slot and
 start-time chronology while retaining completion timestamps, rc.5 HTTPS
 support for the companion, the rc.6 scheme-aware adapter evidence and recovery
-corrections, and the rc.7 adaptive HTTP and HTTPS wrapper behavior.
+corrections, the rc.7 adaptive HTTP and HTTPS wrapper behavior, and the rc.8
+LCARS typography correction.
 It adds canonical third-party notices, the one-line runner, and the
 `install-all` and `uninstall-all` bootstrap actions, and corrects collection
 scheduling so a 15-minute setting collects on every 15-minute timer run,

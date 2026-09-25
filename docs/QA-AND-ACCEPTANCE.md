@@ -178,8 +178,8 @@ remained operational.
 Automated tests exercise the runner, the rendered bootstrap, and the release
 publication validation against stubbed system commands and throwaway
 repositories.  Before version `1.0.6` replaces version `1.0.5`, the following
-must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.7`
-prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.7` with the exact
+must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.8`
+prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.8` with the exact
 one-line runner from `main`.  Prerelease `v1.0.6-rc.1` was published and
 accepted on the Raspberry Pi for upgrade, data preservation, services, sidebar,
 and charts.  It exposed a collection scheduling defect, a 15-minute setting
@@ -220,7 +220,7 @@ The current candidate must show:
 - HTTPS adapter evidence is captured through the TLS health endpoint, and a
   standalone adapter retry reuses the installed HTTPS origins.
 
-Release candidate `v1.0.6-rc.7` must additionally show at least three
+Release candidate `v1.0.6-rc.8` must additionally show at least three
 consecutive scheduled collections about 15 minutes apart with no alternating
 `"not due"` skips in the collector journal, complete one documented uninstall
 and reinstall and one repeat installation, and keep genuine outages as empty
@@ -230,8 +230,11 @@ not overlap the Latency and jitter heading.  Zoom to approximately ten
 measurements while a high ping outside the view would otherwise dominate the
 scale: the Latency and jitter y-axis must fit only the visible measurements
 with headroom.  The bars must widen as spacing grows, stay distinct when
-samples are close, and retain genuine time gaps.  Record owner visual
-acceptance separately from automated test results.
+close, and the companion text and canvas axis labels must use Pi-hole's
+Antonio LCARS font in Chrome split view.  The font check must cover both the
+Overview and Setup pages before and after a browser refresh.  Bars must retain
+genuine time gaps.  Record owner visual acceptance separately from automated
+test results.
 
 For new scheduled measurements, confirm that the chart position is the exact
 configured UTC schedule slot, such as `:00`, `:15`, `:30`, or `:45` for the
@@ -255,6 +258,35 @@ change no source or asset.  The stable `v1.0.6` release must then be published
 from the same commit with byte-identical bootstrap assets, and the ordinary
 command without the override must be verified to resolve it before the curl
 workflow issue is closed.
+
+### Version 1.0.6-rc.7 acceptance result
+
+The owner completed Raspberry Pi 3 ARM64 acceptance on September 25, 2026.
+The public one-line runner verified bootstrap SHA-256
+`fe0bd79aa80389654b2038dd55a45d7bd1bc0d984c8c1ef0db92b3f9ff9c3a6e`
+and installed source commit `e95b176268a2b805ea94269aab5756e2f91030c2`.
+HTTP entry redirected to the canonical HTTPS Pi-hole origin, while direct
+HTTPS Overview and Setup pages loaded the TLS companion successfully.
+
+Five consecutive scheduled collections, followed by three post-reinstall
+collections and one post-reboot collection, used exact quarter-hour
+`scheduled_at` values while retaining distinct actual `started_at` and
+completion `recorded_at` values.  Repeat installation changed nothing.
+Uninstall and repeat-uninstall restored the original Pi-hole web state and
+preserved 98,803 measurements and the settings checksum.  Reinstall reused the
+preserved data, and the final post-reboot count reached 98,807 with SQLite
+integrity `ok`.
+
+The destructive-confirmation guard refused an incorrect purge phrase in an
+isolated private mount namespace.  The exact confirmation then deleted only
+the disposable data.  The live data-directory inode and settings checksum were
+unchanged, the live measurement count did not decrease, and dashboard and
+timer services remained active.  Release candidate 7 passed this complete
+functional sequence, but a later Chrome split-view comparison exposed
+companion typography that did not match the Pi-hole LCARS theme.  It is
+superseded for final acceptance and remains published as historical evidence.
+Release candidate 8 must preserve every rc.7 result and pass the Antonio font
+check.  Stable `v1.0.6` remains held.
 
 ## Stop conditions
 
