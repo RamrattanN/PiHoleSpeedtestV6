@@ -14,10 +14,11 @@ sidebar pages open the dashboard from inside the Pi-hole web interface.
 > `v1.0.6-rc.2` was published and passed tagged install, uninstall, repeat
 > installation, scheduled collection, and reboot continuity.  `v1.0.6-rc.3`
 > corrected chart scaling and bar widths and passed visual and runner
-> acceptance.  Stable publication remains held because chart chronology still
-> used test completion time.  rc.3 is superseded for acceptance and remains
-> published as historical evidence.  `v1.0.6-rc.4` is the current acceptance
-> candidate once published.  Version `1.0.5` remains available through the
+> acceptance.  `v1.0.6-rc.4` corrected chart chronology and retained test
+> completion time, but HTTPS Pi-hole pages could not embed its HTTP-only
+> companion.  rc.4 is superseded for acceptance and remains published as
+> historical evidence.  `v1.0.6-rc.5` is the current acceptance candidate once
+> published.  Version `1.0.5` remains available through the
 > [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
 
 ## Quick install
@@ -56,7 +57,9 @@ deletion is a separate, explicitly confirmed action described in the
 
 ## After installation
 
-The installer prints the addresses it detected for this device:
+The installer prints the addresses it detected for this device.  For a Pi-hole
+configured with HTTPS and `/etc/pihole/tls.pem`, the companion also uses HTTPS
+and the same Pi-hole hostname.  Otherwise, the normal HTTP addresses are:
 
 - **Dashboard:** `http://<pi-hole-address>:8765/`
 - **Pi-hole Overview:** `http://<pi-hole-address>/admin/speedtest`
@@ -66,7 +69,7 @@ Measurements are collected every 15 minutes by default.  A hostname, HTTPS,
 reverse proxy, or nonstandard origin can be supplied with
 `--pihole-origin` and `--companion-url` after `bash -s -- install`.
 
-Version 1.0.6 rc.4 records the UTC time when each speed test process
+Version 1.0.6 rc.4 and later records the UTC time when each speed test process
 starts.  Scheduled tests also record their quarter-hour collection slot (or
 the configured interval's slot), which places them on both charts at the exact
 schedule boundary.  Manual tests use their actual start time.  The original
@@ -87,12 +90,12 @@ immutable commands, trust anchors, and recovery contract in the
 
 Release candidates are tested with the same runner by selecting one exact
 release tag.  The ordinary command above never selects a prerelease.  The
-current acceptance candidate after publication is `v1.0.6-rc.4`:
+current acceptance candidate after publication is `v1.0.6-rc.5`:
 
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.4 bash
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.5 bash
 ```
 
 The tag rules, uninstall form, and full release sequence are in the
@@ -122,11 +125,14 @@ evidence.  `v1.0.6-rc.2` passed install, uninstall, scheduling, and reboot
 checks, but its chart zoom did not pass visual acceptance.  `v1.0.6-rc.3`
 corrected the chart scaling and bar widths and passed visual and runner
 acceptance, but stable publication remained held because chart chronology used
-test completion time.  It is superseded for acceptance and remains published
-as historical evidence.  `v1.0.6-rc.4` is the current acceptance candidate once
-published.  Version `1.0.6` carries the accepted version `1.0.5` Pi-hole-aligned
+test completion time.  `v1.0.6-rc.4` corrected that chronology and retained
+completion timestamps, but its HTTP-only companion could not be embedded by a
+Pi-hole page opened over HTTPS.  It is superseded for acceptance and remains
+published as historical evidence.  `v1.0.6-rc.5` is the current acceptance
+candidate once published.  Version `1.0.6` carries the accepted version `1.0.5` Pi-hole-aligned
 chart presentation, the rc.3 zoom corrections, and rc.4 scheduled-slot and
-start-time chronology while retaining completion timestamps.
+start-time chronology while retaining completion timestamps, and rc.5 HTTPS
+support for the companion and sidebar embedding.
 It adds canonical third-party notices, the one-line runner, and the
 `install-all` and `uninstall-all` bootstrap actions, and corrects collection
 scheduling so a 15-minute setting collects on every 15-minute timer run,

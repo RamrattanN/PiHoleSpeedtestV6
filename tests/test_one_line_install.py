@@ -29,6 +29,7 @@ SYSTEM_PREFIXES = (
     "/var/lib/pihole-speedtest",
     "/opt/pihole-speedtest",
     "/var/www/html",
+    "/etc/pihole",
     "/etc/systemd/system",
     "/etc/default/pihole-speedtest-v6",
 )
@@ -258,6 +259,29 @@ class BootstrapHarness:
             f"""
             #!/usr/bin/env bash
             echo "{DEVICE_ADDRESS} 2001:db8::10"
+            """,
+        )
+        write_executable(
+            self.bin / "pihole-FTL",
+            """
+            #!/usr/bin/env bash
+            [ "${1:-}" = "--config" ] || exit 2
+            case "${2:-}" in
+              webserver.domain)
+                [ -f "$FAKE_ROOT/state/https" ] && printf '%s\n' 'pi.hole'
+                ;;
+              webserver.port)
+                if [ -f "$FAKE_ROOT/state/https" ]; then
+                  printf '%s\n' '80o,443os,[::]:80o,[::]:443os'
+                else
+                  printf '%s\n' '80o,[::]:80o'
+                fi
+                ;;
+              webserver.tls.cert)
+                [ -f "$FAKE_ROOT/state/https" ] && printf '%s\n' '/etc/pihole/tls.pem'
+                ;;
+              *) exit 2 ;;
+            esac
             """,
         )
 
@@ -728,8 +752,23 @@ class BootstrapBehaviourTests(unittest.TestCase):
         )
         log = (self.harness.fake / "phases.log").read_text(encoding="utf-8")
 
-        self.assertIn("--pihole-origin https://pihole.example.net --interval-minutes 60", log)
+        self.assertIn("--pihole-origin https://pihole.example.net", log)
         self.assertIn("--companion-url https://speedtest.example.net", log)
+        self.assertIn("--interval-minutes 60", log)
+
+    def test_install_all_detects_pihole_https_and_uses_https_companion(self):
+        (self.harness.path("state") / "https").touch()
+        certificate = self.harness.path("etc/pihole/tls.pem")
+        certificate.parent.mkdir(parents=True)
+        certificate.write_text("test certificate\n", encoding="utf-8")
+
+        result = self.install_all()
+        log = (self.harness.fake / "phases.log").read_text(encoding="utf-8")
+
+        self.assertIn("Dashboard: https://pi.hole:8765/", result.stdout)
+        self.assertIn("Pi-hole Overview: https://pi.hole/admin/speedtest", result.stdout)
+        self.assertIn("--pihole-origin https://pi.hole", log)
+        self.assertIn("--companion-url https://pi.hole:8765", log)
 
     def test_repeated_install_all_is_idempotent(self):
         self.install_all()

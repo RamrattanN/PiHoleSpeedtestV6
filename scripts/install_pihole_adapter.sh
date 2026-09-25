@@ -133,6 +133,36 @@ if [ "${#validated_origins[@]}" -ne 2 ]; then
 fi
 companion_url="${validated_origins[0]}"
 pihole_origin="${validated_origins[1]}"
+
+companion_curl() {
+  path="$1"
+  shift
+  if [[ "$companion_url" == https://* ]]; then
+    curl -kfsS "$@" "https://127.0.0.1:8765${path}"
+  else
+    curl -fsS "$@" "http://127.0.0.1:8765${path}"
+  fi
+}
+
+pihole_curl() {
+  path="$1"
+  shift
+  if [[ "$pihole_origin" == https://* ]]; then
+    mapfile -t target < <(python3 - "$pihole_origin" <<'PY'
+import sys
+from urllib.parse import urlparse
+
+parsed = urlparse(sys.argv[1])
+print(parsed.hostname)
+print(parsed.port or 443)
+PY
+)
+    curl -kfsS --resolve "${target[0]}:${target[1]}:127.0.0.1" \
+      "$@" "$pihole_origin${path}"
+  else
+    curl -fsS "$@" "$pihole_origin${path}"
+  fi
+}
 for path in "$application_cli" "$install_manifest" "$collection_manifest" "$sidebar"; do
   if [ ! -e "$path" ]; then
     echo "STOP: Required installed target is missing: $path" >&2
@@ -194,8 +224,8 @@ if [ "$installed_web_version" != "v6.6" ]; then
   echo "Detected: ${installed_web_version:-unknown}" >&2
   exit 1
 fi
-curl -fsS http://127.0.0.1:8765/api/health >/dev/null
-curl -fsS -D - -o /dev/null http://127.0.0.1:8765/ |
+companion_curl /api/health >/dev/null
+companion_curl / -D - -o /dev/null |
   tr -d '\r' |
   grep -Fq "frame-ancestors 'self' $pihole_origin" || {
     echo "STOP: Companion frame policy does not allow $pihole_origin." >&2
@@ -287,7 +317,7 @@ PY
 
 policy_verified=0
 for _ in {1..20}; do
-  if curl -fsS -D - -o /dev/null "$pihole_origin/admin/speedtest" |
+  if pihole_curl /admin/speedtest -D - -o /dev/null |
     tr -d '\r' |
     grep -Fq "frame-src $companion_url"
   then

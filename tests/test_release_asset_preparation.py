@@ -1,7 +1,7 @@
 """Release scope, drift, and workflow-safety controls for version 1.0.6.
 
 The scope lock applies to the 1.0.6 release line only: it pins every file
-outside the release allowlist to the reviewed baseline e33bc10.  Bumping the
+outside the release allowlist to the reviewed baseline d56407d.  Bumping the
 project version ends the lock for later development.
 """
 
@@ -20,11 +20,11 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 PREPARE = WORKFLOWS / "prepare-release-assets.yml"
 RELEASE_VERSION = "1.0.6"
-# Content baseline for the scope lock: the reviewed rc.3 main commit.
-REVIEWED_BASE = "e33bc105423d43ff474af7488c7559cfa139c42c"
+# Content baseline for the scope lock: the reviewed rc.4 merge on main.
+REVIEWED_BASE = "d56407dde427b3d010d3bd6987c35fc5021b33a9"
 # Pull request base for the current recut, pinned by the preparation workflow.
 PR_BASE = REVIEWED_BASE
-RELEASE_BRANCH = "fix/v1.0.6-start-time"
+RELEASE_BRANCH = "fix/v1.0.6-https"
 # Assets recut before publication; they must never be reused.
 SUPERSEDED_SHA256 = {
     "40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce",
@@ -42,11 +42,14 @@ SUPERSEDED_SHA256 = {
     # Published rc.3 assets remain historical evidence and cannot be reused for rc.4.
     "4fdfff598c73d805f119bf9e72b6fc92ecfe9cb45e366cea3210f2598fe55b30",
     "cf699eb50583551ad40db7399bb3e88ec458018629f91ee219b38b161ac315b4",
+    # Published rc.4 assets remain historical evidence and cannot be reused for rc.5.
+    "7cbd9f088d4ee9676d1c09619d52478b1e3dc1130cdc922bcecedddcec394d2a",
+    "81e0f27302d01cd4dab51e194c40b3ceff7019ef9e9111e95fc0f2176e95a1cc",
 }
 # The superseded bundle on main (source commit, SHA-256) that this recut replaces.
 INHERITED_BUNDLE = (
-    "2205f65012dc0fa7b734be85b65c5da41cdb56c9",
-    "4fdfff598c73d805f119bf9e72b6fc92ecfe9cb45e366cea3210f2598fe55b30",
+    "107002350bd5c6f63bf44f1266b69d6d21633702",
+    "7cbd9f088d4ee9676d1c09619d52478b1e3dc1130cdc922bcecedddcec394d2a",
 )
 BUNDLE = ROOT / "release" / f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz"
 BOOTSTRAP = ROOT / "release" / "pihole-speedtest-v6-bootstrap.sh"
@@ -61,6 +64,7 @@ RELEASE_ALLOWLIST = {
     "DEPLOY.md",
     "docs/CURL-INSTALLATION.md",
     "docs/KANBAN.md",
+    "docs/PIHOLE-V6-ADAPTER.md",
     "docs/QA-AND-ACCEPTANCE.md",
     "docs/ROADMAP.md",
     "docs/WIKI.md",
@@ -71,42 +75,21 @@ RELEASE_ALLOWLIST = {
 # Files outside the allowlist that carry an exact owner-approved change.  Each is
 # pinned to its complete corrected content and excluded from the group digests.
 APPROVED_OVERRIDES = {
-    # The owner-approved rc.4 timing change and its exact tests and version files.
-    "pyproject.toml": "39bdcd7a3c175d74dd30a9090f58bc21eb35a5aafb4f32e6ab05cd59a5c6fb27",
-    "release/bootstrap.template.sh": "9913f88cf920c623d684f7fb3550b3dbda28a5493dac59ca65fa8124ff54ebff",
-    "src/pihole_speedtest/__init__.py": "e8eddcb6e9a882ec04ae7dc24e6c36682198ad178e7ba1c2a212485a7855bb54",
-    "src/pihole_speedtest/cli.py": "fc473b91807621a140dda8c65d5193cc3ef8a74bc38b13d15f31c623a234ce18",
-    "src/pihole_speedtest/collector.py": "b2a106746f148148610fc47def1335acee8770a45ab368cd38bed76a041c7594",
-    "src/pihole_speedtest/models.py": "f2b748fdd136365213408f07bfe2c2f7f925fb647b753e26a12de6edb3b549fd",
-    "src/pihole_speedtest/server.py": "57e0d1a6f24dd0065be1ef7a0e5f4646d626f1750a02e5245455158ecf905450",
-    "src/pihole_speedtest/storage.py": "01c881c1d6226c4e21d357f3b1a4f87a4e3d94e26721ce05a7393589d1870bdc",
-    "src/pihole_speedtest/web/app.js": "8d6963dd8d7def53cdee2d10a51aaba830a45491faa353ee154a5cae3cba9275",
-    "src/pihole_speedtest/web/index.html": "33ad9f6436ccbe3d6a6ee9bbcc28afd3c0b8633f90aaeb54a390fe0f2129a5c5",
-    "tests/test_collector.py": "0d405e857d356230d25161d9dee991dcf48263a59a1c696b8b30b2e2a862fba9",
-    "tests/test_release_documentation.py": "e01644ead5638876335883fa8853c18d4af55e72cc39eb9792e22b41a2aeb032",
-    "tests/test_server.py": "e6ac6145d58cb91ebc5050ce5e4cb1a79fdeb4c1b8b28ceb8f91bd7357a553ab",
-    "tests/test_storage.py": "cd1f78e198dc39f5efce7609368a33dfb195dad23ffe60de19b778d327eef6a7",
-    "tests/test_version.py": "12ab482b839bb9d51df70b8b35b556f64943564b01d555b3bfe06b1341fba2d7",
-    "tests/test_web_assets.py": "2f5f60337b723377438a1f6671b403670870f2bc42376995c4af2f10727a0d24",
+    # The owner-approved rc.5 HTTPS correction and its exact tests.
+    "deploy/systemd/pihole-speedtest-dashboard-tls.service": "eca597ab7897840044fb39daf03fc289f54de6f0c10c7bcbbf1ec27790fbf1e9",
+    "release/bootstrap.template.sh": "a10388715b7bb65ee8f336ecc41b54bec9c25107fb501fecd068c593ef455b24",
+    "scripts/install_pihole_adapter.sh": "c5ac99de710825e71c1e45f58b3bfc934fbac8a8c51fcd3dac65b2477e447127",
+    "scripts/install_release.sh": "597ecf9786ebcacaa114086ca24b22d3901b478b1b3cab1688b1cfab45212cb7",
+    "src/pihole_speedtest/cli.py": "5a4cdf8f53b5ce58286ccc1bed9d2e62b07c25d97b76dedaf0eefde72ea9e753",
+    "src/pihole_speedtest/server.py": "7d080f2a3afd9cddd64c584813403731f5d64bf3406c58573e989c37edd622cf",
+    "tests/test_one_line_install.py": "1964d54d228612f70d4cc4dddc61f8c037cd3702a67fb129e4b66724309becff",
+    "tests/test_release_documentation.py": "10794ec4e1d31726254b28ad5559c4a0dc2755877bb2fff9291ac9f3484206af",
+    "tests/test_release_workflow.py": "71712c5f1c11980fcbafff3ee48af4c44ccffc772c0987c3f7d69a5369140611",
+    "tests/test_server.py": "abbd68fb2c93828e7453d99d5831782160df8240f666bd12eefd20b95f33f93d",
+    "tests/test_systemd_assets.py": "2bffbbc6d7b54c718267c5f566a4373b149fd4cb0c43f7e593c72bcba68f6584",
 }
-APPROVED_OVERRIDE_MODES = {
-    "pyproject.toml": "100644",
-    "release/bootstrap.template.sh": "100644",
-    "src/pihole_speedtest/__init__.py": "100644",
-    "src/pihole_speedtest/cli.py": "100644",
-    "src/pihole_speedtest/collector.py": "100644",
-    "src/pihole_speedtest/models.py": "100644",
-    "src/pihole_speedtest/server.py": "100644",
-    "src/pihole_speedtest/storage.py": "100644",
-    "src/pihole_speedtest/web/app.js": "100644",
-    "src/pihole_speedtest/web/index.html": "100644",
-    "tests/test_collector.py": "100644",
-    "tests/test_release_documentation.py": "100644",
-    "tests/test_server.py": "100644",
-    "tests/test_storage.py": "100644",
-    "tests/test_version.py": "100644",
-    "tests/test_web_assets.py": "100644",
-}
+APPROVED_OVERRIDE_MODES = {path: "100644" for path in APPROVED_OVERRIDES}
+APPROVED_OVERRIDE_MODES["scripts/install_release.sh"] = "100755"
 # Ordered partition of every tracked file outside the allowlist and overrides.
 PROTECTED_GROUPS = [
     ("chart", ("src/pihole_speedtest/web/", "web/")),
@@ -122,16 +105,16 @@ PROTECTED_GROUPS = [
 ]
 # sha256 over sorted "mode blob path" lines at the reviewed baseline, and file count.
 BASELINE_DIGESTS = {
-    "chart": ("c0ce62eab4c468f27912d138ab89e96eef7db049d8b7bf518baf7628a612663b", 6),
-    "runtime": ("b80ac668aeb15c1668b49f06ab66d67fd360f6d5de7be38af1d699ec5416befc", 9),
-    "installer": ("cf7ef164db8529900637ce6173f23e33677eac855028e2a46c78c712c845819f", 19),
-    "version-and-template": ("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", 0),
+    "chart": ("2f3f87c3a6d2b79f090c9e52773c0e1f1556ab0a299e562c3e5fd99eaea427a1", 8),
+    "runtime": ("c436b24c108aa45d3e0c96dcd11f23be387034ee2a78f20f60323576e97931a5", 13),
+    "installer": ("292eaffdb1b8fb6fd4aefb33da26294071c85bbf4a46885b302023c97655d755", 17),
+    "version-and-template": ("964524da306c583f48c692469effc1e2ec51498e3c0539a7df80d1d84a27df4a", 1),
     "licensing": ("d2daa9886b45795f3a4fb46f63e64ee976ee5a5d6023164a9a735fa38eef1d07", 2),
     "docker": ("51898daa73be46eb2dfa82700dedc02a9fd29370a81f2f9ca65160156cec60b3", 4),
     "workflows": ("ca2d8e4d6a3353f9fd3d1fc0cc60204a612f8101d69f57aef22287995bad6987", 2),
-    "tests": ("ab5322d988d04ad171b4079a084179de8b8673040121bb737d0874cb0ce397cb", 12),
+    "tests": ("841702f8290e44092878fc7ef0a35dd62cf4244dbe1052bae311cc37612b4348", 13),
     "published-releases": ("dd860ea23f231664df1c844b1417a444d6b395412ed98e135c80935abae33c4b", 14),
-    "other": ("79d3cf5e77a934e246dba795ba1933bce37c0f778f16f7d7525dd4d172534106", 7),
+    "other": ("3ec5663d54549afade020ac123e2ee7b01beb784c53a4e37efb996f2479990a7", 6),
 }
 RELEASE_DOCS = [
     "README.md",
@@ -632,7 +615,10 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
     def test_workflow_allowlist_matches_the_release_policy(self):
         guard = self.code.split("case \"$path\" in", 1)[1].split("*)", 1)[0]
         listed = set(
-            re.findall(r"[A-Za-z0-9_./-]+\.(?:yml|toml|html|py|js|md|gz|sha256|sh)", guard)
+            re.findall(
+                r"[A-Za-z0-9_./-]+\.(?:yml|toml|html|py|js|md|gz|sha256|sh|service)",
+                guard,
+            )
         )
 
         self.assertEqual(listed, RELEASE_ALLOWLIST | set(APPROVED_OVERRIDES))

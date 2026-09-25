@@ -73,9 +73,11 @@ evidence.  `v1.0.6-rc.2` passed live runner, scheduling, data-preservation,
 and reboot checks, but its fixed y-axis and narrow zoomed bars did not pass
 owner visual acceptance.  `v1.0.6-rc.3` corrected those chart defects and
 passed visual and runner acceptance, but its completion-time chart chronology
-is superseded for acceptance.  `v1.0.6-rc.4` is the current acceptance
-candidate after publication.  It charts scheduled tests at their configured
-slot, charts manual tests at their actual start, and retains actual start and
-completion timestamps.  It also retains the one-line runner and the
-`install-all` and `uninstall-all` actions.  Raspberry Pi acceptance of rc.4
-and the stable release remain open.
+is superseded for acceptance.  `v1.0.6-rc.4` corrected chart chronology and
+retained completion timestamps, but its HTTP-only companion could not be
+embedded from a Pi-hole page opened over HTTPS.  It is superseded for
+acceptance and remains published as historical evidence.  `v1.0.6-rc.5` is
+the current acceptance candidate after publication.  It serves the companion
+over HTTPS when Pi-hole uses its native TLS certificate and retains the
+one-line `install-all` and `uninstall-all` actions.  Raspberry Pi acceptance of
+rc.5 and the stable release remain open.

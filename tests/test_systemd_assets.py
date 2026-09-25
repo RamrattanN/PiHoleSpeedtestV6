@@ -28,6 +28,14 @@ class SystemdAssetTests(unittest.TestCase):
             "EnvironmentFile=-/etc/default/pihole-speedtest-v6",
             unit,
         )
+
+    def test_https_dashboard_uses_restricted_systemd_certificate_credential(self):
+        unit = self.read("pihole-speedtest-dashboard-tls.service")
+
+        self.assertIn("User=pihole-speedtest", unit)
+        self.assertIn("LoadCredential=tls.pem:/etc/pihole/tls.pem", unit)
+        self.assertIn("PIHOLE_SPEEDTEST_TLS_CERT=%d/tls.pem", unit)
+        self.assertIn("NoNewPrivileges=true", unit)
         self.assertIn("--collection-binary /usr/bin/speedtest", unit)
         self.assertIn(
             "--collection-lock-file /var/lib/pihole-speedtest/collect.lock",
@@ -55,10 +63,14 @@ class SystemdAssetTests(unittest.TestCase):
         combined = "\n".join(
             path.read_text(encoding="utf-8")
             for path in sorted(SYSTEMD.iterdir())
+            if path.name != "pihole-speedtest-dashboard-tls.service"
         )
 
         self.assertNotIn("/etc/pihole", combined)
         self.assertNotIn("/var/www/html", combined)
+        tls_unit = self.read("pihole-speedtest-dashboard-tls.service")
+        self.assertEqual(tls_unit.count("/etc/pihole"), 1)
+        self.assertNotIn("/var/www/html", tls_unit)
 
     def test_dashboard_only_installer_preserves_phase_boundaries(self):
         installer = INSTALLER.read_text(encoding="utf-8")

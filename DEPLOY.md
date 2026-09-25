@@ -32,13 +32,16 @@ pihole-speedtest serve --database ./data/speedtest.db --host 127.0.0.1 --port 87
 - service environment: `/etc/default/pihole-speedtest-v6`
 - reset recovery backups: `/var/lib/pihole-speedtest/backups`
 - service account: dedicated unprivileged account
-- dashboard: independent HTTP service on a configurable LAN address and port
+- dashboard: independent HTTP or HTTPS service on a configurable LAN address
+  and port
 - schedule: systemd timer
 - integration: optional and reversible Pi-hole v6 adapter
 
 Systemd units are maintained under `deploy/systemd/` for:
 
 - an always-on dashboard at LAN port `8765`;
+- native HTTPS using Pi-hole's `/etc/pihole/tls.pem` certificate delivered to
+  the unprivileged service as a restricted systemd credential;
 - a one-shot official Ookla collection service;
 - a persistent scheduler that checks every 15 minutes;
 - a user-selected capture frequency from 15 minutes through once a day, with a

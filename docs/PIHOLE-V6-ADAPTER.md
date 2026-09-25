@@ -45,9 +45,12 @@ PIHOLE_SPEEDTEST_FRAME_ANCESTORS=http://pihole.example.test
 ```
 
 The value is an origin, not a URL path.  HTTPS Pi-hole pages cannot embed an
-HTTP companion because browsers block mixed content.  The verified device
-currently uses the HTTP origin shown above.  A future HTTPS deployment must
-provide the companion through HTTPS before enabling the adapter.
+HTTP companion because browsers block mixed content.  Version 1.0.6 rc.5
+detects native Pi-hole HTTPS, serves the companion through HTTPS on port 8765,
+and requires both origins to use the same scheme.  The companion receives
+`/etc/pihole/tls.pem` as a restricted systemd credential rather than direct
+filesystem access.  Nonstandard reverse-proxy origins must still be supplied
+explicitly.
 
 Pi-hole's CSP may omit a `frame-src` directive.  In that case, `default-src`
 is the browser fallback and a companion service on another port is blocked.

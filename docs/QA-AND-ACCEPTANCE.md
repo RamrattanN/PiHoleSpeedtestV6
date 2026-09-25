@@ -178,8 +178,8 @@ remained operational.
 Automated tests exercise the runner, the rendered bootstrap, and the release
 publication validation against stubbed system commands and throwaway
 repositories.  Before version `1.0.6` replaces version `1.0.5`, the following
-must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.4`
-prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.4` with the exact
+must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.5`
+prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.5` with the exact
 one-line runner from `main`.  Prerelease `v1.0.6-rc.1` was published and
 accepted on the Raspberry Pi for upgrade, data preservation, services, sidebar,
 and charts.  It exposed a collection scheduling defect, a 15-minute setting
@@ -197,6 +197,12 @@ The current candidate must show:
 - dashboard health, exactly one enabled collection timer, Pi-hole FTL and web
   health, and the sidebar adapter manifest and pages are verified;
 - the printed dashboard, Overview, and Setup addresses open correctly;
+- when Pi-hole serves HTTPS, the runner detects its configured domain and
+  certificate, the companion serves HTTPS on port 8765, and the Overview and
+  Setup iframes load without mixed content;
+- the HTTPS dashboard service receives `/etc/pihole/tls.pem` through its
+  restricted systemd credential, while the companion account has no direct
+  read access to the source certificate;
 - a repeated `install-all` changes nothing;
 - `uninstall-all` removes the sidebar before the companion, restores the
   original sidebar exactly, and preserves history, settings, and recovery
@@ -206,7 +212,7 @@ The current candidate must show:
 - a sidebar failure leaves the companion, data, and Pi-hole web files intact
   and prints the failed phase and recovery commands.
 
-Release candidate `v1.0.6-rc.4` must additionally show at least three
+Release candidate `v1.0.6-rc.5` must additionally show at least three
 consecutive scheduled collections about 15 minutes apart with no alternating
 `"not due"` skips in the collector journal, complete one documented uninstall
 and reinstall and one repeat installation, and keep genuine outages as empty
@@ -226,6 +232,14 @@ retain the actual start and completion timestamps.  For a manual measurement,
 confirm that the chart uses its actual start time.  Existing measurements must
 remain intact and continue to use their historical completion time because a
 reliable earlier start time cannot be reconstructed.
+
+Open Pi-hole through its HTTPS hostname and verify both sidebar pages.  Confirm
+that the installed manifest records matching HTTPS `pihole_origin` and
+`companion_url` values, that `https://<pihole-host>:8765/api/health` responds,
+and that the browser reports no refused iframe, mixed-content, or certificate
+error.  Repeat installation must preserve this configuration.  A deliberately
+mixed HTTP/HTTPS pair or a certificate that does not cover the companion
+hostname must fail before installation mutation.
 
 Preserve the runner output, dashboard health responses, timer listings, adapter
 manifests, and recovery evidence as acceptance evidence.  After acceptance,
