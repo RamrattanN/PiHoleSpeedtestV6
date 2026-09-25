@@ -26,8 +26,8 @@ concurrency:
 
 env:
   RELEASE_VERSION: "1.0.6"
-  RELEASE_BRANCH: fix/v1.0.6-https-redirect
-  REVIEWED_BASE: 11c8dc1e9bf7e1a012e92692bb9c90ba2c8b1c98
+  RELEASE_BRANCH: fix/v1.0.6-pihole-fonts
+  REVIEWED_BASE: f4b742e89c293b6c6d351c32dfc011b6f78223bc
   # Superseded, never-published assets that must not be reused.
   SUPERSEDED_SHA256: >-
     40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce
@@ -47,14 +47,16 @@ env:
     3af1b4290b00d1b06f07356312f5ba3b7837f07b9059330f60725bd48ce919c7
     7d7e33b12fdb9605465373b92a8c970be2818ce0757397254d740d15b679a54d
     083b5f4320cb61681362ef3b30a9ddc38d1bb2db293462fd8b905b14b6313789
-  PRERELEASE_TAG: v1.0.6-rc.7
+    f99c75395b689dd8aa8f54bdf49c00bd524e6ce2654aa860b866487a10938698
+    fe0bd79aa80389654b2038dd55a45d7bd1bc0d984c8c1ef0db92b3f9ff9c3a6e
+  PRERELEASE_TAG: v1.0.6-rc.8
   REPOSITORY: RamrattanN/PiHoleSpeedtestV6
   BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
   BOOTSTRAP: pihole-speedtest-v6-bootstrap.sh
 
 jobs:
   prepare:
-    if: github.head_ref == 'fix/v1.0.6-https-redirect'
+    if: github.head_ref == 'fix/v1.0.6-pihole-fonts'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -90,10 +92,14 @@ jobs:
             case "$path" in
               .github/workflows/prepare-release-assets.yml|\
               tests/test_release_asset_preparation.py|\
-              scripts/install_pihole_adapter.sh|\
-              src/pihole_speedtest/adapter.py|\
-              src/pihole_speedtest/cli.py|\
-              tests/test_adapter.py|\
+              THIRD_PARTY_NOTICES.md|pyproject.toml|\
+              src/pihole_speedtest/server.py|\
+              src/pihole_speedtest/web/app.js|\
+              src/pihole_speedtest/web/styles.css|\
+              src/pihole_speedtest/web/fonts/antonio-v19-latin-100.woff2|\
+              src/pihole_speedtest/web/fonts/antonio-v19-latin-regular.woff2|\
+              src/pihole_speedtest/web/fonts/antonio-v19-latin-700.woff2|\
+              tests/test_server.py|tests/test_web_assets.py|\
               tests/test_release_documentation.py|\
               README.md|DEPLOY.md|\
               docs/CURL-INSTALLATION.md|docs/KANBAN.md|docs/QA-AND-ACCEPTANCE.md|\

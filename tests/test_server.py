@@ -143,6 +143,13 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(response.headers["Content-Type"], "image/png")
             self.assertTrue(response.read().startswith(b"\x89PNG\r\n\x1a\n"))
 
+        with urlopen(
+            self.base_url + "/fonts/antonio-v19-latin-regular.woff2"
+        ) as response:
+            self.assertEqual(response.status, 200)
+            self.assertEqual(response.headers["Content-Type"], "font/woff2")
+            self.assertTrue(response.read().startswith(b"wOF2"))
+
     def test_explicit_frame_ancestor_is_added_to_security_policy(self):
         self.server.shutdown()
         self.server.server_close()

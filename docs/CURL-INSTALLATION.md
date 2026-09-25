@@ -33,9 +33,13 @@ acceptance and remains published as historical evidence.  `v1.0.6-rc.6` made
 adapter evidence scheme-aware and passed native HTTPS embedding, but HTTP
 Pi-hole access displayed a rejected iframe instead of upgrading to the
 canonical HTTPS page.  It is superseded for acceptance and remains published
-as historical evidence.  `v1.0.6-rc.7` adds that redirect and is the current
-acceptance candidate after publication while retaining the rc.4 timing
-behavior.  Version `1.0.6` adds the one-line convenience runner, its
+as historical evidence.  `v1.0.6-rc.7` added that redirect and passed complete
+Raspberry Pi acceptance, but Chrome split view exposed companion typography
+that did not match Pi-hole's LCARS theme.  It is superseded for acceptance and
+remains published as historical evidence.  `v1.0.6-rc.8` is the current
+acceptance candidate and uses Pi-hole's Antonio font stack while retaining the
+rc.4 timing behavior.  Version `1.0.6` adds the one-line
+convenience runner, its
 prerelease acceptance override, guarded release publication, and the
 `install-all` and `uninstall-all` bootstrap actions described below.  Its
 production trust anchors will be recorded here only after the stable release is
@@ -108,7 +112,7 @@ GitHub resolves `releases/latest` only to the latest stable release, never to a
 prerelease, so publishing a prerelease cannot silently replace the stable
 release used by the ordinary command.
 
-After rc.7 is published, prerelease acceptance uses
+After rc.8 is published, prerelease acceptance uses
 `PIHOLE_SPEEDTEST_RELEASE_TAG` to select one exact
 release, downloaded from
 `https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/download/<tag>/`:
@@ -116,19 +120,19 @@ release, downloaded from
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.7 bash
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.8 bash
 ```
 
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.7 \
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.8 \
   bash -s -- uninstall
 ```
 
 The tag must match
 `^v(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})(-rc\.[1-9][0-9]{0,3})?$`,
-for example `v1.0.6` or `v1.0.6-rc.7`.  Anything else, including whitespace,
+for example `v1.0.6` or `v1.0.6-rc.8`.  Anything else, including whitespace,
 slashes, `..`, URLs, query strings, fragments, and shell syntax, stops the
 runner before any download.  The repository and GitHub host are fixed.  An
 empty value behaves exactly like no override.  The runner prints a notice when
@@ -146,11 +150,11 @@ prerelease acceptance reuses the accepted commit and bytes.
    with `scripts/render_release_bootstrap.sh`, and commit the rendered
    `release/pihole-speedtest-v6-bootstrap.sh`.  That bootstrap commit is the
    release commit.
-4. Publish the current release candidate, `v1.0.6-rc.7` for this release,
+4. Publish the current release candidate, `v1.0.6-rc.8` for this release,
    from the exact release commit with `scripts/publish_github_release.sh`.
 5. On the Raspberry Pi, run the one-line installation, health, timer, sidebar,
    data-preservation, uninstall, and reinstall acceptance with
-   `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.7`.
+   `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.8`.
 6. Preserve the acceptance evidence.
 7. Make no source or asset changes after successful prerelease acceptance.
 8. Publish the final `v1.0.6` release from the same accepted commit with
@@ -173,6 +177,8 @@ chronology, while its HTTPS embedding finding requires rc.5.
 HTTPS, while its plain-HTTP final evidence capture requires rc.6.
 `v1.0.6-rc.6` remains published as historical evidence of corrected HTTPS
 adapter recovery, while its HTTP wrapper finding requires rc.7.
+`v1.0.6-rc.7` remains published as historical evidence of complete functional
+Raspberry Pi acceptance, while its LCARS typography finding requires rc.8.
 
 `releases/latest` must continue to resolve only the latest stable release.  A
 prerelease must never be marked as the latest release.
@@ -203,7 +209,7 @@ Validate without contacting GitHub, creating a tag, or uploading anything:
 ```bash
 scripts/publish_github_release.sh \
   --kind prerelease \
-  --tag v1.0.6-rc.7 \
+  --tag v1.0.6-rc.8 \
   --expected-commit "$release_commit" \
   --bootstrap-sha256 "$bootstrap_sha256" \
   --asset-dir "$asset_dir"
@@ -221,10 +227,10 @@ matches the bootstrap's embedded checksum.
 
 Publication adds `--publish` and a kind-specific confirmation:
 
-- prerelease: `--confirm 'PUBLISH PRERELEASE v1.0.6-rc.7'`, published with
+- prerelease: `--confirm 'PUBLISH PRERELEASE v1.0.6-rc.8'`, published with
   `--prerelease --latest=false`;
 - production: `--kind production --tag v1.0.6 --accepted-prerelease
-  v1.0.6-rc.7 --confirm 'PUBLISH PRODUCTION v1.0.6'`, published with
+  v1.0.6-rc.8 --confirm 'PUBLISH PRODUCTION v1.0.6'`, published with
   `--latest`.
 
 Prerelease tags must end in `-rc.N` and production tags must not, so one
@@ -433,12 +439,17 @@ Version `1.0.5` passed curl uninstall and reinstall acceptance with measurement
 history and settings preserved, and the owner accepted the restored dashboard
 and sidebar.
 
-Still required:
+Release candidate `v1.0.6-rc.7` passed the Raspberry Pi 3 ARM64 acceptance
+sequence on September 25, 2026.  The accepted sequence covered the one-line
+and checksum-pinned runners, repeat installation, consecutive 15-minute
+scheduled collections, scheduled/start/completion timestamps, HTTP-to-HTTPS
+canonical redirects, direct HTTPS Overview and Setup pages, uninstall,
+repeat-uninstall, reinstall, reboot continuity, and an isolated disposable-data
+purge.  Measurement history and settings remained intact, SQLite integrity was
+`ok`, and the live installation was unchanged by the isolated purge.
 
-- clean Raspberry Pi 3 ARM64 installation;
-- interrupted-install rollback and repeat invocation;
-- reboot with dashboard and timer continuity;
-- explicit purge test using disposable data only;
-- version `1.0.6` `install-all`, `uninstall-all`, and one-line runner
-  acceptance on Raspberry Pi 3 against the `v1.0.6-rc.7` prerelease, followed
-  by final verification of the stable release.
+The rc.7 assets remain immutable historical evidence.  Chrome split view later
+exposed typography that did not match Pi-hole's LCARS interface, so rc.7 is
+superseded for final acceptance.  Still required: publish and accept rc.8 with
+the Antonio typography correction, then publish stable `v1.0.6` from that exact
+accepted commit with byte-identical assets and verify the ordinary runner.

@@ -11,6 +11,8 @@ const chartStates = new Map();
 const DEFAULT_CHART_WINDOW_MS = 24 * 60 * 60 * 1000;
 const BAR_GROUP_GAP_PX = 2;
 const BAR_GROUP_MAX_WIDTH_PX = 56;
+const PIHOLE_FONT_STACK = 'Antonio, Oswald, "Myriad Pro Cond", "Roboto Condensed", '
+  + '"Futura Condensed", "Helvetica Condensed", "Arial Narrow", sans-serif';
 
 function requestedView() {
   return window.location.hash === "#setup" ? "setup" : "overview";
@@ -214,7 +216,7 @@ function drawChart(records, options) {
   chartStates.set(options.canvasId, { records: plottedRecords, options, padding, chartWidth, chartHeight, xPositions });
   context.strokeStyle = "#263747";
   context.fillStyle = "#8fa4b8";
-  context.font = "12px system-ui";
+  context.font = `400 12px ${PIHOLE_FONT_STACK}`;
   context.lineWidth = 1;
   for (let line = 0; line <= 4; line += 1) {
     const y = padding.top + chartHeight * line / 4;
@@ -224,7 +226,7 @@ function drawChart(records, options) {
 
   const timeTicks = chartTimeTicks(timeline, chartWidth);
   context.fillStyle = "#8fa4b8";
-  context.font = "11px system-ui";
+  context.font = `400 11px ${PIHOLE_FONT_STACK}`;
   timeTicks.forEach((timestamp) => {
     const label = formatAxisTime(timestamp);
     const x = xForTimestamp(timestamp);
@@ -508,6 +510,7 @@ async function load() {
     healthElement.textContent = `Healthy - ${formatMeasurementCount(health.measurements)}`; healthElement.className = "health ok";
     setText("app-version", `version ${health.version}`);
     if (latest) { setText("latest-download", formatNumber(latest.download_mbps)); setText("latest-upload", formatNumber(latest.upload_mbps)); setText("latest-latency", formatNumber(latest.latency_ms)); setText("latest-jitter", formatNumber(latest.jitter_ms)); }
+    if (document.fonts?.ready) await document.fonts.ready;
     renderTable(allRecords); renderCharts();
   } catch (error) {
     healthElement.textContent = "Dashboard unavailable"; healthElement.className = "health error";

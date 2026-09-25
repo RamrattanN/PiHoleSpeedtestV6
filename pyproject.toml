@@ -23,4 +23,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-pihole_speedtest = ["web/*"]
+pihole_speedtest = ["web/*", "web/fonts/*.woff2"]

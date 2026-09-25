@@ -83,8 +83,16 @@ rolled the adapter back safely.  It is superseded for acceptance and remains
 published as historical evidence.  `v1.0.6-rc.6` corrected adapter recovery and
 passed native HTTPS embedding, but HTTP Pi-hole access displayed a rejected
 iframe instead of upgrading to the canonical HTTPS page.  It is superseded for
-acceptance and remains published as historical evidence.  `v1.0.6-rc.7` is the
-current acceptance candidate after publication.  It adds the adaptive HTTP-only
-behavior and canonical HTTPS redirect while retaining the one-line
-`install-all` and `uninstall-all` actions.  Raspberry Pi acceptance of rc.7 and
-the stable release remain open.
+acceptance and remains published as historical evidence.  `v1.0.6-rc.7` added
+the adaptive HTTP-only behavior and canonical HTTPS redirect while retaining
+the one-line `install-all` and `uninstall-all` actions.  It passed complete
+Raspberry Pi acceptance,
+including owner visual, install, repeat-install,
+scheduled collection, timestamp, uninstall,
+repeat-uninstall, reinstall, reboot, and isolated disposable-data purge
+acceptance on the Raspberry Pi 3, but Chrome split view exposed companion
+typography that did not match the Pi-hole LCARS theme.  It is superseded for
+acceptance and remains published as historical evidence.  `v1.0.6-rc.8` is
+the current acceptance candidate and applies Pi-hole's Antonio font stack to
+the companion interface and chart canvases.  Stable `v1.0.6` publication and
+ordinary runner verification remain open.

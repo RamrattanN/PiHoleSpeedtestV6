@@ -20,11 +20,11 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 PREPARE = WORKFLOWS / "prepare-release-assets.yml"
 RELEASE_VERSION = "1.0.6"
-# Content baseline for the scope lock: the reviewed rc.6 merge on main.
-REVIEWED_BASE = "11c8dc1e9bf7e1a012e92692bb9c90ba2c8b1c98"
+# Content baseline for the scope lock: the reviewed rc.7 merge on main.
+REVIEWED_BASE = "f4b742e89c293b6c6d351c32dfc011b6f78223bc"
 # Pull request base for the current recut, pinned by the preparation workflow.
 PR_BASE = REVIEWED_BASE
-RELEASE_BRANCH = "fix/v1.0.6-https-redirect"
+RELEASE_BRANCH = "fix/v1.0.6-pihole-fonts"
 # Assets recut before publication; they must never be reused.
 SUPERSEDED_SHA256 = {
     "40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce",
@@ -51,11 +51,14 @@ SUPERSEDED_SHA256 = {
     # Published rc.6 assets remain historical evidence and cannot be reused for rc.7.
     "7d7e33b12fdb9605465373b92a8c970be2818ce0757397254d740d15b679a54d",
     "083b5f4320cb61681362ef3b30a9ddc38d1bb2db293462fd8b905b14b6313789",
+    # Published rc.7 assets remain historical evidence and cannot be reused for rc.8.
+    "f99c75395b689dd8aa8f54bdf49c00bd524e6ce2654aa860b866487a10938698",
+    "fe0bd79aa80389654b2038dd55a45d7bd1bc0d984c8c1ef0db92b3f9ff9c3a6e",
 }
 # The superseded bundle on main (source commit, SHA-256) that this recut replaces.
 INHERITED_BUNDLE = (
-    "897f114b4b9a4eac833ae55cf2ae73debe59f0db",
-    "7d7e33b12fdb9605465373b92a8c970be2818ce0757397254d740d15b679a54d",
+    "e95b176268a2b805ea94269aab5756e2f91030c2",
+    "f99c75395b689dd8aa8f54bdf49c00bd524e6ce2654aa860b866487a10938698",
 )
 BUNDLE = ROOT / "release" / f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz"
 BOOTSTRAP = ROOT / "release" / "pihole-speedtest-v6-bootstrap.sh"
@@ -81,12 +84,18 @@ RELEASE_ALLOWLIST = {
 # Files outside the allowlist that carry an exact owner-approved change.  Each is
 # pinned to its complete corrected content and excluded from the group digests.
 APPROVED_OVERRIDES = {
-    # The owner-approved rc.7 adaptive HTTP and HTTPS wrapper correction.
-    "scripts/install_pihole_adapter.sh": "f871e1039291a7cba00579e6a75d3efa46b1633c4a50d5641bfd88b0e3f1ab5c",
-    "src/pihole_speedtest/adapter.py": "4e4dc24b8092e0776fabd70f5645556202c3f39ff7d455428704f83a076570a7",
-    "src/pihole_speedtest/cli.py": "4bcc051e1aac8711efd52466498811a6cc62ed03ce66a91028a89cd5e0334567",
-    "tests/test_adapter.py": "f721870d7b103aaf5bfa308ee7c0d0a0f4df1928aa10f56d567290ae7c21b58b",
-    "tests/test_release_documentation.py": "8fe6625568e56b82ba40b9ba9fa209e4fefd0f95ebc8b183a701c9390977fff0",
+    # The owner-approved post-rc.7 Pi-hole LCARS typography correction.
+    "THIRD_PARTY_NOTICES.md": "6594ec9722c4de5c6f8385cbb4fcea230b1267e9cfeade4fa09cd83101fc7595",
+    "pyproject.toml": "356d7b137f96e71720e44315966e09f4ef16949b820287bb413b5d2d129cc7eb",
+    "src/pihole_speedtest/server.py": "8a81fa20411d5798f8e3f0d8a80b5de0219183119c8177db8928f8289af13ff4",
+    "src/pihole_speedtest/web/app.js": "918b8f7d8bb887d4f024fe28a3e331331ef746e8c272a46faa08532b56408c86",
+    "src/pihole_speedtest/web/styles.css": "b97f0822f6d3e7a4cc17e292b0f141ba00435310248e967838d49027fdc0b9e1",
+    "src/pihole_speedtest/web/fonts/antonio-v19-latin-100.woff2": "dfabf3dee53dc9c8b2a15b9661242cd06717aaeb7f19ea36a19b04596b7221a8",
+    "src/pihole_speedtest/web/fonts/antonio-v19-latin-700.woff2": "b6d68353c888773b36c65d1cddbc8aa805259dd74d8cc9e500def7f41818840e",
+    "src/pihole_speedtest/web/fonts/antonio-v19-latin-regular.woff2": "c367b51912a07ce2f2ec2fe9bf4c332c8e27133f466c7e22925088c2fdbf6040",
+    "tests/test_server.py": "2a2b8cd073d9b153939da15d495afe4748ee211efe51d9a77956456752104e5a",
+    "tests/test_web_assets.py": "11e4908c444533395df84ca93e3786f28c47ec55b706f6074b1dd3fbd46bffe8",
+    "tests/test_release_documentation.py": "e4b258bf6d2ab986e4b0f2ef9c4ab221f84247f3ff69d31942351dcd44e84f4e",
 }
 APPROVED_OVERRIDE_MODES = {path: "100644" for path in APPROVED_OVERRIDES}
 # Ordered partition of every tracked file outside the allowlist and overrides.
@@ -104,14 +113,14 @@ PROTECTED_GROUPS = [
 ]
 # sha256 over sorted "mode blob path" lines at the reviewed baseline, and file count.
 BASELINE_DIGESTS = {
-    "chart": ("2f3f87c3a6d2b79f090c9e52773c0e1f1556ab0a299e562c3e5fd99eaea427a1", 8),
-    "runtime": ("ebffeb04ac64fa2260b06ee4473c98a65387f29df8470f9712b9f9b73dfd5d76", 14),
-    "installer": ("21f30a73d32dc0dcecaa725919dc7f9104019ff44c207ad804570fd97560429e", 18),
-    "version-and-template": ("fe68dc240452f129717378fa220519614efda969822c7ed01e43da9ec4ed8b0d", 2),
-    "licensing": ("d2daa9886b45795f3a4fb46f63e64ee976ee5a5d6023164a9a735fa38eef1d07", 2),
+    "chart": ("afa6e76c260c8e510f9014a003a5a0f437c8308a024af5e0bbbe5e608c2e9c0a", 6),
+    "runtime": ("bba3082480c1901d6a2880defb5b2e7d07c942a260349435c6ca19f21ebd8374", 15),
+    "installer": ("c7dff88b1b630a7812764b9c6bdbab4c86f9f74d2597c4a7b358961d0e751d8f", 19),
+    "version-and-template": ("d3b04dcacfcd663122b831a41207aaee1de02baffc096e78665692d5876795f0", 1),
+    "licensing": ("277478439fad1f542b1f766675df58a1c32c7738a64f6f0e3e8bd921fbfe2bbc", 1),
     "docker": ("51898daa73be46eb2dfa82700dedc02a9fd29370a81f2f9ca65160156cec60b3", 4),
     "workflows": ("ca2d8e4d6a3353f9fd3d1fc0cc60204a612f8101d69f57aef22287995bad6987", 2),
-    "tests": ("150dfec0beb725f6ab5c10c64de3dec41722c332204d00ef45c85687f00c1de0", 16),
+    "tests": ("bd3fd6cc7a149ecef3d605ee600074263c5e065f0f50f48900251e5c72ae8ee2", 15),
     "published-releases": ("dd860ea23f231664df1c844b1417a444d6b395412ed98e135c80935abae33c4b", 14),
     "other": ("3ec5663d54549afade020ac123e2ee7b01beb784c53a4e37efb996f2479990a7", 6),
 }
@@ -615,7 +624,7 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
         guard = self.code.split("case \"$path\" in", 1)[1].split("*)", 1)[0]
         listed = set(
             re.findall(
-                r"[A-Za-z0-9_./-]+\.(?:yml|toml|html|py|js|md|gz|sha256|sh|service)",
+                r"[A-Za-z0-9_./-]+\.(?:yml|toml|html|py|js|css|woff2|md|gz|sha256|sh|service)",
                 guard,
             )
         )
