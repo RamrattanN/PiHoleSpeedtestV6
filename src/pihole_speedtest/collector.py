@@ -101,6 +101,7 @@ def collect(
         "--format=json",
     ]
     try:
+        started_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         completed = subprocess.run(
             command,
             capture_output=True,
@@ -124,7 +125,9 @@ def collect(
     if not completed.stdout.strip():
         raise CollectionError("Speedtest produced no JSON output")
 
-    measurement = parse_ookla_result(completed.stdout)
+    measurement = replace(
+        parse_ookla_result(completed.stdout), started_at=started_at
+    )
     if measurement.interface_name == "Not available":
         interface_name = default_route_interface()
         if interface_name:

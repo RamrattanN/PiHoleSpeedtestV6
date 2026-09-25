@@ -1,3 +1,5 @@
+import csv
+import io
 import json
 import tempfile
 import threading
@@ -65,6 +67,23 @@ class ServerTests(unittest.TestCase):
         self.assertIn("attachment; filename=\"pihole-speedtest.csv\"", response.headers["Content-Disposition"])
         self.assertIn("recorded_at,download_mbps", body)
         self.assertIn("2026-09-22T18:00:00Z,100.0,20.0", body)
+        rows = list(csv.DictReader(io.StringIO(body)))
+        self.assertEqual(rows[0]["started_at"], "")
+        self.assertEqual(rows[0]["completed_at"], rows[0]["recorded_at"])
+
+    def test_results_expose_both_timestamps_for_new_measurement(self):
+        from dataclasses import replace
+        self.storage.insert(replace(
+            Measurement(
+                recorded_at="2026-09-22T18:15:20Z", download_mbps=101,
+                upload_mbps=20, latency_ms=10, jitter_ms=1,
+                server_name="Example", server_id="42", interface_name="eth0",
+            ), started_at="2026-09-22T18:15:00Z",
+        ))
+        _, payload = self.get_json("/api/results?limit=10")
+        self.assertIsNone(payload["records"][0]["started_at"])
+        self.assertEqual(payload["records"][1]["started_at"], "2026-09-22T18:15:00Z")
+        self.assertEqual(payload["records"][1]["completed_at"], "2026-09-22T18:15:20Z")
 
     def post_json(self, path, payload):
         request = Request(

@@ -31,8 +31,8 @@ class VersionTests(unittest.TestCase):
         self.assertNotRegex(workflow, r"\.dev\d+")
         self.assertIn('bundle_name="pihole-speedtest-v6-${version}.tar.gz"', workflow)
 
-    def test_release_candidate_version_is_1_0_6(self):
-        self.assertEqual(__version__, "1.0.6")
+    def test_next_release_version_is_1_0_7(self):
+        self.assertEqual(__version__, "1.0.7")
 
 
 if __name__ == "__main__":

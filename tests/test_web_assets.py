@@ -1,8 +1,45 @@
+import json
+import shutil
+import subprocess
 import unittest
 from importlib.resources import files
 
 
 class WebAssetTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("node"), "Node.js is needed to run chart logic")
+    def test_chart_uses_start_and_legacy_completion_without_losing_gaps(self):
+        script = files("pihole_speedtest").joinpath("web", "app.js").read_text(encoding="utf-8")
+        check = r'''
+const vm = require("node:vm");
+const assert = require("node:assert/strict");
+const script = JSON.parse(process.argv[1]).replace(/installControls\(\); load\(\);\s*$/, "");
+const context = vm.createContext({
+  localStorage: { getItem: () => null },
+  window: { addEventListener: () => {} },
+});
+vm.runInContext(script, context);
+const result = vm.runInContext(`(() => {
+  const records = [
+    { started_at: null, recorded_at: "2026-09-22T18:00:20Z" },
+    { started_at: "2026-09-22T18:15:00Z", recorded_at: "2026-09-22T18:15:55Z" },
+    { started_at: "2026-09-22T19:15:00Z", recorded_at: "2026-09-22T19:15:55Z" },
+  ];
+  collectionIntervalMinutes = 15;
+  allRecords = records;
+  setDefaultZoomRange();
+  return { timeline: chartTimeline(records), latest: chartTime(records[2]), zoomStart };
+})()`, context);
+assert.deepEqual(Array.from(result.timeline.timestamps), [
+  Date.parse("2026-09-22T18:00:20Z"),
+  Date.parse("2026-09-22T18:15:00Z"),
+  Date.parse("2026-09-22T19:15:00Z"),
+]);
+assert.equal(result.timeline.gapThresholdMs, 15 * 60 * 1000 * 2.5);
+assert.equal(result.latest, "2026-09-22T19:15:00Z");
+assert.equal(result.zoomStart, 0);
+'''
+        subprocess.run(["node", "-e", check, json.dumps(script)], check=True, timeout=10)
+
     def test_assets_are_local_only(self):
         web = files("pihole_speedtest").joinpath("web")
         for name in ("index.html", "app.js", "styles.css"):

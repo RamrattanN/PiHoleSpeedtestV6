@@ -61,6 +61,14 @@ Measurements are collected every 15 minutes by default.  A hostname, HTTPS,
 reverse proxy, or nonstandard origin can be supplied with
 `--pihole-origin` and `--companion-url` after `bash -s -- install`.
 
+The upcoming 1.0.7 release records the UTC time when each speed test process
+starts and uses that time on both charts.  The original `recorded_at` value
+still records completion and remains available in the API and CSV export as
+`completed_at`.  Results captured before 1.0.7 have no known start time; their
+charts continue to use their existing completion time, and the table labels
+their start as unknown.  This change is not part of the published 1.0.6
+release candidates.
+
 ## Fully pinned installation
 
 The convenience command trusts the latest stable GitHub Release for the

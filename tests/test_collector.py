@@ -2,6 +2,7 @@ import json
 import subprocess
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -78,6 +79,24 @@ class CollectorTests(unittest.TestCase):
             timeout=45,
             check=False,
         )
+
+    @patch("pihole_speedtest.collector.subprocess.run")
+    def test_collect_keeps_completion_and_captures_start_before_process(self, run):
+        observed = []
+
+        def finish(*args, **kwargs):
+            observed.append(datetime.now(timezone.utc))
+            return subprocess.CompletedProcess(
+                args=args[0], returncode=0,
+                stdout=json.dumps(VALID_RESULT), stderr="",
+            )
+
+        run.side_effect = finish
+        measurement = collect()
+        started = datetime.fromisoformat(measurement.started_at.replace("Z", "+00:00"))
+        self.assertLessEqual(started, observed[0])
+        self.assertEqual(measurement.recorded_at, VALID_RESULT["timestamp"])
+        self.assertEqual(measurement.to_dict()["completed_at"], VALID_RESULT["timestamp"])
 
     @patch(
         "pihole_speedtest.collector.default_route_interface",
