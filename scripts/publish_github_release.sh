@@ -197,22 +197,94 @@ if [ "$publish" -eq 0 ]; then
   exit 0
 fi
 
-command -v gh >/dev/null 2>&1 || stop "The GitHub CLI (gh) is required to publish."
+for command in gh python3; do
+  command -v "$command" >/dev/null 2>&1 || stop "Publishing requires $command."
+done
 work_dir="$(mktemp -d)"
 trap 'rm -rf -- "$work_dir"' EXIT
-remote_tag_commit() {
-  gh api "repos/${repository}/git/ref/tags/$1" --jq .object.sha 2>/dev/null || true
+
+# Reads one GitHub API response and prints a strictly validated result.  gh api
+# exits nonzero on HTTP errors but still prints the error body to stdout, so the
+# status and body are both inspected.  Only a genuine 404 means "absent".
+github_response() {
+  python3 - "$@" <<'PY'
+import json
+import re
+import sys
+
+mode, subject, status, body = sys.argv[1:5]
+try:
+    data = json.loads(body)
+except ValueError:
+    sys.exit(f"malformed GitHub response for {subject}")
+if not isinstance(data, dict):
+    sys.exit(f"unexpected GitHub response for {subject}")
+if status != "0":
+    if str(data.get("status")) == "404" and data.get("message") == "Not Found":
+        print("absent")
+        sys.exit(0)
+    sys.exit(f"GitHub API error for {subject}: {data.get('status')} {data.get('message')}")
+target = data.get("object")
+if not isinstance(target, dict):
+    sys.exit(f"GitHub response for {subject} has no target object")
+kind, sha = target.get("type"), target.get("sha")
+if not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{40}", sha):
+    sys.exit(f"GitHub response for {subject} has a malformed SHA")
+if mode == "ref":
+    if data.get("ref") != f"refs/tags/{subject}":
+        sys.exit(f"GitHub returned ref {data.get('ref')!r} for tag {subject}")
+    if kind not in ("commit", "tag"):
+        sys.exit(f"tag {subject} targets an unsupported {kind!r} object")
+elif kind != "commit":
+    sys.exit(f"annotated tag object {subject} does not target a commit")
+print(f"{kind} {sha}")
+PY
 }
-[ -z "$(remote_tag_commit "$tag")" ] || stop "Tag $tag already exists on GitHub."
+
+# Prints "absent" or the commit a tag resolves to; returns nonzero on any doubt.
+tag_target_commit() {
+  local tag="$1" body status result kind sha
+  status=0
+  body="$(gh api "repos/${repository}/git/ref/tags/${tag}" 2>"$work_dir/gh-error.txt")" || status=$?
+  if [ "$status" -ne 0 ] && [ -z "$body" ]; then
+    echo "GitHub request for tag $tag failed: $(head -c 300 "$work_dir/gh-error.txt")" >&2
+    return 1
+  fi
+  result="$(github_response ref "$tag" "$status" "$body")" || return 1
+  if [ "$result" = "absent" ]; then
+    echo absent
+    return 0
+  fi
+  kind="${result%% *}"
+  sha="${result#* }"
+  if [ "$kind" = "tag" ]; then
+    status=0
+    body="$(gh api "repos/${repository}/git/tags/${sha}" 2>"$work_dir/gh-error.txt")" || status=$?
+    if [ "$status" -ne 0 ]; then
+      echo "GitHub request for annotated tag $tag failed." >&2
+      return 1
+    fi
+    result="$(github_response annotated "$sha" "$status" "$body")" || return 1
+    sha="${result#* }"
+  fi
+  echo "$sha"
+}
+
+existing="$(tag_target_commit "$tag")" ||
+  stop "Could not determine whether tag $tag exists on GitHub.  Nothing was published."
+[ "$existing" = "absent" ] || stop "Tag $tag already exists on GitHub at $existing."
 if [ "$kind" = "production" ]; then
   [ "$(gh release view "$accepted_prerelease" --repo "$repository" --json isPrerelease --jq .isPrerelease 2>/dev/null)" = "true" ] ||
     stop "Accepted prerelease $accepted_prerelease is not a published prerelease."
-  [ "$(remote_tag_commit "$accepted_prerelease")" = "$expected_commit" ] ||
+  accepted_commit="$(tag_target_commit "$accepted_prerelease")" ||
+    stop "Could not resolve accepted prerelease tag $accepted_prerelease."
+  [ "$accepted_commit" = "$expected_commit" ] ||
     stop "Accepted prerelease $accepted_prerelease was not published from the expected commit."
   accepted_dir="$work_dir/accepted"
   mkdir "$accepted_dir"
   gh release download "$accepted_prerelease" --repo "$repository" \
-    --pattern "$asset_name" --pattern "$asset_name.sha256" --dir "$accepted_dir"
+    --pattern "$asset_name" --pattern "$asset_name.sha256" --dir "$accepted_dir" ||
+    stop "Could not download the accepted prerelease assets."
   cmp -s "$accepted_dir/$asset_name" "$bootstrap" &&
     cmp -s "$accepted_dir/$asset_name.sha256" "$checksum" ||
     stop "Production assets are not byte-identical to accepted prerelease $accepted_prerelease."
@@ -227,6 +299,17 @@ gh release create "$tag" "$bootstrap" "$checksum" \
   --title "Pi-hole Speedtest $tag" \
   --notes-file "$notes_file"
 
-[ "$(remote_tag_commit "$tag")" = "$expected_commit" ] ||
+published_commit="$(tag_target_commit "$tag")" ||
+  stop "Could not verify published tag $tag.  Review the release before use."
+[ "$published_commit" = "$expected_commit" ] ||
   stop "Published tag $tag does not point at the expected commit.  Review the release before use."
+expected_prerelease=false
+if [ "$kind" = "prerelease" ]; then
+  expected_prerelease=true
+fi
+[ "$(gh release view "$tag" --repo "$repository" --json isPrerelease --jq .isPrerelease)" = "$expected_prerelease" ] ||
+  stop "Published release $tag has the wrong prerelease state.  Review the release before use."
+[ "$(gh release view "$tag" --repo "$repository" --json assets --jq '.assets[].name' | LC_ALL=C sort | tr '\n' ' ')" = \
+  "$asset_name $asset_name.sha256 " ] ||
+  stop "Published release $tag does not contain exactly the runner assets.  Review the release before use."
 echo "Published $kind $tag from $expected_commit with the verified runner assets."

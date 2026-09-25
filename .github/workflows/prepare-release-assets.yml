@@ -2,11 +2,12 @@ name: Prepare release assets
 
 # Read-only preparation and validation of the version 1.0.6 release assets.
 #
-# The stage is derived from tracked files:
-#   A  the 1.0.6 bundle is absent: build it twice and upload it as a CI artifact;
-#   B  the bundle is committed but the bootstrap is not 1.0.6: verify the
+# The stage is derived from what this pull request changed relative to the
+# reviewed base, so a recut never reuses assets already on main:
+#   A  the bundle is unchanged: build it twice and upload it as a CI artifact;
+#   B  a new bundle is committed but the bootstrap is unchanged: verify the
 #      bundle, render the bootstrap, and upload it as a CI artifact;
-#   C  both are committed: verify everything, dry-run the guarded publication
+#   C  both are new: verify everything, dry-run the guarded publication
 #      script, and upload the verified bootstrap as a CI artifact.
 #
 # This workflow never pushes, tags, creates or edits a GitHub Release, uploads
@@ -25,8 +26,13 @@ concurrency:
 
 env:
   RELEASE_VERSION: "1.0.6"
-  RELEASE_BRANCH: release/v1.0.6-assets-2
-  REVIEWED_BASE: e3582b254b8a259ab8e9375ea06038aa6f00336e
+  RELEASE_BRANCH: fix/v1.0.6-release-publication
+  REVIEWED_BASE: ba1c271af64f3883d790b14fa707372f452233f2
+  # Superseded, never-published assets that must not be reused.
+  SUPERSEDED_SHA256: >-
+    40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce
+    59a67636376c918da111b6efba78715cc57f88929895faf0cfbb779b794a8844
+    84f39f17c01271f3554ce0fe4b26763f6aedc5f1434724abce4296201558ddae
   PRERELEASE_TAG: v1.0.6-rc.1
   REPOSITORY: RamrattanN/PiHoleSpeedtestV6
   BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
@@ -34,7 +40,7 @@ env:
 
 jobs:
   prepare:
-    if: github.head_ref == 'release/v1.0.6-assets-2'
+    if: github.head_ref == 'fix/v1.0.6-release-publication'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -71,6 +77,7 @@ jobs:
               .github/workflows/prepare-release-assets.yml|\
               tests/test_release_asset_preparation.py|\
               tests/test_release_publication.py|\
+              scripts/publish_github_release.sh|\
               README.md|DEPLOY.md|\
               docs/CURL-INSTALLATION.md|docs/KANBAN.md|docs/QA-AND-ACCEPTANCE.md|\
               docs/ROADMAP.md|docs/WIKI.md|\
@@ -93,21 +100,33 @@ jobs:
         timeout-minutes: 1
         run: |
           set -euo pipefail
-          bootstrap_is_release=0
-          if grep -Fqx "version=\"$RELEASE_VERSION\"" "release/$BOOTSTRAP"; then
-            bootstrap_is_release=1
+          changed() {
+            ! git diff --quiet "$REVIEWED_BASE" HEAD -- "$@"
+          }
+          bundle_changed=0
+          checksum_changed=0
+          bootstrap_changed=0
+          changed "release/$BUNDLE" && bundle_changed=1
+          changed "release/$BUNDLE.sha256" && checksum_changed=1
+          changed "release/$BOOTSTRAP" && bootstrap_changed=1
+          if [ "$bundle_changed" -ne "$checksum_changed" ]; then
+            echo "::error::The bundle and its checksum must be committed together."
+            exit 1
           fi
-          if [ ! -e "release/$BUNDLE" ] && [ ! -e "release/$BUNDLE.sha256" ]; then
-            if [ "$bootstrap_is_release" -eq 1 ]; then
-              echo "::error::A $RELEASE_VERSION bootstrap is committed without its bundle."
+          if [ "$bundle_changed" -eq 0 ]; then
+            if [ "$bootstrap_changed" -eq 1 ]; then
+              echo "::error::A bootstrap is committed without a new bundle."
               exit 1
             fi
             stage=A
-          elif [ -f "release/$BUNDLE" ] && [ -f "release/$BUNDLE.sha256" ]; then
-            if [ "$bootstrap_is_release" -eq 1 ]; then stage=C; else stage=B; fi
+          elif [ "$bootstrap_changed" -eq 0 ]; then
+            stage=B
           else
-            echo "::error::The bundle and its checksum must be committed together."
-            exit 1
+            if ! grep -Fqx "version=\"$RELEASE_VERSION\"" "release/$BOOTSTRAP"; then
+              echo "::error::The committed bootstrap is not version $RELEASE_VERSION."
+              exit 1
+            fi
+            stage=C
           fi
           echo "stage=$stage" >> "$GITHUB_OUTPUT"
           echo "Release stage: $stage"
@@ -142,10 +161,14 @@ jobs:
           grep -Eqx "[0-9a-f]{64}  ${BUNDLE//./\\.}" "release/$BUNDLE.sha256"
           source_commit="$(tar -xzOf "release/$BUNDLE" "pihole-speedtest-v6-$RELEASE_VERSION/release/SOURCE-COMMIT")"
           [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]]
-          asset_commit="$(git log --diff-filter=A --format=%H -- "release/$BUNDLE" | tail -n 1)"
+          asset_commit="$(git log -1 --format=%H -- "release/$BUNDLE")"
           [[ "$asset_commit" =~ ^[0-9a-f]{40}$ ]]
           git merge-base --is-ancestor "$REVIEWED_BASE" "$source_commit"
           git merge-base --is-ancestor "$source_commit" "$asset_commit"
+          if git merge-base --is-ancestor "$asset_commit" "$REVIEWED_BASE"; then
+            echo "::error::The committed bundle predates this pull request; recut it in Stage A."
+            exit 1
+          fi
           test "$(git rev-parse "$asset_commit^")" = "$source_commit"
           test "$(git diff --name-only "$source_commit" "$asset_commit" | LC_ALL=C sort | tr '\n' ' ')" = \
             "release/$BUNDLE release/$BUNDLE.sha256 "
@@ -196,7 +219,14 @@ jobs:
             echo "::error::Bundle contains a private IPv4 address."
             exit 1
           fi
-          echo "BUNDLE_SHA256=$(sha256sum "$BUNDLE_DIR/$BUNDLE" | cut -c1-64)" >> "$GITHUB_ENV"
+          bundle_sha256="$(sha256sum "$BUNDLE_DIR/$BUNDLE" | cut -c1-64)"
+          for superseded in $SUPERSEDED_SHA256; do
+            if [ "$bundle_sha256" = "$superseded" ]; then
+              echo "::error::The bundle matches superseded asset $superseded."
+              exit 1
+            fi
+          done
+          echo "BUNDLE_SHA256=$bundle_sha256" >> "$GITHUB_ENV"
 
       - name: "Stage A: stage the bundle artifact"
         if: steps.stage.outputs.stage == 'A'
@@ -236,7 +266,14 @@ jobs:
           (cd "$RUNNER_TEMP/artifact" && sha256sum "$BOOTSTRAP" > "$BOOTSTRAP.sha256")
           test "$(ls -A "$RUNNER_TEMP/artifact" | LC_ALL=C sort | tr '\n' ' ')" = "$BOOTSTRAP $BOOTSTRAP.sha256 "
           test -z "$(git ls-files -- data/)"
-          echo "BOOTSTRAP_SHA256=$(cut -c1-64 "$RUNNER_TEMP/artifact/$BOOTSTRAP.sha256")" >> "$GITHUB_ENV"
+          bootstrap_sha256="$(cut -c1-64 "$RUNNER_TEMP/artifact/$BOOTSTRAP.sha256")"
+          for superseded in $SUPERSEDED_SHA256; do
+            if [ "$bootstrap_sha256" = "$superseded" ]; then
+              echo "::error::The bootstrap matches superseded asset $superseded."
+              exit 1
+            fi
+          done
+          echo "BOOTSTRAP_SHA256=$bootstrap_sha256" >> "$GITHUB_ENV"
 
       - name: "Stage C: verify the committed bootstrap and dry-run publication"
         if: steps.stage.outputs.stage == 'C'
