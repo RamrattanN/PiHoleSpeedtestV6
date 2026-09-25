@@ -12,8 +12,9 @@ from pihole_speedtest.collector import (
     default_route_interface,
     parse_ookla_result,
 )
-from pihole_speedtest.cli import main
+from pihole_speedtest.cli import main, scheduled_slot
 from pihole_speedtest.models import Measurement
+from pihole_speedtest.settings import save_settings
 from pihole_speedtest.storage import Storage
 
 
@@ -130,6 +131,31 @@ eth0 0002A8C0 00000000 0001 0 0 100 00FFFFFF 0 0 0
             route_path.write_text(route_table, encoding="utf-8")
 
             self.assertEqual(default_route_interface(route_path), "eth0")
+
+    def test_scheduled_collection_stores_slot_start_and_completion_separately(self):
+        now = datetime(2026, 9, 22, 18, 15, 57, tzinfo=timezone.utc)
+        self.assertEqual(scheduled_slot(now, 15), "2026-09-22T18:15:00Z")
+        self.assertEqual(scheduled_slot(now, 30), "2026-09-22T18:00:00Z")
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "speedtest.db"
+            save_settings(database.with_name("settings.json"), 15)
+            with patch("pihole_speedtest.cli.datetime", wraps=datetime) as clock, \
+                 patch("pihole_speedtest.cli.collect") as collector:
+                clock.now.return_value = now
+                collector.return_value = Measurement(
+                    recorded_at="2026-09-22T18:16:20Z",
+                    started_at="2026-09-22T18:15:59Z",
+                    download_mbps=100, upload_mbps=20, latency_ms=10,
+                    jitter_ms=1, server_name="Example", server_id="42",
+                    interface_name="eth0",
+                )
+                self.assertEqual(main([
+                    "collect", "--database", str(database), "--respect-schedule",
+                ]), 0)
+            row = Storage(database).list_recent()[0]
+            self.assertEqual(row["scheduled_at"], "2026-09-22T18:15:00Z")
+            self.assertEqual(row["started_at"], "2026-09-22T18:15:59Z")
+            self.assertEqual(row["completed_at"], "2026-09-22T18:16:20Z")
 
     @patch("pihole_speedtest.cli.collect")
     def test_schedule_check_skips_collection_that_is_not_due(self, collect_mock):

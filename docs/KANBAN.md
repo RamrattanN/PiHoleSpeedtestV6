@@ -98,14 +98,10 @@ detailed acceptance criteria for active engineering work.
 | --- | --- | --- |
 | Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Complete rollback, reboot, and disposable-data purge acceptance on Raspberry Pi 3 |
 | Version `1.0.6` release candidate 2 | Branch `fix/v1.0.6-collection-schedule` | Collection scheduling now uses schedule slots so each 15-minute timer run collects.  Recut the bundle and bootstrap in the guarded workflow, review and merge, then publish `v1.0.6-rc.2` and repeat Raspberry Pi 3 acceptance: upgrade from rc.1, three consecutive collections about 15 minutes apart, uninstall and reinstall, repeat installation, and Pi-hole health.  The stable `v1.0.6` release remains held |
+| Version `1.0.7` chart timing and zoom readability | Draft PR #9 | Chart scheduled tests on their configured UTC slot, while retaining their actual start and completion; chart manual tests on their start.  Scale each y-axis from visible points with headroom, and widen bars as zoom increases without overlapping closely spaced samples.  Review and visually accept on the Raspberry Pi before a future release |
 
 ## Backlog
 
-- Rescale each chart's y-axis when its visible range changes.  Use the highest
-  visible value across that chart's series, plus a small headroom margin, so a
-  ping or jitter spike outside the current zoom no longer flattens the values
-  in view.  Recalculate after zooming, panning, resetting zoom, and loading
-  new results; keep the underlying measurements and time gaps unchanged.
 - Restart and reboot acceptance with collection continuity.
 - Full backup and restore exercise.
 - Pi-hole update failure-isolation exercise after sidebar integration.

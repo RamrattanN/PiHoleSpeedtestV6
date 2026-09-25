@@ -15,6 +15,7 @@ class Measurement:
     server_id: str
     interface_name: str
     started_at: Optional[str] = None
+    scheduled_at: Optional[str] = None
 
     def to_dict(self) -> dict[str, object]:
         result = asdict(self)

@@ -7,7 +7,7 @@ from importlib.resources import files
 
 class WebAssetTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which("node"), "Node.js is needed to run chart logic")
-    def test_chart_uses_start_and_legacy_completion_without_losing_gaps(self):
+    def test_chart_uses_slots_manual_start_and_legacy_completion_without_losing_gaps(self):
         script = files("pihole_speedtest").joinpath("web", "app.js").read_text(encoding="utf-8")
         check = r'''
 const vm = require("node:vm");
@@ -21,8 +21,8 @@ vm.runInContext(script, context);
 const result = vm.runInContext(`(() => {
   const records = [
     { started_at: null, recorded_at: "2026-09-22T18:00:20Z" },
-    { started_at: "2026-09-22T18:15:00Z", recorded_at: "2026-09-22T18:15:55Z" },
-    { started_at: "2026-09-22T19:15:00Z", recorded_at: "2026-09-22T19:15:55Z" },
+    { scheduled_at: "2026-09-22T18:15:00Z", started_at: "2026-09-22T18:15:42Z", recorded_at: "2026-09-22T18:16:05Z" },
+    { scheduled_at: null, started_at: "2026-09-22T19:15:00Z", recorded_at: "2026-09-22T19:15:55Z" },
   ];
   collectionIntervalMinutes = 15;
   allRecords = records;
@@ -37,6 +37,46 @@ assert.deepEqual(Array.from(result.timeline.timestamps), [
 assert.equal(result.timeline.gapThresholdMs, 15 * 60 * 1000 * 2.5);
 assert.equal(result.latest, "2026-09-22T19:15:00Z");
 assert.equal(result.zoomStart, 0);
+'''
+        subprocess.run(["node", "-e", check, json.dumps(script)], check=True, timeout=10)
+
+    @unittest.skipUnless(shutil.which("node"), "Node.js is needed to run chart logic")
+    def test_zoom_scales_visible_values_and_widens_bars_without_overlap(self):
+        script = files("pihole_speedtest").joinpath("web", "app.js").read_text(encoding="utf-8")
+        check = r'''
+const vm = require("node:vm");
+const assert = require("node:assert/strict");
+const script = JSON.parse(process.argv[1]).replace(/installControls\(\); load\(\);\s*$/, "");
+const context = vm.createContext({
+  localStorage: { getItem: () => null },
+  window: { addEventListener: () => {} },
+});
+vm.runInContext(script, context);
+const results = vm.runInContext(`(() => {
+  const series = [{ field: "latency_ms" }, { field: "jitter_ms" }];
+  const records = [
+    { latency_ms: 220, jitter_ms: 2 },
+    { latency_ms: 10, jitter_ms: 3 },
+    { latency_ms: 13, jitter_ms: 4 },
+  ];
+  const wide = { intervalMs: 900000, duration: 86400000 };
+  const zoomed = { intervalMs: 900000, duration: 10800000 };
+  const width = 1600;
+  return {
+    allMaximum: chartMaximum(records, series, 10),
+    visibleMaximum: chartMaximum(records.slice(1), series, 10),
+    wideBar: chartBarGroupWidth(wide, width, 17),
+    zoomedBar: chartBarGroupWidth(zoomed, width, 180),
+    closeBar: chartBarGroupWidth(zoomed, width, 8),
+    loneBar: chartBarGroupWidth(zoomed, width, chartBarSpacing(zoomed, [500])),
+  };
+})()`, context);
+assert.equal(results.allMaximum, 243);
+assert.equal(results.visibleMaximum, 15);
+assert.ok(results.zoomedBar > results.wideBar * 3);
+assert.equal(results.zoomedBar, 56);
+assert.ok(results.closeBar <= 6);
+assert.equal(results.loneBar, 56);
 '''
         subprocess.run(["node", "-e", check, json.dumps(script)], check=True, timeout=10)
 
@@ -123,7 +163,7 @@ assert.equal(result.zoomStart, 0);
         self.assertIn("justify-content: space-between", styles)
         self.assertIn(".setup-panel-title", styles)
         self.assertIn('byId("open-help")', script)
-        self.assertIn("chartMaximum(allRecords", script)
+        self.assertIn("chartMaximum(plottedRecords", script)
         self.assertIn('data-zoom', page)
         self.assertIn('id="history-tooltip"', page)
         self.assertIn('id="latency-tooltip"', page)
@@ -140,7 +180,7 @@ assert.equal(result.zoomStart, 0);
         self.assertIn("function chartBarGroupWidth(timeline, chartWidth, measuredSpacing)", script)
         self.assertIn("Math.min(expectedSpacing, measuredSpacing)", script)
         self.assertIn("const BAR_GROUP_GAP_PX = 2", script)
-        self.assertIn("const BAR_GROUP_MAX_WIDTH_PX = 14", script)
+        self.assertIn("const BAR_GROUP_MAX_WIDTH_PX = 56", script)
         self.assertIn("Math.min(BAR_GROUP_GAP_PX, availableSpacing * 0.5)", script)
         self.assertIn("Math.min(BAR_GROUP_MAX_WIDTH_PX, availableSpacing - reservedGap)", script)
         self.assertNotIn("function chartBarGroupWidth(timeline, xPositions, index", script)

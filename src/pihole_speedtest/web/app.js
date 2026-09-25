@@ -10,7 +10,7 @@ let chartMode = localStorage.getItem("pihole-speedtest-chart-mode") || "line";
 const chartStates = new Map();
 const DEFAULT_CHART_WINDOW_MS = 24 * 60 * 60 * 1000;
 const BAR_GROUP_GAP_PX = 2;
-const BAR_GROUP_MAX_WIDTH_PX = 14;
+const BAR_GROUP_MAX_WIDTH_PX = 56;
 
 function requestedView() {
   return window.location.hash === "#setup" ? "setup" : "overview";
@@ -28,7 +28,9 @@ function formatNumber(value) { const n = Number(value); return Number.isFinite(n
 function formatTime(value) { const d = new Date(value); return Number.isNaN(d.valueOf()) ? value : d.toLocaleString(); }
 function formatMeasurementCount(count) { return `${count} ${count === 1 ? "measurement" : "measurements"}`; }
 function hasStartTime(record) { return typeof record.started_at === "string" && Number.isFinite(Date.parse(record.started_at)); }
-function chartTime(record) { return hasStartTime(record) ? record.started_at : record.recorded_at; }
+function hasScheduledTime(record) { return typeof record.scheduled_at === "string" && Number.isFinite(Date.parse(record.scheduled_at)); }
+function chartTime(record) { return hasScheduledTime(record)
+  ? record.scheduled_at : (hasStartTime(record) ? record.started_at : record.recorded_at); }
 function setText(id, value) { byId(id).textContent = value; }
 function addCell(row, value) { const cell = document.createElement("td"); cell.textContent = value; row.appendChild(cell); }
 
@@ -38,6 +40,7 @@ function renderTable(records) {
   byId("empty-state").hidden = records.length > 0;
   records.slice().reverse().forEach((record) => {
     const row = document.createElement("tr");
+    addCell(row, hasScheduledTime(record) ? formatTime(record.scheduled_at) : (hasStartTime(record) ? "Manual" : "Unknown (legacy)"));
     addCell(row, hasStartTime(record) ? formatTime(record.started_at) : "Unknown (legacy)");
     addCell(row, formatTime(record.recorded_at));
     addCell(row, `${formatNumber(record.download_mbps)} Mbps`);
@@ -115,7 +118,7 @@ function chartBarSpacing(timeline, xPositions) {
     const spacing = xPositions[index] - xPositions[index - 1];
     if (spacing > 0) spacings.push(spacing);
   }
-  if (spacings.length === 0) return 12;
+  if (spacings.length === 0) return Infinity;
   spacings.sort((left, right) => left - right);
   const middle = Math.floor(spacings.length / 2);
   return spacings.length % 2
@@ -202,7 +205,7 @@ function drawChart(records, options) {
   const padding = { top: 20, right: 16, bottom: 34, left: 46 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
-  const maximum = chartMaximum(allRecords, options.series, options.minimumMaximum);
+  const maximum = chartMaximum(plottedRecords, options.series, options.minimumMaximum);
   const values = options.series.map((series) => plottedRecords.map((record) => Number(record[series.field]) || 0));
   const xForTimestamp = (timestamp) => padding.left + chartWidth * (timestamp - timeline.start) / timeline.duration;
   const xPositions = timeline.timestamps.map((timestamp, index) => Number.isFinite(timestamp)
@@ -235,8 +238,14 @@ function drawChart(records, options) {
 
   if (chartMode === "bar") {
     const measuredSpacing = chartBarSpacing(timeline, xPositions);
-    const groupWidth = chartBarGroupWidth(timeline, chartWidth, measuredSpacing);
     plottedRecords.forEach((record, index) => {
+      const nearestSpacing = Math.min(
+        index > 0 ? xPositions[index] - xPositions[index - 1] : Infinity,
+        index + 1 < xPositions.length ? xPositions[index + 1] - xPositions[index] : Infinity,
+      );
+      const groupWidth = chartBarGroupWidth(
+        timeline, chartWidth, Math.min(measuredSpacing, nearestSpacing),
+      );
       const bars = options.series.map((series, seriesIndex) => ({
         color: series.color,
         height: chartHeight * values[seriesIndex][index] / maximum,
@@ -307,9 +316,13 @@ function showChartTooltip(event, canvas) {
   const record = records[index];
   const tooltip = byId(options.tooltipId);
   const title = document.createElement("strong");
-  title.textContent = hasStartTime(record)
-    ? `Started: ${formatTime(record.started_at)}`
-    : `Recorded: ${formatTime(record.recorded_at)} (start unknown)`;
+  title.textContent = hasScheduledTime(record)
+    ? `Scheduled: ${formatTime(record.scheduled_at)}`
+    : (hasStartTime(record)
+      ? `Started: ${formatTime(record.started_at)}`
+      : `Recorded: ${formatTime(record.recorded_at)} (start unknown)`);
+  const started = document.createElement("span");
+  if (hasScheduledTime(record) && hasStartTime(record)) started.textContent = `Started: ${formatTime(record.started_at)}`;
   const completed = document.createElement("span");
   if (hasStartTime(record)) completed.textContent = `Completed: ${formatTime(record.recorded_at)}`;
   const rows = options.series.map((series) => {
@@ -319,7 +332,8 @@ function showChartTooltip(event, canvas) {
     row.append(swatch, `${series.label}: ${formatNumber(record[series.field])} ${series.unit}`);
     return row;
   });
-  tooltip.replaceChildren(title, ...(hasStartTime(record) ? [completed] : []), ...rows);
+  tooltip.replaceChildren(title, ...(hasScheduledTime(record) && hasStartTime(record) ? [started] : []),
+    ...(hasStartTime(record) ? [completed] : []), ...rows);
   tooltip.style.left = `${Math.max(105, Math.min(bounds.width - 105, x))}px`;
   tooltip.style.top = `${Math.max(96, y)}px`;
   tooltip.hidden = false;

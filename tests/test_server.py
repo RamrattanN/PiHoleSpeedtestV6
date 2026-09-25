@@ -69,6 +69,7 @@ class ServerTests(unittest.TestCase):
         self.assertIn("2026-09-22T18:00:00Z,100.0,20.0", body)
         rows = list(csv.DictReader(io.StringIO(body)))
         self.assertEqual(rows[0]["started_at"], "")
+        self.assertEqual(rows[0]["scheduled_at"], "")
         self.assertEqual(rows[0]["completed_at"], rows[0]["recorded_at"])
 
     def test_results_expose_both_timestamps_for_new_measurement(self):
@@ -78,12 +79,19 @@ class ServerTests(unittest.TestCase):
                 recorded_at="2026-09-22T18:15:20Z", download_mbps=101,
                 upload_mbps=20, latency_ms=10, jitter_ms=1,
                 server_name="Example", server_id="42", interface_name="eth0",
-            ), started_at="2026-09-22T18:15:00Z",
+            ), started_at="2026-09-22T18:15:07Z",
+            scheduled_at="2026-09-22T18:15:00Z",
         ))
         _, payload = self.get_json("/api/results?limit=10")
         self.assertIsNone(payload["records"][0]["started_at"])
-        self.assertEqual(payload["records"][1]["started_at"], "2026-09-22T18:15:00Z")
+        self.assertEqual(payload["records"][1]["started_at"], "2026-09-22T18:15:07Z")
         self.assertEqual(payload["records"][1]["completed_at"], "2026-09-22T18:15:20Z")
+        self.assertEqual(payload["records"][1]["scheduled_at"], "2026-09-22T18:15:00Z")
+        with urlopen(self.base_url + "/api/export.csv", timeout=2) as response:
+            rows = list(csv.DictReader(io.StringIO(response.read().decode("utf-8"))))
+        self.assertEqual(rows[1]["scheduled_at"], "2026-09-22T18:15:00Z")
+        self.assertEqual(rows[1]["started_at"], "2026-09-22T18:15:07Z")
+        self.assertEqual(rows[1]["completed_at"], "2026-09-22T18:15:20Z")
 
     def post_json(self, path, payload):
         request = Request(

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS measurements (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     recorded_at TEXT NOT NULL,
     started_at TEXT,
+    scheduled_at TEXT,
     download_mbps REAL NOT NULL CHECK(download_mbps >= 0),
     upload_mbps REAL NOT NULL CHECK(upload_mbps >= 0),
     latency_ms REAL NOT NULL CHECK(latency_ms >= 0),
@@ -52,9 +53,11 @@ class Storage:
             }
             if "started_at" not in columns:
                 connection.execute("ALTER TABLE measurements ADD COLUMN started_at TEXT")
+            if "scheduled_at" not in columns:
+                connection.execute("ALTER TABLE measurements ADD COLUMN scheduled_at TEXT")
             connection.execute(
-                "CREATE INDEX IF NOT EXISTS idx_measurements_chart_at "
-                "ON measurements(COALESCE(started_at, recorded_at) DESC)"
+                "CREATE INDEX IF NOT EXISTS idx_measurements_chart_slot "
+                "ON measurements(COALESCE(scheduled_at, started_at, recorded_at) DESC)"
             )
 
     def insert(self, measurement: Measurement) -> int:
@@ -65,6 +68,7 @@ class Storage:
                 INSERT INTO measurements (
                     recorded_at,
                     started_at,
+                    scheduled_at,
                     download_mbps,
                     upload_mbps,
                     latency_ms,
@@ -72,11 +76,12 @@ class Storage:
                     server_name,
                     server_id,
                     interface_name
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     measurement.recorded_at,
                     measurement.started_at,
+                    measurement.scheduled_at,
                     measurement.download_mbps,
                     measurement.upload_mbps,
                     measurement.latency_ms,
@@ -99,6 +104,7 @@ class Storage:
                     recorded_at,
                     recorded_at AS completed_at,
                     started_at,
+                    scheduled_at,
                     download_mbps,
                     upload_mbps,
                     latency_ms,
@@ -107,7 +113,7 @@ class Storage:
                     server_id,
                     interface_name
                 FROM measurements
-                ORDER BY COALESCE(started_at, recorded_at) DESC, id DESC
+                ORDER BY COALESCE(scheduled_at, started_at, recorded_at) DESC, id DESC
                 LIMIT ?
                 """,
                 (bounded_limit,),
@@ -160,12 +166,12 @@ class Storage:
         with self.connect() as connection:
             rows = connection.execute(
                 """
-                SELECT recorded_at, recorded_at AS completed_at, started_at,
+                SELECT recorded_at, recorded_at AS completed_at, started_at, scheduled_at,
                        download_mbps, upload_mbps,
                        latency_ms, jitter_ms, server_name, server_id,
                        interface_name
                 FROM measurements
-                ORDER BY COALESCE(started_at, recorded_at) ASC, id ASC
+                ORDER BY COALESCE(scheduled_at, started_at, recorded_at) ASC, id ASC
                 """
             ).fetchall()
         return [dict(row) for row in rows]

@@ -62,12 +62,17 @@ reverse proxy, or nonstandard origin can be supplied with
 `--pihole-origin` and `--companion-url` after `bash -s -- install`.
 
 The upcoming 1.0.7 release records the UTC time when each speed test process
-starts and uses that time on both charts.  The original `recorded_at` value
-still records completion and remains available in the API and CSV export as
-`completed_at`.  Results captured before 1.0.7 have no known start time; their
-charts continue to use their existing completion time, and the table labels
-their start as unknown.  This change is not part of the published 1.0.6
-release candidates.
+starts.  Scheduled tests also record their quarter-hour collection slot (or
+the configured interval's slot), which places them on both charts at the exact
+schedule boundary.  Manual tests use their actual start time.  The original
+`recorded_at` value still records completion and remains available in the API
+and CSV export as `completed_at`.  Results captured before 1.0.7 have no known
+start or scheduled time; their charts continue to use their existing completion
+time, and the table labels their start as unknown.  This change is not part of
+the published 1.0.6 release candidates.
+Chart zoom in 1.0.7 also scales each y-axis to the visible values with room
+above the highest point and widens bars as the view narrows, while keeping
+closely spaced samples from overlapping.
 
 ## Fully pinned installation
 

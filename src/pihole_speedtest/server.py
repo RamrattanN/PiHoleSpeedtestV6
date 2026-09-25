@@ -122,6 +122,7 @@ class CompanionServer(ThreadingHTTPServer):
                 "measurement_id": measurement_id,
                 "recorded_at": measurement.recorded_at,
                 "started_at": measurement.started_at,
+                "scheduled_at": measurement.scheduled_at,
                 "completed_at": measurement.recorded_at,
             }
 
@@ -231,7 +232,7 @@ class CompanionHandler(BaseHTTPRequestHandler):
             columns = (
                 "recorded_at", "download_mbps", "upload_mbps",
                 "latency_ms", "jitter_ms", "server_name", "server_id",
-                "interface_name", "started_at", "completed_at",
+                "interface_name", "started_at", "completed_at", "scheduled_at",
             )
             writer = csv.DictWriter(output, fieldnames=columns)
             writer.writeheader()

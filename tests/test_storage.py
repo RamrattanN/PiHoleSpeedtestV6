@@ -73,6 +73,7 @@ class StorageTests(unittest.TestCase):
         self.storage.initialize()
         original = self.storage.list_recent()[0]
         self.assertIsNone(original["started_at"])
+        self.assertIsNone(original["scheduled_at"])
         self.assertEqual(original["recorded_at"], original["completed_at"])
         self.assertEqual(original["download_mbps"], 100)
         self.assertEqual(self.storage.count(), 1)
@@ -98,3 +99,21 @@ class StorageTests(unittest.TestCase):
             [100, 120],
         )
         self.assertEqual(self.storage.last_recorded_at(), "2026-09-22T18:25:00Z")
+
+    def test_chart_history_prefers_slot_and_preserves_actual_timestamps(self):
+        self.storage.insert(replace(
+            measurement("2026-09-22T18:15:25Z", 120),
+            started_at="2026-09-22T18:15:03Z",
+            scheduled_at="2026-09-22T18:15:00Z",
+        ))
+        self.storage.insert(replace(
+            measurement("2026-09-22T18:04:00Z", 100),
+            started_at="2026-09-22T18:01:03Z",
+            scheduled_at="2026-09-22T18:00:00Z",
+        ))
+        rows = self.storage.list_recent()
+        self.assertEqual([row["scheduled_at"] for row in rows], [
+            "2026-09-22T18:00:00Z", "2026-09-22T18:15:00Z",
+        ])
+        self.assertEqual(rows[0]["started_at"], "2026-09-22T18:01:03Z")
+        self.assertEqual(rows[0]["completed_at"], "2026-09-22T18:04:00Z")
