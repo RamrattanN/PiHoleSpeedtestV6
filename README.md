@@ -11,8 +11,11 @@ sidebar pages open the dashboard from inside the Pi-hole web interface.
 > `v1.0.6-rc.1` was published and accepted on the Raspberry Pi for upgrade,
 > data preservation, services, sidebar, and charts; it exposed a 15-minute
 > collection scheduling defect and is superseded for acceptance.
-> `v1.0.6-rc.2`, which corrects collection scheduling, is the current
-> acceptance candidate.  Version `1.0.5` remains available through the
+> `v1.0.6-rc.2` was published and passed tagged install, uninstall, repeat
+> installation, scheduled collection, and reboot continuity.  The owner held
+> stable publication after finding fixed y-axis scaling and narrow bars while
+> zoomed.  `v1.0.6-rc.3` is the next acceptance candidate once published, with
+> those two chart fixes.  Version `1.0.5` remains available through the
 > [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
 
 ## Quick install
@@ -72,12 +75,12 @@ immutable commands, trust anchors, and recovery contract in the
 
 Release candidates are tested with the same runner by selecting one exact
 release tag.  The ordinary command above never selects a prerelease.  The
-current acceptance candidate is `v1.0.6-rc.2`:
+current acceptance candidate after publication is `v1.0.6-rc.3`:
 
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.2 bash
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.3 bash
 ```
 
 The tag rules, uninstall form, and full release sequence are in the
@@ -103,13 +106,15 @@ Pi-hole sidebar adapter active.  Production `v1.0.6` is held.  Prerelease
 preservation, services, sidebar, and charts.  It exposed a collection
 scheduling defect, a 15-minute setting recording about every 30 minutes, so it
 is superseded for acceptance and remains published as immutable historical
-evidence.  `v1.0.6-rc.2` is the current acceptance candidate.  Version `1.0.6`
-carries the accepted version `1.0.5` Pi-hole-aligned chart corrections
-unchanged, adds canonical third-party notices, the one-line runner, and the
+evidence.  `v1.0.6-rc.2` passed install, uninstall, scheduling, and reboot
+checks, but its chart zoom did not pass visual acceptance.  `v1.0.6-rc.3` is
+the current acceptance candidate after publication.  Version `1.0.6`
+carries the accepted version `1.0.5` Pi-hole-aligned chart presentation,
+with visible-range y-axis scaling and zoom-responsive bar widths in rc.3.
+It adds canonical third-party notices, the one-line runner, and the
 `install-all` and `uninstall-all` bootstrap actions, and corrects collection
 scheduling so a 15-minute setting collects on every 15-minute timer run,
-without changing the dashboard, charts, settings, database, or sidebar
-appearance.  The product provides:
+without changing the settings, database, or sidebar integration.  The product provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;
