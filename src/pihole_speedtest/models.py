@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -13,6 +14,10 @@ class Measurement:
     server_name: str
     server_id: str
     interface_name: str
+    started_at: Optional[str] = None
+    scheduled_at: Optional[str] = None
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        result = asdict(self)
+        result["completed_at"] = self.recorded_at
+        return result

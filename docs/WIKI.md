@@ -71,9 +71,11 @@ scheduling defect, a 15-minute setting recording about every 30 minutes, so it
 is superseded for acceptance and remains published as immutable historical
 evidence.  `v1.0.6-rc.2` passed live runner, scheduling, data-preservation,
 and reboot checks, but its fixed y-axis and narrow zoomed bars did not pass
-owner visual acceptance.  `v1.0.6-rc.3` is the current acceptance candidate
-after publication.  It adds visible-range y-axis scaling and zoom-responsive
-bar widths without changing the collector, settings, database, or sidebar
-integration.  It also retains the one-line runner and the `install-all` and
-`uninstall-all` actions.  Raspberry Pi acceptance of rc.3 and the stable
-release remain open.
+owner visual acceptance.  `v1.0.6-rc.3` corrected those chart defects and
+passed visual and runner acceptance, but its completion-time chart chronology
+is superseded for acceptance.  `v1.0.6-rc.4` is the current acceptance
+candidate after publication.  It charts scheduled tests at their configured
+slot, charts manual tests at their actual start, and retains actual start and
+completion timestamps.  It also retains the one-line runner and the
+`install-all` and `uninstall-all` actions.  Raspberry Pi acceptance of rc.4
+and the stable release remain open.
