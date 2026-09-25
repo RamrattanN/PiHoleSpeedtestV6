@@ -23,18 +23,24 @@ RELEASE_VERSION = "1.0.6"
 # Content baseline for the scope lock: the reviewed pre-release main commit.
 REVIEWED_BASE = "e3582b254b8a259ab8e9375ea06038aa6f00336e"
 # Pull request base for the current recut, pinned by the preparation workflow.
-PR_BASE = "ba1c271af64f3883d790b14fa707372f452233f2"
-RELEASE_BRANCH = "fix/v1.0.6-release-publication"
+PR_BASE = "c833c6c0f8c401c280bd7b1099c8cb966450250d"
+RELEASE_BRANCH = "fix/v1.0.6-collection-schedule"
 # Assets recut before publication; they must never be reused.
 SUPERSEDED_SHA256 = {
     "40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce",
     "59a67636376c918da111b6efba78715cc57f88929895faf0cfbb779b794a8844",
     "84f39f17c01271f3554ce0fe4b26763f6aedc5f1434724abce4296201558ddae",
+    # v1.0.6-rc.1, superseded by the collection-schedule correction.
+    "b356547c6171fd0978f04591211a725140c72e19f57a29d577011cb2df7a4abb",
+    "c1e19a103f85e7c6fc35baee58f1aa6c48ede434a721d32fd842e91a175e2450",
+    # First rc.2 assets, superseded by the rc.2 documentation correction.
+    "4b4ac3959240d05df9865eef4fabaa58556d8a86996c38956980eea567189144",
+    "c6ee26eb441d06e11ff3cd9d753876471799e7fda6b6e37903c21cd317437c64",
 }
 # The superseded bundle on main (source commit, SHA-256) that this recut replaces.
 INHERITED_BUNDLE = (
-    "0301e4600256b8af6a15d5f47eb67e75f07ce344",
-    "59a67636376c918da111b6efba78715cc57f88929895faf0cfbb779b794a8844",
+    "a045fbad6b10f9fcdc7be5e134fcbda6d68c4517",
+    "b356547c6171fd0978f04591211a725140c72e19f57a29d577011cb2df7a4abb",
 )
 BUNDLE = ROOT / "release" / f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz"
 BOOTSTRAP = ROOT / "release" / "pihole-speedtest-v6-bootstrap.sh"
@@ -63,6 +69,17 @@ APPROVED_OVERRIDES = {
     "tests/test_release_publication.py": (
         "a4305b9871debe9c08694225cc9a64941789d61a57839582d738c67d218836c2"
     ),
+    # Collection scheduling: a run is due when its schedule slot has no measurement.
+    "src/pihole_speedtest/storage.py": (
+        "c35f6d979a658551255f38bfe4890efcfa408d9d79b524635ccba952d4d496fc"
+    ),
+    "tests/test_collection_schedule.py": (
+        "384245d0bb1f8d2dcf013cb23d05a7c96e06d64742946c25592bd0144fb401f2"
+    ),
+    # Actionable prerelease commands name the current candidate; rc.1 stays historical.
+    "tests/test_release_documentation.py": (
+        "896f7838c83ec5502800c795b7871bad2de1b422df9308cc077740a49b1dfeb5"
+    ),
     # Strict GitHub tag lookup: a 404 is absent; every other error fails closed.
     "scripts/publish_github_release.sh": (
         "78bd68fd7a21f970ee46f6e78330da4062a6f02ff2353c4c3fd3737e493a0247"
@@ -71,6 +88,9 @@ APPROVED_OVERRIDES = {
 APPROVED_OVERRIDE_MODES = {
     "tests/test_release_publication.py": "100644",
     "scripts/publish_github_release.sh": "100755",
+    "src/pihole_speedtest/storage.py": "100644",
+    "tests/test_collection_schedule.py": "100644",
+    "tests/test_release_documentation.py": "100644",
 }
 # Ordered partition of every tracked file outside the allowlist and overrides.
 PROTECTED_GROUPS = [
@@ -88,13 +108,13 @@ PROTECTED_GROUPS = [
 # sha256 over sorted "mode blob path" lines at the reviewed baseline, and file count.
 BASELINE_DIGESTS = {
     "chart": ("46b0f5b0b4c25aa09441d09912dfbb4c98374661d3f3072e42f5eda1eef690fc", 8),
-    "runtime": ("7a3f580d4ff8690a500fffd50bb1b88e7560d3a567f20847f264aad9680917ac", 15),
+    "runtime": ("77a789e65b77715222872b09cebe62809af92bad5cdfd0cf3f18b1d6d7e666e5", 14),
     "installer": ("973f094eb9a697175548cc4666f45017ae54dc56b5c9d7a356ed5d4571537f4f", 18),
     "version-and-template": ("092537f50899ce69da3b8189ef7722786941a798dbf5f7b6fdd093e1192616a3", 2),
     "licensing": ("d2daa9886b45795f3a4fb46f63e64ee976ee5a5d6023164a9a735fa38eef1d07", 2),
     "docker": ("51898daa73be46eb2dfa82700dedc02a9fd29370a81f2f9ca65160156cec60b3", 4),
     "workflows": ("ca2d8e4d6a3353f9fd3d1fc0cc60204a612f8101d69f57aef22287995bad6987", 2),
-    "tests": ("0602b5563a6c27bc3d367a39bfac654e944f864734a8e399a9c7858336e4f0d8", 16),
+    "tests": ("accd83cbe5272479313df90c4f249abffd03d438d19e5ced9c22329924fcfdcd", 15),
     "published-releases": ("dd860ea23f231664df1c844b1417a444d6b395412ed98e135c80935abae33c4b", 14),
     "other": ("79d3cf5e77a934e246dba795ba1933bce37c0f778f16f7d7525dd4d172534106", 7),
 }
@@ -179,6 +199,23 @@ def verify_bundle_lineage(repo, bundle_relative, source_commit):
     if parent != source_commit:
         raise AssertionError(
             f"Bundle commit {asset_commit} has parent {parent}, not source {source_commit}."
+        )
+    return asset_commit
+
+
+def verify_asset_commit(repo, bundle_relative, asset_commit, source_commit):
+    """Prove asset_commit holds exactly the committed bundle and follows its source."""
+    require_full_history(repo)
+    committed = subprocess.run(
+        ["git", "show", f"{asset_commit}:{bundle_relative}"],
+        cwd=repo, check=True, stdout=subprocess.PIPE,
+    ).stdout
+    if committed != (Path(repo) / bundle_relative).read_bytes():
+        raise AssertionError(f"Asset commit {asset_commit} does not hold the committed bundle.")
+    parent = git("rev-parse", f"{asset_commit}^", cwd=repo).stdout.strip()
+    if parent != source_commit:
+        raise AssertionError(
+            f"Asset commit {asset_commit} has parent {parent}, not source {source_commit}."
         )
     return asset_commit
 
@@ -370,7 +407,12 @@ class ReleaseAssetTests(unittest.TestCase):
                 self.assertEqual(PRIVATE_IPV4.findall(text), [])
 
     def test_bundle_source_commit_is_its_parent(self):
-        verify_bundle_lineage(ROOT, f"release/{BUNDLE.name}", self.marker)
+        text = BOOTSTRAP.read_text(encoding="utf-8")
+        relative = f"release/{BUNDLE.name}"
+        if self.bundle_state(text) == "match":
+            verify_asset_commit(ROOT, relative, bootstrap_value(text, "asset_commit"), self.marker)
+        else:
+            verify_bundle_lineage(ROOT, relative, self.marker)
 
     def test_committed_assets_are_not_superseded(self):
         digest = hashlib.sha256(BUNDLE.read_bytes()).hexdigest()
@@ -413,8 +455,10 @@ class ReleaseAssetTests(unittest.TestCase):
             self.skipTest("The version 1.0.6 bootstrap has not been rendered yet.")
         if self.bundle_state(text) == "awaiting-render":
             self.skipTest("Recut in progress: the committed bundle awaits its Stage B bootstrap.")
-        asset_commit = verify_bundle_lineage(ROOT, f"release/{BUNDLE.name}", self.marker)
-        self.assertEqual(bootstrap_value(text, "asset_commit"), asset_commit)
+        self.assertEqual(self.bundle_state(text), "match")
+        verify_asset_commit(
+            ROOT, f"release/{BUNDLE.name}", bootstrap_value(text, "asset_commit"), self.marker
+        )
 
 
 class BundleLineageCheckTests(unittest.TestCase):
@@ -468,6 +512,16 @@ class BundleLineageCheckTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "has no commit"):
             verify_bundle_lineage(self.repo, "release/other.tar.gz", self.source)
 
+    def test_asset_commit_must_hold_the_committed_bundle_and_follow_its_source(self):
+        bundle = "release/bundle.tar.gz"
+        self.assertEqual(verify_asset_commit(self.repo, bundle, self.asset, self.source), self.asset)
+        with self.assertRaisesRegex(AssertionError, "not source"):
+            verify_asset_commit(self.repo, bundle, self.asset, self.asset)
+        (self.repo / bundle).write_bytes(b"different bundle")
+        self.commit("replace bundle")
+        with self.assertRaisesRegex(AssertionError, "does not hold the committed bundle"):
+            verify_asset_commit(self.repo, bundle, self.asset, self.source)
+
     def test_git_errors_fail_instead_of_skipping(self):
         with self.assertRaises(subprocess.CalledProcessError):
             verify_bundle_lineage(Path(self.temporary.name), "release/bundle.tar.gz", self.source)
@@ -481,6 +535,8 @@ class BundleLineageCheckTests(unittest.TestCase):
         with self.assertRaises(unittest.SkipTest) as raised:
             verify_bundle_lineage(shallow, "release/bundle.tar.gz", self.source)
         self.assertEqual(str(raised.exception), SHALLOW_HISTORY_REASON)
+        with self.assertRaises(unittest.SkipTest):
+            verify_asset_commit(shallow, "release/bundle.tar.gz", self.asset, self.source)
 
 
 class PrepareWorkflowSafetyTests(unittest.TestCase):
@@ -499,7 +555,7 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
         self.assertNotRegex(self.code, r"\bwrite\b")
         self.assertNotIn("secrets.", self.code)
         self.assertIn("persist-credentials: false", self.code)
-        self.assertIn("if: github.head_ref == 'fix/v1.0.6-release-publication'", self.code)
+        self.assertIn("if: github.head_ref == 'fix/v1.0.6-collection-schedule'", self.code)
         self.assertIn(f"REVIEWED_BASE: {PR_BASE}", self.code)
         self.assertIn(f"RELEASE_BRANCH: {RELEASE_BRANCH}", self.code)
         for digest in SUPERSEDED_SHA256:
@@ -629,13 +685,13 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
         self.git("commit", "-q", "--allow-empty", "-m", message)
         return self.git("rev-parse", "HEAD")
 
-    def run_step(self, name, head_ref="fix/v1.0.6-release-publication", base=None):
+    def run_step(self, name, head_ref="fix/v1.0.6-collection-schedule", base=None):
         output = self.runner_temp / "github_output"
         output.write_text("", encoding="utf-8")
         environment = dict(os.environ)
         environment.update(
             RELEASE_VERSION=RELEASE_VERSION,
-            RELEASE_BRANCH="fix/v1.0.6-release-publication",
+            RELEASE_BRANCH="fix/v1.0.6-collection-schedule",
             REVIEWED_BASE=self.base,
             BUNDLE=f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz",
             BOOTSTRAP="pihole-speedtest-v6-bootstrap.sh",
@@ -670,13 +726,14 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
             "feature/other",
             "release/v1.0.6-assets",
             "release/v1.0.6-assets-2",
-            "fix/v1.0.6-release-publication-2",
+            "fix/v1.0.6-release-publication",
+            "fix/v1.0.6-collection-schedule-2",
         ):
             with self.subTest(head_ref=head_ref):
                 result = self.guard(head_ref=head_ref)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn(
-                    "Only fix/v1.0.6-release-publication may prepare release assets", result.stdout
+                    "Only fix/v1.0.6-collection-schedule may prepare release assets", result.stdout
                 )
 
     def test_guard_rejects_a_changed_base(self):

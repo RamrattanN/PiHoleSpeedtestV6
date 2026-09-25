@@ -101,10 +101,13 @@
   the product `LICENSE`.
 - [x] Add tagged prerelease selection to the runner and guarded GitHub
   Release publication tooling.
-- [ ] Publish the `v1.0.6-rc.1` prerelease with the rendered bootstrap and its
+- [x] Publish the `v1.0.6-rc.1` prerelease and complete its Raspberry Pi 3
+  upgrade acceptance; it exposed the collection scheduling defect and is
+  superseded for acceptance.
+- [ ] Publish the `v1.0.6-rc.2` prerelease with the rendered bootstrap and its
   checksum as release assets.
 - [ ] Complete version `1.0.6` one-line install and uninstall acceptance on
-  Raspberry Pi 3 with `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.1`.
+  Raspberry Pi 3 with `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.2`.
 - [ ] Publish the stable `v1.0.6` release from the accepted commit with
   byte-identical assets and verify the ordinary command resolves it.
 - [ ] Tag the first supported v6 release.
