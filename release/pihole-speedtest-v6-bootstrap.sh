@@ -3,9 +3,9 @@ set -euo pipefail
 
 repository="RamrattanN/PiHoleSpeedtestV6"
 version="1.0.6"
-source_commit="a045fbad6b10f9fcdc7be5e134fcbda6d68c4517"
-asset_commit="a258d5b05452ffb7583291682b6ccb55a5c2831d"
-bundle_sha256="b356547c6171fd0978f04591211a725140c72e19f57a29d577011cb2df7a4abb"
+source_commit="9d989db9466755896a988495354142caddf3f9fe"
+asset_commit="53d383203698de8bbf57cce6ea762a04a855cfc0"
+bundle_sha256="4b4ac3959240d05df9865eef4fabaa58556d8a86996c38956980eea567189144"
 bundle_name="pihole-speedtest-v6-${version}.tar.gz"
 bundle_url="https://raw.githubusercontent.com/${repository}/${asset_commit}/release/${bundle_name}"
 
