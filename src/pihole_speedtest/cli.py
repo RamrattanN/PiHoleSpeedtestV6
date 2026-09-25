@@ -112,6 +112,7 @@ def parser() -> argparse.ArgumentParser:
     adapter_install.add_argument("--web-root", type=Path, required=True)
     adapter_install.add_argument("--web-version", required=True)
     adapter_install.add_argument("--companion-url", required=True)
+    adapter_install.add_argument("--pihole-origin", required=True)
     adapter_install.add_argument("--backup-root", type=Path, required=True)
 
     adapter_remove = commands.add_parser(
@@ -132,6 +133,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 arguments.web_root,
                 arguments.web_version,
                 arguments.companion_url,
+                arguments.pihole_origin,
                 arguments.backup_root,
             )
         except AdapterError as exc:

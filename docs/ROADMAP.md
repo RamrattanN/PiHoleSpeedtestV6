@@ -116,10 +116,13 @@
   matching-scheme enforcement, and secure certificate delivery.  Its final
   adapter evidence capture incorrectly used plain HTTP against the TLS listener,
   so the adapter rolled back safely and rc.5 is superseded for acceptance.
-- [ ] Publish `v1.0.6-rc.6` with scheme-aware adapter evidence, installed-origin
-  reuse for standalone recovery, and durable retry guidance.  Complete
+- [x] Publish `v1.0.6-rc.6` with scheme-aware adapter evidence, installed-origin
+  reuse for standalone recovery, and durable retry guidance.  Native HTTPS
+  embedding passed, but HTTP Pi-hole access displayed a rejected iframe.
+- [ ] Publish `v1.0.6-rc.7` with adaptive HTTP-only behavior and canonical HTTPS
+  redirects for HTTPS-enabled Pi-hole installations.  Complete
   Raspberry Pi acceptance using
-  `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.6`.
+  `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.7`.
 - [ ] Publish the stable `v1.0.6` release from the accepted commit with
   byte-identical assets and verify the ordinary command resolves it.
 - [ ] Tag the first supported v6 release.

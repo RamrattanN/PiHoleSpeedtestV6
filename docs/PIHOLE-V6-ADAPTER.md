@@ -52,6 +52,13 @@ and requires both origins to use the same scheme.  The companion receives
 filesystem access.  Nonstandard reverse-proxy origins must still be supplied
 explicitly.
 
+HTTP-only Pi-hole installations retain an HTTP companion and HTTP wrapper.
+When Pi-hole has native HTTPS, the configured HTTPS origin is canonical.  The
+Overview and Setup wrappers redirect HTTP IP addresses, old bookmarks, and
+other noncanonical origins to that HTTPS origin before loading the iframe.
+This supports both installation types without allowing an insecure HTTP parent
+through the companion's strict `frame-ancestors` policy.
+
 Pi-hole's CSP may omit a `frame-src` directive.  In that case, `default-src`
 is the browser fallback and a companion service on another port is blocked.
 The guarded adapter installer preserves the existing policy and adds only the
@@ -71,6 +78,7 @@ pihole-speedtest adapter-install \
   --web-root /temporary/pihole-admin-copy \
   --web-version v6.6 \
   --companion-url http://pihole.example.test:8765 \
+  --pihole-origin http://pihole.example.test \
   --backup-root /temporary/adapter-backups
 ```
 
@@ -79,7 +87,7 @@ The command creates a timestamped recovery directory containing:
 - the exact pre-install sidebar;
 - SHA-256 checksums for the original and installed sidebar;
 - checksums for both created adapter pages;
-- the tested version, web root, and companion URL;
+- the tested version, web root, companion URL, and canonical Pi-hole origin;
 - the exact Pi-hole web header array before and after the narrow `frame-src`
   addition;
 - a manifest used for verified removal.

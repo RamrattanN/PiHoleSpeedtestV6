@@ -20,7 +20,11 @@ sidebar pages open the dashboard from inside the Pi-hole web interface.
 > historical evidence.  `v1.0.6-rc.5` added native HTTPS, but its sidebar
 > installer used plain HTTP for the final health evidence and rolled back the
 > adapter safely.  rc.5 is superseded for acceptance and remains published as
-> historical evidence.  `v1.0.6-rc.6` is the current acceptance candidate once
+> historical evidence.  `v1.0.6-rc.6` corrected that recovery defect and
+> passed native HTTPS embedding, but an HTTP Pi-hole URL displayed a rejected
+> iframe instead of upgrading to the canonical HTTPS page.  rc.6 is superseded
+> for acceptance and remains published as historical evidence.  `v1.0.6-rc.7`
+> adds the canonical redirect and is the current acceptance candidate once
 > published.  Version `1.0.5` remains available through the
 > [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
 
@@ -93,12 +97,12 @@ immutable commands, trust anchors, and recovery contract in the
 
 Release candidates are tested with the same runner by selecting one exact
 release tag.  The ordinary command above never selects a prerelease.  The
-current acceptance candidate after publication is `v1.0.6-rc.6`:
+current acceptance candidate after publication is `v1.0.6-rc.7`:
 
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.6 bash
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.7 bash
 ```
 
 The tag rules, uninstall form, and full release sequence are in the
@@ -134,12 +138,16 @@ Pi-hole page opened over HTTPS.  It is superseded for acceptance and remains
 published as historical evidence.  `v1.0.6-rc.5` added native HTTPS, but its
 final adapter evidence capture sent plain HTTP to the TLS listener and safely
 rolled back the adapter.  It is superseded for acceptance and remains
-published as historical evidence.  `v1.0.6-rc.6` is the current acceptance
+published as historical evidence.  `v1.0.6-rc.6` corrected that recovery
+defect and passed native HTTPS embedding, but an HTTP Pi-hole URL displayed a
+rejected iframe instead of upgrading to the canonical HTTPS page.  It is
+superseded for acceptance and remains published as historical evidence.
+`v1.0.6-rc.7` adds that canonical redirect and is the current acceptance
 candidate once published.  Version `1.0.6` carries the accepted version `1.0.5` Pi-hole-aligned
 chart presentation, the rc.3 zoom corrections, and rc.4 scheduled-slot and
 start-time chronology while retaining completion timestamps, rc.5 HTTPS
-support for the companion, and the rc.6 scheme-aware adapter evidence and
-recovery corrections.
+support for the companion, the rc.6 scheme-aware adapter evidence and recovery
+corrections, and the rc.7 adaptive HTTP and HTTPS wrapper behavior.
 It adds canonical third-party notices, the one-line runner, and the
 `install-all` and `uninstall-all` bootstrap actions, and corrects collection
 scheduling so a 15-minute setting collects on every 15-minute timer run,

@@ -1,7 +1,7 @@
 """Release scope, drift, and workflow-safety controls for version 1.0.6.
 
 The scope lock applies to the 1.0.6 release line only: it pins every file
-outside the release allowlist to the reviewed baseline ba76cd1.  Bumping the
+outside the release allowlist to the reviewed baseline 11c8dc1.  Bumping the
 project version ends the lock for later development.
 """
 
@@ -20,11 +20,11 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 PREPARE = WORKFLOWS / "prepare-release-assets.yml"
 RELEASE_VERSION = "1.0.6"
-# Content baseline for the scope lock: the reviewed rc.5 merge on main.
-REVIEWED_BASE = "ba76cd12ac4de7ecd3b25ccb23772f56a032e413"
+# Content baseline for the scope lock: the reviewed rc.6 merge on main.
+REVIEWED_BASE = "11c8dc1e9bf7e1a012e92692bb9c90ba2c8b1c98"
 # Pull request base for the current recut, pinned by the preparation workflow.
 PR_BASE = REVIEWED_BASE
-RELEASE_BRANCH = "fix/v1.0.6-https-recovery"
+RELEASE_BRANCH = "fix/v1.0.6-https-redirect"
 # Assets recut before publication; they must never be reused.
 SUPERSEDED_SHA256 = {
     "40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce",
@@ -48,11 +48,14 @@ SUPERSEDED_SHA256 = {
     # Published rc.5 assets remain historical evidence and cannot be reused for rc.6.
     "4d67f41e3b12268c5690c5237240787d753afc95a0678a4496ccbd7f2db28fcc",
     "3af1b4290b00d1b06f07356312f5ba3b7837f07b9059330f60725bd48ce919c7",
+    # Published rc.6 assets remain historical evidence and cannot be reused for rc.7.
+    "7d7e33b12fdb9605465373b92a8c970be2818ce0757397254d740d15b679a54d",
+    "083b5f4320cb61681362ef3b30a9ddc38d1bb2db293462fd8b905b14b6313789",
 }
 # The superseded bundle on main (source commit, SHA-256) that this recut replaces.
 INHERITED_BUNDLE = (
-    "c050bc627315b3a43f85af5d1f7ff43801a66f9e",
-    "4d67f41e3b12268c5690c5237240787d753afc95a0678a4496ccbd7f2db28fcc",
+    "897f114b4b9a4eac833ae55cf2ae73debe59f0db",
+    "7d7e33b12fdb9605465373b92a8c970be2818ce0757397254d740d15b679a54d",
 )
 BUNDLE = ROOT / "release" / f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz"
 BOOTSTRAP = ROOT / "release" / "pihole-speedtest-v6-bootstrap.sh"
@@ -78,12 +81,12 @@ RELEASE_ALLOWLIST = {
 # Files outside the allowlist that carry an exact owner-approved change.  Each is
 # pinned to its complete corrected content and excluded from the group digests.
 APPROVED_OVERRIDES = {
-    # The owner-approved rc.6 HTTPS recovery correction and its exact tests.
-    "release/bootstrap.template.sh": "c4023ab253120828a11cf19525cfdbc883adfa2e23ebf95fbaa772f3a6d39e36",
-    "scripts/install_pihole_adapter.sh": "64f220109f2426a736e2d905d30f285edfd333dbc18c12f825ec5f1a8a13184f",
-    "tests/test_one_line_install.py": "efdafd4f0550bd8698ebf8003649fc66f5c0def02ce9ac6300e87265103488fd",
-    "tests/test_release_documentation.py": "a1b6d6180478dfc5df04a75f229e7705db10f82144205a63b62effecdf909ae1",
-    "tests/test_systemd_assets.py": "0a892ef0825d8376a4d7a2784c10a067bbd0f82af40ce263eab8112ad508720d",
+    # The owner-approved rc.7 adaptive HTTP and HTTPS wrapper correction.
+    "scripts/install_pihole_adapter.sh": "f871e1039291a7cba00579e6a75d3efa46b1633c4a50d5641bfd88b0e3f1ab5c",
+    "src/pihole_speedtest/adapter.py": "4e4dc24b8092e0776fabd70f5645556202c3f39ff7d455428704f83a076570a7",
+    "src/pihole_speedtest/cli.py": "4bcc051e1aac8711efd52466498811a6cc62ed03ce66a91028a89cd5e0334567",
+    "tests/test_adapter.py": "f721870d7b103aaf5bfa308ee7c0d0a0f4df1928aa10f56d567290ae7c21b58b",
+    "tests/test_release_documentation.py": "8fe6625568e56b82ba40b9ba9fa209e4fefd0f95ebc8b183a701c9390977fff0",
 }
 APPROVED_OVERRIDE_MODES = {path: "100644" for path in APPROVED_OVERRIDES}
 # Ordered partition of every tracked file outside the allowlist and overrides.
@@ -102,13 +105,13 @@ PROTECTED_GROUPS = [
 # sha256 over sorted "mode blob path" lines at the reviewed baseline, and file count.
 BASELINE_DIGESTS = {
     "chart": ("2f3f87c3a6d2b79f090c9e52773c0e1f1556ab0a299e562c3e5fd99eaea427a1", 8),
-    "runtime": ("56968d841b7a2bdab8927cff16aee7c9572ca006f43d97d62db96fcded77f4b5", 16),
+    "runtime": ("ebffeb04ac64fa2260b06ee4473c98a65387f29df8470f9712b9f9b73dfd5d76", 14),
     "installer": ("21f30a73d32dc0dcecaa725919dc7f9104019ff44c207ad804570fd97560429e", 18),
-    "version-and-template": ("964524da306c583f48c692469effc1e2ec51498e3c0539a7df80d1d84a27df4a", 1),
+    "version-and-template": ("fe68dc240452f129717378fa220519614efda969822c7ed01e43da9ec4ed8b0d", 2),
     "licensing": ("d2daa9886b45795f3a4fb46f63e64ee976ee5a5d6023164a9a735fa38eef1d07", 2),
     "docker": ("51898daa73be46eb2dfa82700dedc02a9fd29370a81f2f9ca65160156cec60b3", 4),
     "workflows": ("ca2d8e4d6a3353f9fd3d1fc0cc60204a612f8101d69f57aef22287995bad6987", 2),
-    "tests": ("f152f3f1f35fe45733745e5aa22244da4209bb1069880ba20ae2a9462e7012f0", 15),
+    "tests": ("150dfec0beb725f6ab5c10c64de3dec41722c332204d00ef45c85687f00c1de0", 16),
     "published-releases": ("dd860ea23f231664df1c844b1417a444d6b395412ed98e135c80935abae33c4b", 14),
     "other": ("3ec5663d54549afade020ac123e2ee7b01beb784c53a4e37efb996f2479990a7", 6),
 }

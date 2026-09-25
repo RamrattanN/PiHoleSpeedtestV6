@@ -80,8 +80,11 @@ acceptance and remains published as historical evidence.  `v1.0.6-rc.5`
 served the companion over HTTPS when Pi-hole used its native TLS certificate,
 but its final adapter evidence capture sent plain HTTP to the TLS listener and
 rolled the adapter back safely.  It is superseded for acceptance and remains
-published as historical evidence.  `v1.0.6-rc.6` is the current acceptance
-candidate after publication.  It makes adapter evidence scheme-aware, reuses
-installed origins for recovery, and retains the one-line `install-all` and
-`uninstall-all` actions.  Raspberry Pi acceptance of rc.6 and the stable
-release remain open.
+published as historical evidence.  `v1.0.6-rc.6` corrected adapter recovery and
+passed native HTTPS embedding, but HTTP Pi-hole access displayed a rejected
+iframe instead of upgrading to the canonical HTTPS page.  It is superseded for
+acceptance and remains published as historical evidence.  `v1.0.6-rc.7` is the
+current acceptance candidate after publication.  It adds the adaptive HTTP-only
+behavior and canonical HTTPS redirect while retaining the one-line
+`install-all` and `uninstall-all` actions.  Raspberry Pi acceptance of rc.7 and
+the stable release remain open.

@@ -37,6 +37,7 @@ class AdapterTests(unittest.TestCase):
             self.root,
             "v6.6",
             "http://pihole.example.test:8765",
+            "http://pihole.example.test",
             self.backups,
         )
 
@@ -58,7 +59,24 @@ class AdapterTests(unittest.TestCase):
             "?embed=1#setup",
             (self.root / "speedtest-setup.lp").read_text(encoding="utf-8"),
         )
+        overview = (self.root / "speedtest.lp").read_text(encoding="utf-8")
+        self.assertNotIn('\n                    src="', overview)
+        self.assertIn(
+            'data-src="http://pihole.example.test:8765/?embed=1#overview"',
+            overview,
+        )
+        self.assertIn(
+            'const canonicalOrigin = "http://pihole.example.test";',
+            overview,
+        )
+        self.assertIn("window.location.origin !== canonicalOrigin", overview)
+        self.assertIn("window.location.replace(", overview)
+        self.assertIn("frame.src = frame.dataset.src", overview)
         self.assertEqual(manifest["web_version"], "v6.6")
+        self.assertEqual(
+            manifest["pihole_origin"],
+            "http://pihole.example.test",
+        )
         self.assertEqual(
             stat.S_IMODE(self.sidebar.stat().st_mode),
             0o644,
@@ -85,6 +103,7 @@ class AdapterTests(unittest.TestCase):
                 self.root,
                 "v6.7",
                 "http://pihole.example.test:8765",
+                "http://pihole.example.test",
                 self.backups,
             )
         self.assertEqual(self.sidebar.read_text(encoding="utf-8"), SIDEBAR)
@@ -120,6 +139,61 @@ class AdapterTests(unittest.TestCase):
                     install_adapter(
                         self.root,
                         "v6.6",
+                        value,
+                        "http://pihole.example.test",
+                        self.backups,
+                    )
+
+    def test_noncanonical_http_access_redirects_to_https_origin(self):
+        install_adapter(
+            self.root,
+            "v6.6",
+            "https://pi.hole:8765",
+            "https://pi.hole",
+            self.backups,
+        )
+
+        for name in ("speedtest.lp", "speedtest-setup.lp"):
+            with self.subTest(name=name):
+                page = (self.root / name).read_text(encoding="utf-8")
+                self.assertIn(
+                    'const canonicalOrigin = "https://pi.hole";',
+                    page,
+                )
+                self.assertIn(
+                    "canonicalOrigin\n                + window.location.pathname",
+                    page,
+                )
+                self.assertIn("frame.src = frame.dataset.src", page)
+                self.assertNotIn('\n                    src="', page)
+
+    def test_default_https_port_is_normalized_to_prevent_redirect_loop(self):
+        manifest_path = install_adapter(
+            self.root,
+            "v6.6",
+            "https://pi.hole:8765",
+            "https://pi.hole:443",
+            self.backups,
+        )
+
+        page = (self.root / "speedtest.lp").read_text(encoding="utf-8")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertIn('const canonicalOrigin = "https://pi.hole";', page)
+        self.assertEqual(manifest["pihole_origin"], "https://pi.hole")
+
+    def test_pihole_origin_rejects_unsafe_values(self):
+        for value in (
+            "file:///tmp/admin",
+            "https://user:secret@pi.hole",
+            "https://pi.hole/admin",
+            "https://pi.hole/?unsafe=1",
+        ):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(AdapterError, "Pi-hole origin"):
+                    install_adapter(
+                        self.root,
+                        "v6.6",
+                        "https://pi.hole:8765",
                         value,
                         self.backups,
                     )

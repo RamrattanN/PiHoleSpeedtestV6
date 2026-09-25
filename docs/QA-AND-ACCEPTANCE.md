@@ -178,8 +178,8 @@ remained operational.
 Automated tests exercise the runner, the rendered bootstrap, and the release
 publication validation against stubbed system commands and throwaway
 repositories.  Before version `1.0.6` replaces version `1.0.5`, the following
-must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.6`
-prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.6` with the exact
+must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.7`
+prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.7` with the exact
 one-line runner from `main`.  Prerelease `v1.0.6-rc.1` was published and
 accepted on the Raspberry Pi for upgrade, data preservation, services, sidebar,
 and charts.  It exposed a collection scheduling defect, a 15-minute setting
@@ -200,6 +200,11 @@ The current candidate must show:
 - when Pi-hole serves HTTPS, the runner detects its configured domain and
   certificate, the companion serves HTTPS on port 8765, and the Overview and
   Setup iframes load without mixed content;
+- on an HTTPS-enabled Pi-hole, HTTP IP or alternate-origin Overview and Setup
+  requests redirect to the configured canonical HTTPS origin before the iframe
+  loads;
+- on an HTTP-only Pi-hole, Overview and Setup remain on the configured HTTP
+  origin without an HTTPS redirect;
 - the HTTPS dashboard service receives `/etc/pihole/tls.pem` through its
   restricted systemd credential, while the companion account has no direct
   read access to the source certificate;
@@ -215,7 +220,7 @@ The current candidate must show:
 - HTTPS adapter evidence is captured through the TLS health endpoint, and a
   standalone adapter retry reuses the installed HTTPS origins.
 
-Release candidate `v1.0.6-rc.6` must additionally show at least three
+Release candidate `v1.0.6-rc.7` must additionally show at least three
 consecutive scheduled collections about 15 minutes apart with no alternating
 `"not due"` skips in the collector journal, complete one documented uninstall
 and reinstall and one repeat installation, and keep genuine outages as empty

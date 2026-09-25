@@ -46,21 +46,37 @@ def _write_atomic(path: Path, content: str, mode: int = 0o600) -> None:
         temporary_path.unlink(missing_ok=True)
 
 
-def _validated_url(value: str) -> str:
+def _validated_url(value: str, label: str = "companion URL") -> str:
     parsed = urlparse(value)
     if (
         parsed.scheme not in ("http", "https")
         or not parsed.hostname
         or parsed.username
         or parsed.password
+        or parsed.path not in ("", "/")
         or parsed.query
         or parsed.fragment
     ):
         raise AdapterError(
-            "companion URL must be an HTTP(S) origin without credentials, "
-            "query, or fragment"
+            f"{label} must be an HTTP(S) origin without credentials, "
+            "path, query, or fragment"
         )
     return value.rstrip("/")
+
+
+def _normalized_origin(value: str, label: str) -> str:
+    validated = _validated_url(value, label)
+    parsed = urlparse(validated)
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise AdapterError(f"{label} contains an invalid port") from exc
+    host = parsed.hostname or ""
+    if ":" in host:
+        host = f"[{host}]"
+    default_port = 80 if parsed.scheme == "http" else 443
+    suffix = f":{port}" if port is not None and port != default_port else ""
+    return f"{parsed.scheme}://{host}{suffix}"
 
 
 def _sidebar_entry(companion_url: str) -> str:
@@ -89,12 +105,41 @@ def _sidebar_entry(companion_url: str) -> str:
 """
 
 
-def _page(title: str, companion_url: str, view: str) -> str:
+def _page(
+    title: str,
+    companion_url: str,
+    pihole_origin: str,
+    view: str,
+) -> str:
     safe_title = html.escape(title, quote=True)
     safe_source = html.escape(f"{companion_url}/?embed=1#{view}", quote=True)
+    safe_origin = (
+        json.dumps(pihole_origin)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
     return f"""<?
 mg.include('scripts/lua/header_authenticated.lp','r')
 ?>
+<script>
+    (() => {{
+        const canonicalOrigin = {safe_origin};
+        if (window.location.origin !== canonicalOrigin) {{
+            window.location.replace(
+                canonicalOrigin
+                + window.location.pathname
+                + window.location.search
+                + window.location.hash
+            );
+            return;
+        }}
+        window.addEventListener("DOMContentLoaded", () => {{
+            const frame = document.getElementById("pihole-speedtest-frame");
+            frame.src = frame.dataset.src;
+        }});
+    }})();
+</script>
 <div class="page-header">
     <h1>{safe_title}</h1>
     <small>Ramrattan Network Tools companion service</small>
@@ -104,8 +149,9 @@ mg.include('scripts/lua/header_authenticated.lp','r')
         <div class="box">
             <div class="box-body" style="padding: 0; overflow: hidden;">
                 <iframe
+                    id="pihole-speedtest-frame"
                     title="{safe_title}"
-                    src="{safe_source}"
+                    data-src="{safe_source}"
                     style="display: block; width: 100%; min-height: 1200px; border: 0;"
                     loading="eager"
                     referrerpolicy="no-referrer"
@@ -122,11 +168,13 @@ def install_adapter(
     web_root: Path,
     web_version: str,
     companion_url: str,
+    pihole_origin: str,
     backup_root: Path,
 ) -> Path:
     if web_version not in SUPPORTED_WEB_VERSIONS:
         raise AdapterError(f"unsupported Pi-hole Web version: {web_version}")
     companion_url = _validated_url(companion_url)
+    pihole_origin = _normalized_origin(pihole_origin, "Pi-hole origin")
     root = web_root.expanduser().resolve()
     sidebar = root / "scripts" / "lua" / "sidebar.lp"
     overview = root / "speedtest.lp"
@@ -159,12 +207,22 @@ def install_adapter(
     try:
         _write_atomic(
             overview,
-            _page("Speedtest Overview", companion_url, "overview"),
+            _page(
+                "Speedtest Overview",
+                companion_url,
+                pihole_origin,
+                "overview",
+            ),
             0o644,
         )
         _write_atomic(
             setup,
-            _page("Speedtest Setup", companion_url, "setup"),
+            _page(
+                "Speedtest Setup",
+                companion_url,
+                pihole_origin,
+                "setup",
+            ),
             0o644,
         )
         _write_atomic(sidebar, patched, sidebar_mode)
@@ -173,6 +231,7 @@ def install_adapter(
             "web_version": web_version,
             "web_root": str(root),
             "companion_url": companion_url,
+            "pihole_origin": pihole_origin,
             "sidebar": {
                 "path": str(sidebar),
                 "backup": str(sidebar_backup),
