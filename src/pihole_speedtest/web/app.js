@@ -27,6 +27,10 @@ function showView(name, updateHash = false) {
 function formatNumber(value) { const n = Number(value); return Number.isFinite(n) ? n.toFixed(2) : "-"; }
 function formatTime(value) { const d = new Date(value); return Number.isNaN(d.valueOf()) ? value : d.toLocaleString(); }
 function formatMeasurementCount(count) { return `${count} ${count === 1 ? "measurement" : "measurements"}`; }
+function hasStartTime(record) { return typeof record.started_at === "string" && Number.isFinite(Date.parse(record.started_at)); }
+function hasScheduledTime(record) { return typeof record.scheduled_at === "string" && Number.isFinite(Date.parse(record.scheduled_at)); }
+function chartTime(record) { return hasScheduledTime(record)
+  ? record.scheduled_at : (hasStartTime(record) ? record.started_at : record.recorded_at); }
 function setText(id, value) { byId(id).textContent = value; }
 function addCell(row, value) { const cell = document.createElement("td"); cell.textContent = value; row.appendChild(cell); }
 
@@ -36,6 +40,8 @@ function renderTable(records) {
   byId("empty-state").hidden = records.length > 0;
   records.slice().reverse().forEach((record) => {
     const row = document.createElement("tr");
+    addCell(row, hasScheduledTime(record) ? formatTime(record.scheduled_at) : (hasStartTime(record) ? "Manual" : "Unknown (legacy)"));
+    addCell(row, hasStartTime(record) ? formatTime(record.started_at) : "Unknown (legacy)");
     addCell(row, formatTime(record.recorded_at));
     addCell(row, `${formatNumber(record.download_mbps)} Mbps`);
     addCell(row, `${formatNumber(record.upload_mbps)} Mbps`);
@@ -55,7 +61,7 @@ function chartMaximum(records, series, minimum) {
 
 function chartTimeline(records) {
   const intervalMs = collectionIntervalMinutes * 60 * 1000;
-  const timestamps = records.map((record) => Date.parse(record.recorded_at));
+  const timestamps = records.map((record) => Date.parse(chartTime(record)));
   const valid = timestamps.filter(Number.isFinite);
   const deltas = [];
   for (let index = 1; index < timestamps.length; index += 1) {
@@ -310,7 +316,15 @@ function showChartTooltip(event, canvas) {
   const record = records[index];
   const tooltip = byId(options.tooltipId);
   const title = document.createElement("strong");
-  title.textContent = formatTime(record.recorded_at);
+  title.textContent = hasScheduledTime(record)
+    ? `Scheduled: ${formatTime(record.scheduled_at)}`
+    : (hasStartTime(record)
+      ? `Started: ${formatTime(record.started_at)}`
+      : `Recorded: ${formatTime(record.recorded_at)} (start unknown)`);
+  const started = document.createElement("span");
+  if (hasScheduledTime(record) && hasStartTime(record)) started.textContent = `Started: ${formatTime(record.started_at)}`;
+  const completed = document.createElement("span");
+  if (hasStartTime(record)) completed.textContent = `Completed: ${formatTime(record.recorded_at)}`;
   const rows = options.series.map((series) => {
     const row = document.createElement("span");
     const swatch = document.createElement("i");
@@ -318,7 +332,8 @@ function showChartTooltip(event, canvas) {
     row.append(swatch, `${series.label}: ${formatNumber(record[series.field])} ${series.unit}`);
     return row;
   });
-  tooltip.replaceChildren(title, ...rows);
+  tooltip.replaceChildren(title, ...(hasScheduledTime(record) && hasStartTime(record) ? [started] : []),
+    ...(hasStartTime(record) ? [completed] : []), ...rows);
   tooltip.style.left = `${Math.max(105, Math.min(bounds.width - 105, x))}px`;
   tooltip.style.top = `${Math.max(96, y)}px`;
   tooltip.hidden = false;
@@ -355,9 +370,9 @@ function setDefaultZoomRange() {
     defaultWindowActive = true;
     return;
   }
-  const latest = Date.parse(allRecords[allRecords.length - 1].recorded_at);
+  const latest = Date.parse(chartTime(allRecords[allRecords.length - 1]));
   const cutoff = latest - DEFAULT_CHART_WINDOW_MS;
-  const firstVisible = allRecords.findIndex((record) => Date.parse(record.recorded_at) >= cutoff);
+  const firstVisible = allRecords.findIndex((record) => Date.parse(chartTime(record)) >= cutoff);
   zoomStart = firstVisible < 0 ? Math.max(0, allRecords.length - 1) : firstVisible;
   defaultWindowActive = true;
 }

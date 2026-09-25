@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from dataclasses import replace
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
@@ -13,6 +15,15 @@ from .migration import LegacyImportError, import_legacy_csv
 from .server import serve
 from .settings import load_settings
 from .storage import Storage
+
+
+def scheduled_slot(now: datetime, interval_minutes: int) -> str:
+    """Return the UTC schedule boundary for the timer invocation."""
+    seconds = int(interval_minutes) * 60
+    epoch = int(now.astimezone(timezone.utc).timestamp())
+    return datetime.fromtimestamp(
+        (epoch // seconds) * seconds, timezone.utc
+    ).isoformat().replace("+00:00", "Z")
 
 
 def default_database() -> Path:
@@ -135,17 +146,22 @@ def main(argv: Optional[List[str]] = None) -> int:
         lock_file = arguments.lock_file or Path(
             f"{arguments.database}.collect.lock"
         )
+        scheduled_at = None
         if arguments.respect_schedule:
             settings_file = arguments.settings_file or arguments.database.with_name(
                 "settings.json"
             )
             interval = load_settings(settings_file)["collection_interval_minutes"]
-            if not storage.collection_is_due(interval):
+            now = datetime.now(timezone.utc)
+            if not storage.collection_is_due(interval, now=now):
                 print(json.dumps({"status": "skipped", "reason": "not due"}))
                 return 0
+            scheduled_at = scheduled_slot(now, interval)
         try:
             with collection_lock(lock_file):
                 measurement = collect(arguments.binary, arguments.timeout)
+                if scheduled_at is not None:
+                    measurement = replace(measurement, scheduled_at=scheduled_at)
                 measurement_id = storage.insert(measurement)
         except (CollectionError, CollectionLockedError) as exc:
             print(f"Collection failed: {exc}")

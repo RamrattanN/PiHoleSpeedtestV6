@@ -12,10 +12,12 @@ sidebar pages open the dashboard from inside the Pi-hole web interface.
 > data preservation, services, sidebar, and charts; it exposed a 15-minute
 > collection scheduling defect and is superseded for acceptance.
 > `v1.0.6-rc.2` was published and passed tagged install, uninstall, repeat
-> installation, scheduled collection, and reboot continuity.  The owner held
-> stable publication after finding fixed y-axis scaling and narrow bars while
-> zoomed.  `v1.0.6-rc.3` is the next acceptance candidate once published, with
-> those two chart fixes.  Version `1.0.5` remains available through the
+> installation, scheduled collection, and reboot continuity.  `v1.0.6-rc.3`
+> corrected chart scaling and bar widths and passed visual and runner
+> acceptance.  Stable publication remains held because chart chronology still
+> used test completion time.  rc.3 is superseded for acceptance and remains
+> published as historical evidence.  `v1.0.6-rc.4` is the current acceptance
+> candidate once published.  Version `1.0.5` remains available through the
 > [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
 
 ## Quick install
@@ -64,6 +66,16 @@ Measurements are collected every 15 minutes by default.  A hostname, HTTPS,
 reverse proxy, or nonstandard origin can be supplied with
 `--pihole-origin` and `--companion-url` after `bash -s -- install`.
 
+Version 1.0.6 rc.4 records the UTC time when each speed test process
+starts.  Scheduled tests also record their quarter-hour collection slot (or
+the configured interval's slot), which places them on both charts at the exact
+schedule boundary.  Manual tests use their actual start time.  The original
+`recorded_at` value still records completion and remains available in the API
+and CSV export as `completed_at`.  Results captured before rc.4 have no known
+start or scheduled time; their charts continue to use their existing completion
+time, and the table labels their start as unknown.  The visible-range y-axis
+scaling and zoom-responsive bar widths accepted in rc.3 remain unchanged.
+
 ## Fully pinned installation
 
 The convenience command trusts the latest stable GitHub Release for the
@@ -75,12 +87,12 @@ immutable commands, trust anchors, and recovery contract in the
 
 Release candidates are tested with the same runner by selecting one exact
 release tag.  The ordinary command above never selects a prerelease.  The
-current acceptance candidate after publication is `v1.0.6-rc.3`:
+current acceptance candidate after publication is `v1.0.6-rc.4`:
 
 ```bash
 curl -fsSL \
   https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/main/install.sh |
-  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.3 bash
+  PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.4 bash
 ```
 
 The tag rules, uninstall form, and full release sequence are in the
@@ -107,14 +119,19 @@ preservation, services, sidebar, and charts.  It exposed a collection
 scheduling defect, a 15-minute setting recording about every 30 minutes, so it
 is superseded for acceptance and remains published as immutable historical
 evidence.  `v1.0.6-rc.2` passed install, uninstall, scheduling, and reboot
-checks, but its chart zoom did not pass visual acceptance.  `v1.0.6-rc.3` is
-the current acceptance candidate after publication.  Version `1.0.6`
-carries the accepted version `1.0.5` Pi-hole-aligned chart presentation,
-with visible-range y-axis scaling and zoom-responsive bar widths in rc.3.
+checks, but its chart zoom did not pass visual acceptance.  `v1.0.6-rc.3`
+corrected the chart scaling and bar widths and passed visual and runner
+acceptance, but stable publication remained held because chart chronology used
+test completion time.  It is superseded for acceptance and remains published
+as historical evidence.  `v1.0.6-rc.4` is the current acceptance candidate once
+published.  Version `1.0.6` carries the accepted version `1.0.5` Pi-hole-aligned
+chart presentation, the rc.3 zoom corrections, and rc.4 scheduled-slot and
+start-time chronology while retaining completion timestamps.
 It adds canonical third-party notices, the one-line runner, and the
 `install-all` and `uninstall-all` bootstrap actions, and corrects collection
 scheduling so a 15-minute setting collects on every 15-minute timer run,
-without changing the settings, database, or sidebar integration.  The product provides:
+while preserving existing settings, measurement history, and sidebar
+integration.  The product provides:
 
 - an official Ookla CLI collector;
 - validated result parsing;

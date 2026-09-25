@@ -107,9 +107,12 @@
 - [x] Publish the `v1.0.6-rc.2` prerelease and verify its live install,
   uninstall, pinned bootstrap, scheduled collection, and reboot continuity.
   Stable acceptance was held for chart zoom readability.
-- [ ] Publish `v1.0.6-rc.3` with visible-range y-axis scaling and zoomed bar
-  widths, then complete Raspberry Pi visual and curl acceptance using
-  `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.3`.
+- [x] Publish `v1.0.6-rc.3` with visible-range y-axis scaling and zoomed bar
+  widths, then complete Raspberry Pi visual and curl acceptance.
+- [ ] Publish `v1.0.6-rc.4` with scheduled-slot chart chronology, actual start
+  and completion timestamps, and safe legacy-history fallback.  Complete
+  Raspberry Pi acceptance using
+  `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.4`.
 - [ ] Publish the stable `v1.0.6` release from the accepted commit with
   byte-identical assets and verify the ordinary command resolves it.
 - [ ] Tag the first supported v6 release.

@@ -26,8 +26,8 @@ concurrency:
 
 env:
   RELEASE_VERSION: "1.0.6"
-  RELEASE_BRANCH: fix/v1.0.6-chart-zoom
-  REVIEWED_BASE: cbe8a21f539c152abec4e71ed6c8129a089d8383
+  RELEASE_BRANCH: fix/v1.0.6-start-time
+  REVIEWED_BASE: e33bc105423d43ff474af7488c7559cfa139c42c
   # Superseded, never-published assets that must not be reused.
   SUPERSEDED_SHA256: >-
     40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce
@@ -39,14 +39,16 @@ env:
     c6ee26eb441d06e11ff3cd9d753876471799e7fda6b6e37903c21cd317437c64
     ba04982ba7605a8ba7cf165de6fdab70d9fa7bb1b34bf2e8650386204a46ef85
     dfc75dc7b775c18940a864e33a27be73c6c3fb449a61b2102d38dc65dbe663b3
-  PRERELEASE_TAG: v1.0.6-rc.3
+    4fdfff598c73d805f119bf9e72b6fc92ecfe9cb45e366cea3210f2598fe55b30
+    cf699eb50583551ad40db7399bb3e88ec458018629f91ee219b38b161ac315b4
+  PRERELEASE_TAG: v1.0.6-rc.4
   REPOSITORY: RamrattanN/PiHoleSpeedtestV6
   BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
   BOOTSTRAP: pihole-speedtest-v6-bootstrap.sh
 
 jobs:
   prepare:
-    if: github.head_ref == 'fix/v1.0.6-chart-zoom'
+    if: github.head_ref == 'fix/v1.0.6-start-time'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -82,11 +84,20 @@ jobs:
             case "$path" in
               .github/workflows/prepare-release-assets.yml|\
               tests/test_release_asset_preparation.py|\
-              tests/test_release_publication.py|\
-              scripts/publish_github_release.sh|\
+              pyproject.toml|\
+              release/bootstrap.template.sh|\
+              src/pihole_speedtest/__init__.py|\
+              src/pihole_speedtest/cli.py|\
+              src/pihole_speedtest/collector.py|\
+              src/pihole_speedtest/models.py|\
+              src/pihole_speedtest/server.py|\
               src/pihole_speedtest/storage.py|\
-              tests/test_collection_schedule.py|\
+              src/pihole_speedtest/web/index.html|\
+              tests/test_collector.py|\
               tests/test_release_documentation.py|\
+              tests/test_server.py|\
+              tests/test_storage.py|\
+              tests/test_version.py|\
               src/pihole_speedtest/web/app.js|\
               tests/test_web_assets.py|\
               README.md|DEPLOY.md|\

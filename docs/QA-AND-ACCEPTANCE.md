@@ -178,8 +178,8 @@ remained operational.
 Automated tests exercise the runner, the rendered bootstrap, and the release
 publication validation against stubbed system commands and throwaway
 repositories.  Before version `1.0.6` replaces version `1.0.5`, the following
-must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.3`
-prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.3` with the exact
+must pass on Raspberry Pi 3 ARM64 against the published `v1.0.6-rc.4`
+prerelease, using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.4` with the exact
 one-line runner from `main`.  Prerelease `v1.0.6-rc.1` was published and
 accepted on the Raspberry Pi for upgrade, data preservation, services, sidebar,
 and charts.  It exposed a collection scheduling defect, a 15-minute setting
@@ -206,7 +206,7 @@ The current candidate must show:
 - a sidebar failure leaves the companion, data, and Pi-hole web files intact
   and prints the failed phase and recovery commands.
 
-Release candidate `v1.0.6-rc.3` must additionally show at least three
+Release candidate `v1.0.6-rc.4` must additionally show at least three
 consecutive scheduled collections about 15 minutes apart with no alternating
 `"not due"` skips in the collector journal, complete one documented uninstall
 and reinstall and one repeat installation, and keep genuine outages as empty
@@ -218,6 +218,14 @@ scale: the Latency and jitter y-axis must fit only the visible measurements
 with headroom.  The bars must widen as spacing grows, stay distinct when
 samples are close, and retain genuine time gaps.  Record owner visual
 acceptance separately from automated test results.
+
+For new scheduled measurements, confirm that the chart position is the exact
+configured UTC schedule slot, such as `:00`, `:15`, `:30`, or `:45` for the
+default interval.  Confirm that the API, CSV export, table, and chart tooltip
+retain the actual start and completion timestamps.  For a manual measurement,
+confirm that the chart uses its actual start time.  Existing measurements must
+remain intact and continue to use their historical completion time because a
+reliable earlier start time cannot be reconstructed.
 
 Preserve the runner output, dashboard health responses, timer listings, adapter
 manifests, and recovery evidence as acceptance evidence.  After acceptance,

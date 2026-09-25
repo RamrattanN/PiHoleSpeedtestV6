@@ -117,7 +117,9 @@
         <table>
           <thead>
             <tr>
-              <th scope="col">Time</th>
+              <th scope="col">Scheduled</th>
+              <th scope="col">Started</th>
+              <th scope="col">Completed</th>
               <th scope="col">Download</th>
               <th scope="col">Upload</th>
               <th scope="col">Latency</th>
@@ -194,7 +196,7 @@
         <h2 id="help-title">Pi-hole Speedtest help</h2>
         <button id="close-help" class="icon-button" type="button" aria-label="Close help">&times;</button>
       </div>
-      <p>Point to either chart to see the measurement time and values.  Use Line or Bar to change the chart style.  Scroll over a chart or use the zoom buttons to inspect a shorter time range.  Drag horizontally to move through a zoomed range.</p>
+      <p>Scheduled charts place tests at their UTC collection slots; manual tests use their actual start.  Point to either chart to see the scheduled, start, and completion times and values.  Older measurements without a known start time retain their recorded time.  Use Line or Bar to change the chart style.  Scroll over a chart or use the zoom buttons to inspect a shorter time range.  Drag horizontally to move through a zoomed range.</p>
       <p>The y-axis remains fixed while you zoom so changes stay visually comparable.  Open Setup to control the table, export CSV data, change capture frequency, or reset history.</p>
       <p>Use Run speed test now on the Overview page to start a measurement immediately.</p>
     </dialog>
