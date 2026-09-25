@@ -45,6 +45,11 @@ def default_frame_ancestors() -> List[str]:
     ).split()
 
 
+def default_tls_certificate() -> Optional[Path]:
+    configured = os.environ.get("PIHOLE_SPEEDTEST_TLS_CERT")
+    return Path(configured) if configured else None
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(
         prog="pihole-speedtest",
@@ -93,6 +98,12 @@ def parser() -> argparse.ArgumentParser:
     serve_command.add_argument("--collection-binary")
     serve_command.add_argument("--collection-lock-file", type=Path)
     serve_command.add_argument("--collection-timeout", type=int, default=180)
+    serve_command.add_argument(
+        "--tls-cert",
+        type=Path,
+        default=default_tls_certificate(),
+        help="PEM file containing the HTTPS certificate and private key",
+    )
 
     adapter_install = commands.add_parser(
         "adapter-install",
@@ -203,5 +214,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         collection_binary=arguments.collection_binary,
         collection_lock_file=arguments.collection_lock_file,
         collection_timeout=arguments.collection_timeout,
+        tls_certificate=arguments.tls_cert,
     )
     return 0

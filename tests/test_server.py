@@ -8,10 +8,10 @@ import unittest
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from pihole_speedtest.models import Measurement
-from pihole_speedtest.server import CompanionServer, validate_frame_ancestors
+from pihole_speedtest.server import CompanionServer, serve, validate_frame_ancestors
 from pihole_speedtest.storage import Storage
 
 
@@ -175,6 +175,22 @@ class ServerTests(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(ValueError):
                     validate_frame_ancestors([value])
+
+    @patch("pihole_speedtest.server.ssl.SSLContext")
+    @patch.object(CompanionServer, "serve_forever", side_effect=KeyboardInterrupt)
+    def test_serve_wraps_socket_with_tls_12_or_newer(self, run, context_type):
+        context = MagicMock()
+        context_type.return_value = context
+        wrapped = MagicMock()
+        context.wrap_socket.return_value = wrapped
+        certificate = Path(self.temporary.name) / "tls.pem"
+
+        with self.assertRaises(KeyboardInterrupt):
+            serve(self.storage, port=0, tls_certificate=certificate)
+
+        context_type.assert_called_once()
+        context.load_cert_chain.assert_called_once_with(str(certificate))
+        context.wrap_socket.assert_called_once()
 
     @patch("pihole_speedtest.server.collect")
     def test_manual_collection_runs_asynchronously_and_stores_result(self, run):

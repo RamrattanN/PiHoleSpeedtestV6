@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import ssl
 import sqlite3
 import threading
 from datetime import datetime, timezone
@@ -366,6 +367,7 @@ def serve(
     collection_binary: Optional[str] = None,
     collection_lock_file: Optional[Path] = None,
     collection_timeout: int = 180,
+    tls_certificate: Optional[Path] = None,
 ) -> None:
     storage.initialize()
     server = CompanionServer(
@@ -373,6 +375,11 @@ def serve(
         backup_directory, frame_ancestors, collection_binary,
         collection_lock_file, collection_timeout,
     )
+    if tls_certificate is not None:
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+        context.load_cert_chain(str(tls_certificate))
+        server.socket = context.wrap_socket(server.socket, server_side=True)
     try:
         server.serve_forever()
     finally:

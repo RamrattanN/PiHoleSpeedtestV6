@@ -139,24 +139,73 @@ companion_state() {
 }
 
 detect_origins() {
-  if [ -z "$pihole_origin" ] || [ -z "$companion_url" ]; then
+  if [ -z "$pihole_origin" ]; then
     device_address="$(hostname -I 2>/dev/null | awk '{print $1}')"
     if [ -z "$device_address" ]; then
       echo "STOP: Device address could not be detected.  Supply --pihole-origin and --companion-url." >&2
       exit 1
     fi
-    pihole_origin="${pihole_origin:-http://${device_address}}"
-    companion_url="${companion_url:-http://${device_address}:8765}"
+    web_domain="$(sudo pihole-FTL --config webserver.domain 2>/dev/null || true)"
+    web_ports="$(sudo pihole-FTL --config webserver.port 2>/dev/null || true)"
+    tls_certificate="$(sudo pihole-FTL --config webserver.tls.cert 2>/dev/null || true)"
+    if [ -n "$web_domain" ] &&
+      printf '%s' "$web_ports" | grep -Eq '(^|,)([^,]*:)?443[^,]*s' &&
+      [ "$tls_certificate" = "/etc/pihole/tls.pem" ] &&
+      sudo test -f "$tls_certificate"
+    then
+      pihole_origin="https://${web_domain}"
+    else
+      pihole_origin="http://${device_address}"
+    fi
+  fi
+  if [ -z "$companion_url" ]; then
+    companion_url="$(python3 - "$pihole_origin" <<'PY'
+import sys
+from urllib.parse import urlparse
+
+parsed = urlparse(sys.argv[1])
+host = parsed.hostname or ""
+if ":" in host:
+    host = f"[{host}]"
+print(f"{parsed.scheme}://{host}:8765")
+PY
+)"
+  fi
+  if [[ "$companion_url" == https://* ]]; then
+    health_url="https://127.0.0.1:8765/api/health"
+  fi
+}
+
+pihole_curl() {
+  url="$1"
+  shift
+  if [[ "$pihole_origin" == https://* ]]; then
+    mapfile -t pihole_target < <(python3 - "$pihole_origin" <<'PY'
+import sys
+from urllib.parse import urlparse
+
+parsed = urlparse(sys.argv[1])
+print(parsed.hostname)
+print(parsed.port or 443)
+PY
+)
+    curl -kfsS --resolve "${pihole_target[0]}:${pihole_target[1]}:127.0.0.1" "$@" "$url"
+  else
+    curl -fsS "$@" "$url"
   fi
 }
 
 verify_dashboard() {
   health=""
   for attempt in 1 2 3 4 5 6 7 8 9 10; do
-    if health="$(curl -fsS "$health_url" 2>/dev/null)"; then
+    if [[ "$health_url" == https://* ]]; then
+      health="$(curl -kfsS "$health_url" 2>/dev/null)" || health=""
+    else
+      health="$(curl -fsS "$health_url" 2>/dev/null)" || health=""
+    fi
+    if [ -n "$health" ]; then
       break
     fi
-    health=""
     sleep 1
   done
   if ! printf '%s' "$health" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'; then
@@ -192,7 +241,7 @@ verify_pihole() {
     echo "STOP: Pi-hole FTL is not active." >&2
     return 1
   fi
-  if [ -n "${1:-}" ] && ! curl -fsS -o /dev/null "$1/admin/"; then
+  if [ -n "${1:-}" ] && ! pihole_curl "$1/admin/" -o /dev/null; then
     echo "STOP: Pi-hole web interface did not respond at $1/admin/" >&2
     return 1
   fi
@@ -230,7 +279,7 @@ PY
     return 1
   fi
   for page in speedtest speedtest-setup; do
-    if ! curl -fsS -o /dev/null "$pihole_origin/admin/$page"; then
+    if ! pihole_curl "$pihole_origin/admin/$page" -o /dev/null; then
       echo "STOP: Pi-hole did not serve $pihole_origin/admin/$page" >&2
       return 1
     fi
@@ -376,11 +425,13 @@ install_companion() {
     sudo bash "$source_root/scripts/install_release.sh" \
       --source-commit "$source_commit" \
       --pihole-origin "$pihole_origin" \
+      --companion-url "$companion_url" \
       --interval-minutes "$interval_minutes"
   else
     sudo bash "$source_root/scripts/install_release.sh" \
       --source-commit "$source_commit" \
-      --pihole-origin "$pihole_origin"
+      --pihole-origin "$pihole_origin" \
+      --companion-url "$companion_url"
   fi
 }
 
@@ -507,7 +558,7 @@ run_install_all() {
 
 case "$action" in
   install-all)
-    for command in python3 systemctl grep id; do
+    for command in python3 systemctl grep id pihole-FTL; do
       if ! command -v "$command" >/dev/null 2>&1; then
         echo "STOP: Required command is unavailable: $command" >&2
         exit 1

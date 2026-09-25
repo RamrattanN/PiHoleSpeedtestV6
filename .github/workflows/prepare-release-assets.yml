@@ -26,8 +26,8 @@ concurrency:
 
 env:
   RELEASE_VERSION: "1.0.6"
-  RELEASE_BRANCH: fix/v1.0.6-start-time
-  REVIEWED_BASE: e33bc105423d43ff474af7488c7559cfa139c42c
+  RELEASE_BRANCH: fix/v1.0.6-https
+  REVIEWED_BASE: d56407dde427b3d010d3bd6987c35fc5021b33a9
   # Superseded, never-published assets that must not be reused.
   SUPERSEDED_SHA256: >-
     40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce
@@ -41,14 +41,16 @@ env:
     dfc75dc7b775c18940a864e33a27be73c6c3fb449a61b2102d38dc65dbe663b3
     4fdfff598c73d805f119bf9e72b6fc92ecfe9cb45e366cea3210f2598fe55b30
     cf699eb50583551ad40db7399bb3e88ec458018629f91ee219b38b161ac315b4
-  PRERELEASE_TAG: v1.0.6-rc.4
+    7cbd9f088d4ee9676d1c09619d52478b1e3dc1130cdc922bcecedddcec394d2a
+    81e0f27302d01cd4dab51e194c40b3ceff7019ef9e9111e95fc0f2176e95a1cc
+  PRERELEASE_TAG: v1.0.6-rc.5
   REPOSITORY: RamrattanN/PiHoleSpeedtestV6
   BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
   BOOTSTRAP: pihole-speedtest-v6-bootstrap.sh
 
 jobs:
   prepare:
-    if: github.head_ref == 'fix/v1.0.6-start-time'
+    if: github.head_ref == 'fix/v1.0.6-https'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -84,25 +86,20 @@ jobs:
             case "$path" in
               .github/workflows/prepare-release-assets.yml|\
               tests/test_release_asset_preparation.py|\
-              pyproject.toml|\
               release/bootstrap.template.sh|\
-              src/pihole_speedtest/__init__.py|\
+              deploy/systemd/pihole-speedtest-dashboard-tls.service|\
+              scripts/install_pihole_adapter.sh|\
+              scripts/install_release.sh|\
               src/pihole_speedtest/cli.py|\
-              src/pihole_speedtest/collector.py|\
-              src/pihole_speedtest/models.py|\
               src/pihole_speedtest/server.py|\
-              src/pihole_speedtest/storage.py|\
-              src/pihole_speedtest/web/index.html|\
-              tests/test_collector.py|\
               tests/test_release_documentation.py|\
+              tests/test_one_line_install.py|\
+              tests/test_release_workflow.py|\
               tests/test_server.py|\
-              tests/test_storage.py|\
-              tests/test_version.py|\
-              src/pihole_speedtest/web/app.js|\
-              tests/test_web_assets.py|\
+              tests/test_systemd_assets.py|\
               README.md|DEPLOY.md|\
               docs/CURL-INSTALLATION.md|docs/KANBAN.md|docs/QA-AND-ACCEPTANCE.md|\
-              docs/ROADMAP.md|docs/WIKI.md|\
+              docs/PIHOLE-V6-ADAPTER.md|docs/ROADMAP.md|docs/WIKI.md|\
               release/pihole-speedtest-v6-1.0.6.tar.gz|\
               release/pihole-speedtest-v6-1.0.6.tar.gz.sha256|\
               release/pihole-speedtest-v6-bootstrap.sh) ;;

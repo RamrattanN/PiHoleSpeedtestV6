@@ -69,6 +69,18 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertNotIn("adapter-install", installer)
         self.assertNotIn("/var/www/html", installer)
 
+    def test_native_https_uses_validated_pihole_certificate(self):
+        installer = self.read(INSTALLER)
+        bootstrap = self.read(BOOTSTRAP)
+
+        self.assertIn("Pi-hole and companion origins must use the same", installer)
+        self.assertIn('if [ "$tls_certificate" != "/etc/pihole/tls.pem" ]', installer)
+        self.assertIn("openssl x509", installer)
+        self.assertIn("pihole-speedtest-dashboard-tls.service", installer)
+        self.assertIn("pihole-FTL --config webserver.domain", bootstrap)
+        self.assertIn("pihole-FTL --config webserver.port", bootstrap)
+        self.assertIn('--resolve "${pihole_target[0]}', bootstrap)
+
     def test_install_builds_outside_the_unprivileged_bootstrap_workspace(self):
         installer = self.read(INSTALLER)
 

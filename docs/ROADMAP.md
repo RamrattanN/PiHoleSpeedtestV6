@@ -109,10 +109,13 @@
   Stable acceptance was held for chart zoom readability.
 - [x] Publish `v1.0.6-rc.3` with visible-range y-axis scaling and zoomed bar
   widths, then complete Raspberry Pi visual and curl acceptance.
-- [ ] Publish `v1.0.6-rc.4` with scheduled-slot chart chronology, actual start
-  and completion timestamps, and safe legacy-history fallback.  Complete
+- [x] Publish `v1.0.6-rc.4` with scheduled-slot chart chronology, actual start
+  and completion timestamps, and safe legacy-history fallback.  Its HTTPS
+  embedding defect supersedes it for acceptance.
+- [ ] Publish `v1.0.6-rc.5` with native Pi-hole HTTPS detection, companion TLS,
+  matching-scheme enforcement, and secure certificate delivery.  Complete
   Raspberry Pi acceptance using
-  `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.4`.
+  `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.5`.
 - [ ] Publish the stable `v1.0.6` release from the accepted commit with
   byte-identical assets and verify the ordinary command resolves it.
 - [ ] Tag the first supported v6 release.
