@@ -127,6 +127,9 @@ The tag rules, uninstall form, and full release sequence are in the
 - a regular user account with `sudo` rights.
 
 Docker deployment is not supported in this release; it is planned future work.
+An experimental [Docker Compose setup](docs/DOCKER.md) is available for
+review.  It has not been verified on a Docker host and is not part of the
+production v1.0.6 support or release.
 
 ## Current status
 

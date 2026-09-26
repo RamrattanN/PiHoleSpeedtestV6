@@ -60,3 +60,37 @@ jobs:
             --output "$first/bootstrap.sh"
           bash -n "$first/bootstrap.sh"
           ! grep -q '@SOURCE_COMMIT@\|@ASSET_COMMIT@\|@BUNDLE_SHA256@' "$first/bootstrap.sh"
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and exercise the Compose stack with a local CLI fixture
+        run: |
+          cat > "$RUNNER_TEMP/speedtest" <<'SH'
+          #!/bin/sh
+          if [ "${1:-}" = "--version" ]; then
+            echo 'CI fixture, not Ookla'
+            exit 0
+          fi
+          echo '{"timestamp":"2026-09-26T10:00:20Z","download":{"bandwidth":10000000},"upload":{"bandwidth":2000000},"ping":{"latency":10,"jitter":1},"server":{"name":"CI","id":1},"interface":{"name":"eth0"}}'
+          SH
+          chmod 755 "$RUNNER_TEMP/speedtest"
+          export SPEEDTEST_BINARY="$RUNNER_TEMP/speedtest"
+          docker compose -f docker/compose.yaml config --quiet
+          docker compose -f docker/compose.yaml up --build -d
+          trap 'docker compose -f docker/compose.yaml down -v' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8765/api/health; then
+              break
+            fi
+            sleep 2
+          done
+          docker compose -f docker/compose.yaml exec -T pihole-speedtest-collector \
+            pihole-speedtest collect --database /data/speedtest.db \
+              --binary /usr/local/bin/speedtest --respect-schedule
+          docker compose -f docker/compose.yaml exec -T pihole-speedtest \
+            python -c 'from pihole_speedtest.storage import Storage; from pathlib import Path; s=Storage(Path("/data/speedtest.db")); assert len(s.list_recent()) == 1'
+          docker compose -f docker/compose.yaml up -d
+          docker compose -f docker/compose.yaml exec -T pihole-speedtest \
+            python -c 'from pihole_speedtest.storage import Storage; from pathlib import Path; s=Storage(Path("/data/speedtest.db")); assert len(s.list_recent()) == 1'

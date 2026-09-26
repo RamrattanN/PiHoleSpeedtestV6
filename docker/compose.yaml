@@ -1,0 +1,30 @@
+# Run `docker compose -f docker/compose.yaml up --build -d` from the repo root.
+# SPEEDTEST_BINARY is the absolute path to the official Ookla CLI on the host.
+services:
+  pihole-speedtest:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: pihole-speedtest:local
+    ports:
+      - "${PIHOLE_SPEEDTEST_BIND_IP:-127.0.0.1}:8765:8765"
+    volumes:
+      - pihole-speedtest-data:/data
+      - "${SPEEDTEST_BINARY:?Set SPEEDTEST_BINARY to the absolute path of the official Ookla CLI}:/usr/local/bin/speedtest:ro"
+    restart: unless-stopped
+
+  pihole-speedtest-collector:
+    image: pihole-speedtest:local
+    command: ["python", "-m", "pihole_speedtest.docker_scheduler"]
+    healthcheck:
+      disable: true
+    depends_on:
+      pihole-speedtest:
+        condition: service_healthy
+    volumes:
+      - pihole-speedtest-data:/data
+      - "${SPEEDTEST_BINARY:?Set SPEEDTEST_BINARY to the absolute path of the official Ookla CLI}:/usr/local/bin/speedtest:ro"
+    restart: unless-stopped
+
+volumes:
+  pihole-speedtest-data: {}
