@@ -18,7 +18,7 @@ No development build may modify the live Pi-hole until all preceding gates pass.
   collector lock;
 - reset verifies a SQLite recovery copy before deleting active history;
 - CSV export preserves chronological order and measurement units;
-- chart zoom and pan affect only the time axis;
+- chart zoom and pan select a time range while the vertical scale follows visible measurements;
 - line and bar modes use the same visible-range vertical scale with headroom;
 - bar mode layers unequal paired values without adding them and separates
   equal or nearly equal values so both series remain visible.
