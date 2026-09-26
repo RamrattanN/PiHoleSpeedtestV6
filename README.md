@@ -12,6 +12,32 @@ sidebar pages open the dashboard from inside the Pi-hole web interface.
 > bootstrap assets.  Earlier release candidates remain published as historical
 > evidence.  See the [acceptance record](docs/CURL-INSTALLATION.md#acceptance).
 
+## What it does
+
+Pi-hole shows DNS activity, but it does not keep a scheduled history of your
+internet connection's download speed, upload speed, latency, and jitter.  This
+companion runs speed tests with the official Ookla CLI, stores results in its
+own SQLite database, and puts a connection history in Pi-hole's sidebar.  You
+can spot slowdowns and gaps, compare measurements over time, and run a test on
+demand.  The collector and dashboard run separately from Pi-hole, so the
+history remains available through Pi-hole web updates.
+
+**Overview:** The recent results and zoomable charts show speed, latency, and
+jitter together.  Scheduled measurements appear at their intended collection
+slots.  Actual start and completion times are retained for inspection and
+export.
+
+![Pi-hole Speedtest Overview showing current results and connection history charts](docs/images/speedtest-overview.png)
+
+**Setup:** Choose the collection frequency, show or hide the recent measurement
+table, and export the full history as CSV.  Clearing measurement history
+requires confirmation and creates a verified database backup first.
+
+![Pi-hole Speedtest Setup showing chart, export, collection, and reset controls](docs/images/speedtest-setup.png)
+
+The sidebar integration is optional.  The dashboard remains available on its
+own port, and uninstall preserves measurements and settings for a later install.
+
 ## Quick install
 
 Run as a regular user with `sudo` rights on the Pi-hole host:
