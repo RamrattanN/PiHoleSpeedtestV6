@@ -91,7 +91,7 @@ APPROVED_OVERRIDES = {
     "THIRD_PARTY_NOTICES.md": "6594ec9722c4de5c6f8385cbb4fcea230b1267e9cfeade4fa09cd83101fc7595",
     "pyproject.toml": "356d7b137f96e71720e44315966e09f4ef16949b820287bb413b5d2d129cc7eb",
     # The rc.9 bundle builder normalizes archive modes across runner umasks.
-    "scripts/build_release_assets.sh": "99de1902073a34b65bd3460e41d75c2a2e746b91564e4250460298276f52aee8",
+    "scripts/build_release_assets.sh": "e2f2e8919e250ee8569d04e8dad6436ac801ded482696e9f071e740497464550",
     "src/pihole_speedtest/server.py": "8a81fa20411d5798f8e3f0d8a80b5de0219183119c8177db8928f8289af13ff4",
     "src/pihole_speedtest/web/app.js": "918b8f7d8bb887d4f024fe28a3e331331ef746e8c272a46faa08532b56408c86",
     # Post-rc.8 owner-requested uppercase heading and Pi-hole title-color correction.
@@ -620,7 +620,8 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
         self.assertIn("if-no-files-found: error", self.code)
 
     def test_workflow_builds_twice_and_compares_bytes(self):
-        self.assertEqual(self.code.count("scripts/build_release_assets.sh"), 2)
+        self.assertEqual(self.code.count("scripts/build_release_assets.sh"), 3)
+        self.assertIn("scripts/build_release_assets.sh|\\", self.code)
         self.assertIn('cmp "$RUNNER_TEMP/first/$BUNDLE" "$RUNNER_TEMP/second/$BUNDLE"', self.code)
         self.assertIn('cmp "$RUNNER_TEMP/$build/$BUNDLE" "release/$BUNDLE"', self.code)
         self.assertIn("sha256sum --check --strict", self.code)

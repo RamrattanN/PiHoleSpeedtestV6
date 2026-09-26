@@ -69,7 +69,8 @@ work_dir="$(mktemp -d)"
 trap 'rm -rf -- "$work_dir"' EXIT
 mkdir -p "$work_dir/$bundle_root/release" "$output_directory"
 
-git -C "$source_root" -c tar.umask=0022 archive "$archive_commit" -- \
+GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=tar.umask GIT_CONFIG_VALUE_0=0022 \
+git -C "$source_root" archive "$archive_commit" -- \
   . \
   ':(exclude)release/*.tar.gz' \
   ':(exclude)release/*.tar.gz.sha256' \
