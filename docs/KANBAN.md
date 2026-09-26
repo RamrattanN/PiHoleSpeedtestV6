@@ -108,8 +108,8 @@ detailed acceptance criteria for active engineering work.
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Release candidate 7 passed the complete functional Raspberry Pi acceptance sequence.  Preserve those results while completing rc.8 Chrome split-view font acceptance |
-| Version `1.0.6` release candidate 8 | Branch `fix/v1.0.6-pihole-fonts` | Publish the verified rc.8 assets, confirm Pi-hole's Antonio typography on Overview, Setup, and both chart axes, then repeat the short health, timer, data-integrity, and install checks.  Stable `v1.0.6` remains held |
+| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Release candidate 7 passed the complete functional Raspberry Pi acceptance sequence.  Preserve those results while completing rc.9 heading acceptance |
+| Version `1.0.6` release candidate 9 | Branch `fix/v1.0.6-heading-style` | rc.8 remains published as historical evidence after the heading case and color finding.  Publish verified rc.9 assets, confirm uppercase and muted blue-gray headings on Overview and Setup in Chrome split view, then repeat short health, timer, data-integrity, and install checks.  Stable `v1.0.6` remains held |
 
 ## Backlog
 

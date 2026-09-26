@@ -23,8 +23,8 @@ RELEASE_VERSION = "1.0.6"
 # Content baseline for the scope lock: the reviewed rc.7 merge on main.
 REVIEWED_BASE = "f4b742e89c293b6c6d351c32dfc011b6f78223bc"
 # Pull request base for the current recut, pinned by the preparation workflow.
-PR_BASE = REVIEWED_BASE
-RELEASE_BRANCH = "fix/v1.0.6-pihole-fonts"
+PR_BASE = "cb51f9595e72cb9cda33d10acbdab6414bf4c952"
+RELEASE_BRANCH = "fix/v1.0.6-heading-style"
 # Assets recut before publication; they must never be reused.
 SUPERSEDED_SHA256 = {
     "40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce",
@@ -54,11 +54,14 @@ SUPERSEDED_SHA256 = {
     # Published rc.7 assets remain historical evidence and cannot be reused for rc.8.
     "f99c75395b689dd8aa8f54bdf49c00bd524e6ce2654aa860b866487a10938698",
     "fe0bd79aa80389654b2038dd55a45d7bd1bc0d984c8c1ef0db92b3f9ff9c3a6e",
+    # Published rc.8 assets remain historical evidence and cannot be reused for rc.9.
+    "de89ec112dd64cd0123777ee66f150f1830faf00b203cca97d1bba6514f1db77",
+    "948435ea38017633125c9cf107d2a56abb03b9ea3e7aa30d2d7bbdff8177992c",
 }
 # The superseded bundle on main (source commit, SHA-256) that this recut replaces.
 INHERITED_BUNDLE = (
-    "e95b176268a2b805ea94269aab5756e2f91030c2",
-    "f99c75395b689dd8aa8f54bdf49c00bd524e6ce2654aa860b866487a10938698",
+    "cabcbd7b217666b6b98ed41f1581c05a38bb11d4",
+    "de89ec112dd64cd0123777ee66f150f1830faf00b203cca97d1bba6514f1db77",
 )
 BUNDLE = ROOT / "release" / f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz"
 BOOTSTRAP = ROOT / "release" / "pihole-speedtest-v6-bootstrap.sh"
@@ -96,7 +99,7 @@ APPROVED_OVERRIDES = {
     "src/pihole_speedtest/web/fonts/antonio-v19-latin-regular.woff2": "c367b51912a07ce2f2ec2fe9bf4c332c8e27133f466c7e22925088c2fdbf6040",
     "tests/test_server.py": "2a2b8cd073d9b153939da15d495afe4748ee211efe51d9a77956456752104e5a",
     "tests/test_web_assets.py": "18bbcd1ce8b03283f1497563d6454fdf9579ee8bd86edb27f4c382eb7677f7e3",
-    "tests/test_release_documentation.py": "e4b258bf6d2ab986e4b0f2ef9c4ab221f84247f3ff69d31942351dcd44e84f4e",
+    "tests/test_release_documentation.py": "9b99116da24f3948f887c820d12a2d04301e0bbe9e4294ab03af22514e8cab82",
 }
 APPROVED_OVERRIDE_MODES = {path: "100644" for path in APPROVED_OVERRIDES}
 # Ordered partition of every tracked file outside the allowlist and overrides.

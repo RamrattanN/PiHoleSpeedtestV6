@@ -124,9 +124,12 @@
 - [x] Publish `v1.0.6-rc.7` with adaptive HTTP-only behavior and canonical HTTPS
   redirects for HTTPS-enabled Pi-hole installations, then complete Raspberry
   Pi acceptance using the tagged rc.7 runner.
-- [ ] Publish `v1.0.6-rc.8` with Pi-hole's Antonio LCARS font stack for the
-  companion interface and chart canvases, then complete Chrome split-view
-  visual acceptance using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.8`.
+- [x] Publish `v1.0.6-rc.8` with Pi-hole's Antonio LCARS font stack for the
+  companion interface and chart canvases.  Chrome split view identified a
+  heading case and color mismatch, so rc.8 remains historical evidence.
+- [ ] Publish `v1.0.6-rc.9` with uppercase companion headings in the Pi-hole
+  dashboard heading color, then complete Chrome split-view and short Raspberry
+  Pi acceptance using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.9`.
 - [ ] Publish the stable `v1.0.6` release from the accepted commit with
   byte-identical assets and verify the ordinary command resolves it.
 - [ ] Tag the first supported v6 release.
