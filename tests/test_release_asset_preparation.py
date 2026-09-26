@@ -89,12 +89,13 @@ APPROVED_OVERRIDES = {
     "pyproject.toml": "356d7b137f96e71720e44315966e09f4ef16949b820287bb413b5d2d129cc7eb",
     "src/pihole_speedtest/server.py": "8a81fa20411d5798f8e3f0d8a80b5de0219183119c8177db8928f8289af13ff4",
     "src/pihole_speedtest/web/app.js": "918b8f7d8bb887d4f024fe28a3e331331ef746e8c272a46faa08532b56408c86",
-    "src/pihole_speedtest/web/styles.css": "b97f0822f6d3e7a4cc17e292b0f141ba00435310248e967838d49027fdc0b9e1",
+    # Post-rc.8 owner-requested uppercase heading and Pi-hole title-color correction.
+    "src/pihole_speedtest/web/styles.css": "f44386bc24ab32526a1640ed8aef5a9abe8f43de95bfe7ce04861d8d3882a7ea",
     "src/pihole_speedtest/web/fonts/antonio-v19-latin-100.woff2": "dfabf3dee53dc9c8b2a15b9661242cd06717aaeb7f19ea36a19b04596b7221a8",
     "src/pihole_speedtest/web/fonts/antonio-v19-latin-700.woff2": "b6d68353c888773b36c65d1cddbc8aa805259dd74d8cc9e500def7f41818840e",
     "src/pihole_speedtest/web/fonts/antonio-v19-latin-regular.woff2": "c367b51912a07ce2f2ec2fe9bf4c332c8e27133f466c7e22925088c2fdbf6040",
     "tests/test_server.py": "2a2b8cd073d9b153939da15d495afe4748ee211efe51d9a77956456752104e5a",
-    "tests/test_web_assets.py": "11e4908c444533395df84ca93e3786f28c47ec55b706f6074b1dd3fbd46bffe8",
+    "tests/test_web_assets.py": "18bbcd1ce8b03283f1497563d6454fdf9579ee8bd86edb27f4c382eb7677f7e3",
     "tests/test_release_documentation.py": "e4b258bf6d2ab986e4b0f2ef9c4ab221f84247f3ff69d31942351dcd44e84f4e",
 }
 APPROVED_OVERRIDE_MODES = {path: "100644" for path in APPROVED_OVERRIDES}

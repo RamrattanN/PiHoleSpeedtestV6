@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 import subprocess
 import unittest
@@ -105,6 +106,30 @@ assert.equal(results.loneBar, 56);
         self.assertIn('context.font = `400 12px ${PIHOLE_FONT_STACK}`', script)
         self.assertIn('context.font = `400 11px ${PIHOLE_FONT_STACK}`', script)
         self.assertIn("await document.fonts.ready", script)
+
+    def test_titles_match_pihole_dashboard_without_changing_labels_or_buttons(self):
+        web = files("pihole_speedtest").joinpath("web")
+        styles = web.joinpath("styles.css").read_text(encoding="utf-8")
+        page = web.joinpath("index.html").read_text(encoding="utf-8")
+
+        heading_rule = re.search(
+            r"([^{}]+)\{\s*color: #a9bbcc;\s*text-transform: uppercase;\s*\}",
+            styles,
+        )
+        self.assertIsNotNone(heading_rule)
+        selectors = {selector.strip() for selector in heading_rule.group(1).split(",")}
+        self.assertEqual(
+            selectors,
+            {
+                "h1", ".section-title", ".panel-heading h2",
+                ".section-heading h2", ".setup-panel-title", ".dialog-heading h2",
+            },
+        )
+        self.assertIn("<h2>Download and upload</h2>", page)
+        self.assertIn("<h2>Latency and jitter</h2>", page)
+        self.assertIn("<h2>Recent measurements</h2>", page)
+        self.assertIn("Run speed test now", page)
+        self.assertIn("<span>Download</span>", page)
 
     def test_single_measurement_chart_has_visible_point(self):
         script = (
