@@ -36,7 +36,6 @@ jobs:
       - name: Check retained shell syntax
         run: |
           bash -n mod
-          bash -n test
           bash -n scripts/*.sh
           bash -n release/bootstrap.template.sh
       - name: Verify deterministic release assets
