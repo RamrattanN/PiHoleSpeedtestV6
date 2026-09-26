@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Archive modes must not depend on the caller's umask.
+umask 022
 
 usage() {
   cat <<'EOF'
@@ -67,6 +69,7 @@ work_dir="$(mktemp -d)"
 trap 'rm -rf -- "$work_dir"' EXIT
 mkdir -p "$work_dir/$bundle_root/release" "$output_directory"
 
+GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=tar.umask GIT_CONFIG_VALUE_0=0022 \
 git -C "$source_root" archive "$archive_commit" -- \
   . \
   ':(exclude)release/*.tar.gz' \

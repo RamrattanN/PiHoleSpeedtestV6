@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_CANDIDATE = "v1.0.6-rc.8"
+CURRENT_CANDIDATE = "v1.0.6-rc.9"
 SUPERSEDED_CANDIDATES = (
     "v1.0.6-rc.1",
     "v1.0.6-rc.2",
@@ -13,6 +13,7 @@ SUPERSEDED_CANDIDATES = (
     "v1.0.6-rc.5",
     "v1.0.6-rc.6",
     "v1.0.6-rc.7",
+    "v1.0.6-rc.8",
 )
 RELEASE_DOCUMENTS = (
     "README.md",

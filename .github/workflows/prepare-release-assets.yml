@@ -26,8 +26,8 @@ concurrency:
 
 env:
   RELEASE_VERSION: "1.0.6"
-  RELEASE_BRANCH: fix/v1.0.6-pihole-fonts
-  REVIEWED_BASE: f4b742e89c293b6c6d351c32dfc011b6f78223bc
+  RELEASE_BRANCH: fix/v1.0.6-heading-style
+  REVIEWED_BASE: cb51f9595e72cb9cda33d10acbdab6414bf4c952
   # Superseded, never-published assets that must not be reused.
   SUPERSEDED_SHA256: >-
     40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce
@@ -49,14 +49,16 @@ env:
     083b5f4320cb61681362ef3b30a9ddc38d1bb2db293462fd8b905b14b6313789
     f99c75395b689dd8aa8f54bdf49c00bd524e6ce2654aa860b866487a10938698
     fe0bd79aa80389654b2038dd55a45d7bd1bc0d984c8c1ef0db92b3f9ff9c3a6e
-  PRERELEASE_TAG: v1.0.6-rc.8
+    de89ec112dd64cd0123777ee66f150f1830faf00b203cca97d1bba6514f1db77
+    948435ea38017633125c9cf107d2a56abb03b9ea3e7aa30d2d7bbdff8177992c
+  PRERELEASE_TAG: v1.0.6-rc.9
   REPOSITORY: RamrattanN/PiHoleSpeedtestV6
   BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
   BOOTSTRAP: pihole-speedtest-v6-bootstrap.sh
 
 jobs:
   prepare:
-    if: github.head_ref == 'fix/v1.0.6-pihole-fonts'
+    if: github.head_ref == 'fix/v1.0.6-heading-style'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -92,6 +94,7 @@ jobs:
             case "$path" in
               .github/workflows/prepare-release-assets.yml|\
               tests/test_release_asset_preparation.py|\
+              scripts/build_release_assets.sh|\
               THIRD_PARTY_NOTICES.md|pyproject.toml|\
               src/pihole_speedtest/server.py|\
               src/pihole_speedtest/web/app.js|\

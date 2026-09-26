@@ -23,8 +23,8 @@ RELEASE_VERSION = "1.0.6"
 # Content baseline for the scope lock: the reviewed rc.7 merge on main.
 REVIEWED_BASE = "f4b742e89c293b6c6d351c32dfc011b6f78223bc"
 # Pull request base for the current recut, pinned by the preparation workflow.
-PR_BASE = REVIEWED_BASE
-RELEASE_BRANCH = "fix/v1.0.6-pihole-fonts"
+PR_BASE = "cb51f9595e72cb9cda33d10acbdab6414bf4c952"
+RELEASE_BRANCH = "fix/v1.0.6-heading-style"
 # Assets recut before publication; they must never be reused.
 SUPERSEDED_SHA256 = {
     "40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce",
@@ -54,11 +54,14 @@ SUPERSEDED_SHA256 = {
     # Published rc.7 assets remain historical evidence and cannot be reused for rc.8.
     "f99c75395b689dd8aa8f54bdf49c00bd524e6ce2654aa860b866487a10938698",
     "fe0bd79aa80389654b2038dd55a45d7bd1bc0d984c8c1ef0db92b3f9ff9c3a6e",
+    # Published rc.8 assets remain historical evidence and cannot be reused for rc.9.
+    "de89ec112dd64cd0123777ee66f150f1830faf00b203cca97d1bba6514f1db77",
+    "948435ea38017633125c9cf107d2a56abb03b9ea3e7aa30d2d7bbdff8177992c",
 }
 # The superseded bundle on main (source commit, SHA-256) that this recut replaces.
 INHERITED_BUNDLE = (
-    "e95b176268a2b805ea94269aab5756e2f91030c2",
-    "f99c75395b689dd8aa8f54bdf49c00bd524e6ce2654aa860b866487a10938698",
+    "cabcbd7b217666b6b98ed41f1581c05a38bb11d4",
+    "de89ec112dd64cd0123777ee66f150f1830faf00b203cca97d1bba6514f1db77",
 )
 BUNDLE = ROOT / "release" / f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz"
 BOOTSTRAP = ROOT / "release" / "pihole-speedtest-v6-bootstrap.sh"
@@ -87,17 +90,23 @@ APPROVED_OVERRIDES = {
     # The owner-approved post-rc.7 Pi-hole LCARS typography correction.
     "THIRD_PARTY_NOTICES.md": "6594ec9722c4de5c6f8385cbb4fcea230b1267e9cfeade4fa09cd83101fc7595",
     "pyproject.toml": "356d7b137f96e71720e44315966e09f4ef16949b820287bb413b5d2d129cc7eb",
+    # The rc.9 bundle builder normalizes archive modes across runner umasks.
+    "scripts/build_release_assets.sh": "e2f2e8919e250ee8569d04e8dad6436ac801ded482696e9f071e740497464550",
     "src/pihole_speedtest/server.py": "8a81fa20411d5798f8e3f0d8a80b5de0219183119c8177db8928f8289af13ff4",
     "src/pihole_speedtest/web/app.js": "918b8f7d8bb887d4f024fe28a3e331331ef746e8c272a46faa08532b56408c86",
-    "src/pihole_speedtest/web/styles.css": "b97f0822f6d3e7a4cc17e292b0f141ba00435310248e967838d49027fdc0b9e1",
+    # Post-rc.8 owner-requested uppercase heading and Pi-hole title-color correction.
+    "src/pihole_speedtest/web/styles.css": "f44386bc24ab32526a1640ed8aef5a9abe8f43de95bfe7ce04861d8d3882a7ea",
     "src/pihole_speedtest/web/fonts/antonio-v19-latin-100.woff2": "dfabf3dee53dc9c8b2a15b9661242cd06717aaeb7f19ea36a19b04596b7221a8",
     "src/pihole_speedtest/web/fonts/antonio-v19-latin-700.woff2": "b6d68353c888773b36c65d1cddbc8aa805259dd74d8cc9e500def7f41818840e",
     "src/pihole_speedtest/web/fonts/antonio-v19-latin-regular.woff2": "c367b51912a07ce2f2ec2fe9bf4c332c8e27133f466c7e22925088c2fdbf6040",
     "tests/test_server.py": "2a2b8cd073d9b153939da15d495afe4748ee211efe51d9a77956456752104e5a",
-    "tests/test_web_assets.py": "11e4908c444533395df84ca93e3786f28c47ec55b706f6074b1dd3fbd46bffe8",
-    "tests/test_release_documentation.py": "e4b258bf6d2ab986e4b0f2ef9c4ab221f84247f3ff69d31942351dcd44e84f4e",
+    "tests/test_web_assets.py": "18bbcd1ce8b03283f1497563d6454fdf9579ee8bd86edb27f4c382eb7677f7e3",
+    "tests/test_release_documentation.py": "9b99116da24f3948f887c820d12a2d04301e0bbe9e4294ab03af22514e8cab82",
 }
-APPROVED_OVERRIDE_MODES = {path: "100644" for path in APPROVED_OVERRIDES}
+APPROVED_OVERRIDE_MODES = {
+    path: "100755" if path == "scripts/build_release_assets.sh" else "100644"
+    for path in APPROVED_OVERRIDES
+}
 # Ordered partition of every tracked file outside the allowlist and overrides.
 PROTECTED_GROUPS = [
     ("chart", ("src/pihole_speedtest/web/", "web/")),
@@ -115,7 +124,7 @@ PROTECTED_GROUPS = [
 BASELINE_DIGESTS = {
     "chart": ("afa6e76c260c8e510f9014a003a5a0f437c8308a024af5e0bbbe5e608c2e9c0a", 6),
     "runtime": ("bba3082480c1901d6a2880defb5b2e7d07c942a260349435c6ca19f21ebd8374", 15),
-    "installer": ("c7dff88b1b630a7812764b9c6bdbab4c86f9f74d2597c4a7b358961d0e751d8f", 19),
+    "installer": ("27cd67ec3cc4a071cf6dd3aa3e76e4dbc6b73be556a5de1f85ea3430c5d78a01", 18),
     "version-and-template": ("d3b04dcacfcd663122b831a41207aaee1de02baffc096e78665692d5876795f0", 1),
     "licensing": ("277478439fad1f542b1f766675df58a1c32c7738a64f6f0e3e8bd921fbfe2bbc", 1),
     "docker": ("51898daa73be46eb2dfa82700dedc02a9fd29370a81f2f9ca65160156cec60b3", 4),
@@ -322,6 +331,25 @@ class ReleaseScopeTests(unittest.TestCase):
         entries = tracked_files()
         for path in ("install.sh", "scripts/publish_github_release.sh"):
             self.assertEqual(entries[path][0], "100755", path)
+
+    def test_bundle_bytes_are_independent_of_shell_and_git_umasks(self):
+        source_commit = git("rev-parse", "HEAD").stdout.strip()
+        with tempfile.TemporaryDirectory() as tmp:
+            outputs = []
+            for setting in ("0022", "0002"):
+                destination = Path(tmp) / setting
+                subprocess.run(
+                    ["bash", "-c", 'umask "$1"; shift; exec "$@"', "bash", setting,
+                     str(ROOT / "scripts" / "build_release_assets.sh"),
+                     "--source-commit", source_commit,
+                     "--output-directory", str(destination)],
+                    cwd=ROOT, check=True, stdout=subprocess.PIPE, text=True,
+                    env={**os.environ, "GIT_CONFIG_COUNT": "1",
+                         "GIT_CONFIG_KEY_0": "tar.umask",
+                         "GIT_CONFIG_VALUE_0": setting},
+                )
+                outputs.append((destination / BUNDLE.name).read_bytes())
+            self.assertEqual(outputs[0], outputs[1])
 
     def test_changed_files_are_within_the_allowlist(self):
         if git("cat-file", "-e", f"{REVIEWED_BASE}^{{commit}}", check=False).returncode:
@@ -592,7 +620,8 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
         self.assertIn("if-no-files-found: error", self.code)
 
     def test_workflow_builds_twice_and_compares_bytes(self):
-        self.assertEqual(self.code.count("scripts/build_release_assets.sh"), 2)
+        self.assertEqual(self.code.count("scripts/build_release_assets.sh"), 3)
+        self.assertIn("scripts/build_release_assets.sh|\\", self.code)
         self.assertIn('cmp "$RUNNER_TEMP/first/$BUNDLE" "$RUNNER_TEMP/second/$BUNDLE"', self.code)
         self.assertIn('cmp "$RUNNER_TEMP/$build/$BUNDLE" "release/$BUNDLE"', self.code)
         self.assertIn("sha256sum --check --strict", self.code)
