@@ -5,35 +5,12 @@ It keeps collection, history, and the full dashboard independent from Pi-hole
 so a Pi-hole upgrade cannot erase data or disable scheduled tests.  Optional
 sidebar pages open the dashboard from inside the Pi-hole web interface.
 
-> **Release status:** the one-line commands below are introduced by version
-> `1.0.6`.  Production `v1.0.6` is held and unpublished, so the ordinary
-> command stops safely without changing anything.  Prerelease
-> `v1.0.6-rc.1` was published and accepted on the Raspberry Pi for upgrade,
-> data preservation, services, sidebar, and charts; it exposed a 15-minute
-> collection scheduling defect and is superseded for acceptance.
-> `v1.0.6-rc.2` was published and passed tagged install, uninstall, repeat
-> installation, scheduled collection, and reboot continuity.  `v1.0.6-rc.3`
-> corrected chart scaling and bar widths and passed visual and runner
-> acceptance.  `v1.0.6-rc.4` corrected chart chronology and retained test
-> completion time, but HTTPS Pi-hole pages could not embed its HTTP-only
-> companion.  rc.4 is superseded for acceptance and remains published as
-> historical evidence.  `v1.0.6-rc.5` added native HTTPS, but its sidebar
-> installer used plain HTTP for the final health evidence and rolled back the
-> adapter safely.  rc.5 is superseded for acceptance and remains published as
-> historical evidence.  `v1.0.6-rc.6` corrected that recovery defect and
-> passed native HTTPS embedding, but an HTTP Pi-hole URL displayed a rejected
-> iframe instead of upgrading to the canonical HTTPS page.  rc.6 is superseded
-> for acceptance and remains published as historical evidence.  `v1.0.6-rc.7`
-> added the canonical redirect and passed complete Raspberry Pi acceptance,
-> but Chrome split view exposed companion typography that did not match the
-> Pi-hole LCARS theme.  rc.7 is superseded for acceptance and remains
-> published as historical evidence.  `v1.0.6-rc.8` brought Pi-hole's Antonio
-> font stack to the companion but exposed headings with different case and
-> color in Chrome split view.  rc.8 is superseded for acceptance and remains
-> published as historical evidence.  `v1.0.6-rc.9` is the current acceptance
-> candidate and aligns companion headings with Pi-hole's dashboard.
-> Version `1.0.5` remains available through the
-> [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
+> **Release status:** [v1.0.6](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.6)
+> is the published production release.  The ordinary install command below
+> selects it and passed Raspberry Pi verification.  Stable `v1.0.6` and the
+> accepted `v1.0.6-rc.9` point to the same release commit and carry identical
+> bootstrap assets.  Earlier release candidates remain published as historical
+> evidence.  See the [acceptance record](docs/CURL-INSTALLATION.md#acceptance).
 
 ## Quick install
 
@@ -100,11 +77,10 @@ bootstrap and its checksum.  For independently pinned installation, use the
 immutable commands, trust anchors, and recovery contract in the
 [checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
 
-## Prerelease acceptance
+## Pinned release selection
 
-Release candidates are tested with the same runner by selecting one exact
-release tag.  The ordinary command above never selects a prerelease.  The
-current acceptance candidate is `v1.0.6-rc.9`:
+To reproduce the accepted rc.9 installation, select its exact release tag.
+The ordinary command above selects stable v1.0.6:
 
 ```bash
 curl -fsSL \
@@ -128,34 +104,12 @@ Docker deployment is not supported in this release; it is planned future work.
 
 ## Current status
 
-Version `1.0.5` is the owner-approved production baseline.  It is installed on
-the verified Raspberry Pi with the companion, 15-minute collection timer, and
-Pi-hole sidebar adapter active.  Production `v1.0.6` is held.  Prerelease
-`v1.0.6-rc.1` was published and accepted on the Raspberry Pi for upgrade, data
-preservation, services, sidebar, and charts.  It exposed a collection
-scheduling defect, a 15-minute setting recording about every 30 minutes, so it
-is superseded for acceptance and remains published as immutable historical
-evidence.  `v1.0.6-rc.2` passed install, uninstall, scheduling, and reboot
-checks, but its chart zoom did not pass visual acceptance.  `v1.0.6-rc.3`
-corrected the chart scaling and bar widths and passed visual and runner
-acceptance, but stable publication remained held because chart chronology used
-test completion time.  `v1.0.6-rc.4` corrected that chronology and retained
-completion timestamps, but its HTTP-only companion could not be embedded by a
-Pi-hole page opened over HTTPS.  It is superseded for acceptance and remains
-published as historical evidence.  `v1.0.6-rc.5` added native HTTPS, but its
-final adapter evidence capture sent plain HTTP to the TLS listener and safely
-rolled back the adapter.  It is superseded for acceptance and remains
-published as historical evidence.  `v1.0.6-rc.6` corrected that recovery
-defect and passed native HTTPS embedding, but an HTTP Pi-hole URL displayed a
-rejected iframe instead of upgrading to the canonical HTTPS page.  It is
-superseded for acceptance and remains published as historical evidence.
-`v1.0.6-rc.7` added that canonical redirect and passed complete Raspberry Pi
-acceptance, but Chrome split view exposed mismatched companion typography.
-It is superseded for acceptance and remains published as historical evidence.
-`v1.0.6-rc.8` uses Pi-hole's Antonio font stack for the companion interface and
-chart canvases but its heading case and color differ from Pi-hole's dashboard.
-It remains published as historical evidence and is superseded for acceptance.
-`v1.0.6-rc.9` is the current acceptance candidate with corrected headings.  Version `1.0.6`
+Version `1.0.6` is the published, owner-accepted production baseline on the
+verified Raspberry Pi.  The tagged rc.9 install, repeat install, uninstall,
+reinstall, scheduled collection, and owner Overview and Setup review passed.
+The ordinary stable runner also exited successfully after validating the
+published bootstrap.  Version `1.0.5` and rc.1 through rc.8 remain historical
+release evidence.  Version `1.0.6`
 carries the accepted version `1.0.5` Pi-hole-aligned
 chart presentation, the rc.3 zoom corrections, and rc.4 scheduled-slot and
 start-time chronology while retaining completion timestamps, rc.5 HTTPS
@@ -197,9 +151,7 @@ uninstaller discovers and validates the installed source commit, allowing the
 current bootstrap to remove any supported installed version.
 Guarded installation and upgrade paths exist.  Immutable download
 commands and checksums are documented in
-[Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  Remaining
-Raspberry Pi acceptance is tracked in
-[issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
+[Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).
 
 ## Architecture
 

@@ -127,12 +127,12 @@
 - [x] Publish `v1.0.6-rc.8` with Pi-hole's Antonio LCARS font stack for the
   companion interface and chart canvases.  Chrome split view identified a
   heading case and color mismatch, so rc.8 remains historical evidence.
-- [ ] Publish `v1.0.6-rc.9` with uppercase companion headings in the Pi-hole
+- [x] Publish `v1.0.6-rc.9` with uppercase companion headings in the Pi-hole
   dashboard heading color, then complete Chrome split-view and short Raspberry
   Pi acceptance using `PIHOLE_SPEEDTEST_RELEASE_TAG=v1.0.6-rc.9`.
-- [ ] Publish the stable `v1.0.6` release from the accepted commit with
+- [x] Publish the stable `v1.0.6` release from the accepted commit with
   byte-identical assets and verify the ordinary command resolves it.
-- [ ] Tag the first supported v6 release.
+- [x] Tag the first supported v6 release.
 
 ## Future: version 1.1.0
 

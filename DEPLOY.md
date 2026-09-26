@@ -2,8 +2,8 @@
 
 The dashboard companion service, 15-minute automated collection, and optional
 Pi-hole navigation adapter passed live verification on the Raspberry Pi.
-Version `1.0.5` is the installed and owner-approved production baseline.
-Version `1.0.6` is in preparation and unpublished.
+Version `1.0.6` is the installed and owner-approved production baseline.  The
+ordinary stable one-line curl runner passed on the Raspberry Pi.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
@@ -150,6 +150,5 @@ publication is deferred and cannot run from a GitHub Release.
 
 Immutable production command syntax and the complete trust, preservation,
 rollback, and acceptance contract are maintained in
-[Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  Remaining
-Raspberry Pi acceptance is tracked in
-[issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
+[Checksum-verified curl workflow](docs/CURL-INSTALLATION.md).  The v1.0.6
+Raspberry Pi acceptance sequence is recorded there.

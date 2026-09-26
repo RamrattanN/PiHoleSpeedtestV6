@@ -90,7 +90,7 @@ detailed acceptance criteria for active engineering work.
   recorded only about every 30 minutes: the due check measured elapsed time
   from the previous test's completion, so test duration and the timer's
   randomized delay made every other run "not due" (52 measurements per day).
-  This behavior predates `1.0.6`.  Production `v1.0.6` is held.
+  This behavior predates `1.0.6` and was corrected in rc.2.
 - Publish prereleases `v1.0.6-rc.2` through `v1.0.6-rc.7`, preserving each
   superseded candidate as immutable historical evidence.  Release candidate
   7 passed owner visual acceptance, adaptive HTTP-to-HTTPS wrapper behavior,
@@ -103,13 +103,24 @@ detailed acceptance criteria for active engineering work.
 - Add Pi-hole's local Antonio 100, regular, and 700 font files to the companion
   and apply the LCARS font stack to both DOM text and canvas axis labels.  rc.7
   remains immutable historical evidence and is superseded for final acceptance.
+- Publish rc.9 with uppercase, Pi-hole-colored companion headings.  The owner
+  accepted Overview and Setup in Chrome split view; tagged install, repeat
+  install, uninstall, reinstall, preservation, and subsequent scheduled
+  collection passed on the Raspberry Pi.  SQLite integrity was `ok`, the
+  settings checksum was unchanged, and measurement count reached 98,828.
+- Merge PR #16 into `main`, publish stable `v1.0.6` from the same exact release
+  commit as rc.9 (`673119bff0b4751fd3afa4fa9af922a09a27cc3d`), and verify
+  its two published assets are byte-identical to rc.9.  The ordinary stable
+  curl runner verified bootstrap SHA-256 `cf7db2d9c028ed5ea8a8df21e5f268afd0f72d22f6ff31d6735615902fcbc120`,
+  passed all seven install checks, and exited `0` on the Raspberry Pi.
+- Complete the supported curl install and uninstall acceptance tracked by
+  [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Supported curl install and uninstall | [Issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) | Release candidate 7 passed the complete functional Raspberry Pi acceptance sequence.  Preserve those results while completing rc.9 heading acceptance |
-| Version `1.0.6` release candidate 9 | Branch `fix/v1.0.6-heading-style` | rc.8 remains published as historical evidence after the heading case and color finding.  Publish verified rc.9 assets, confirm uppercase and muted blue-gray headings on Overview and Setup in Chrome split view, then repeat short health, timer, data-integrity, and install checks.  Stable `v1.0.6` remains held |
+| General backup and restore controls | [Roadmap](ROADMAP.md) | Define a recovery exercise for settings and history after production release |
 
 ## Backlog
 
@@ -119,7 +130,6 @@ detailed acceptance criteria for active engineering work.
 - Dashboard service status, next-run, last-failure, storage, and log views.
 - Chart date ranges, optional preferred server selection, table sorting, and
   complete accessible-state verification.
-- First supported v6 release tag after all release gates pass.
 
 ### Future: version 1.1.0 Docker deployment
 

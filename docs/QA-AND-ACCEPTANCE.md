@@ -49,8 +49,8 @@ geometry, mixed five-minute and fifteen-minute history retains consistent
 visual delimiters, outage spans remain blank, and the Setup version label
 matches `/api/health`.  The guarded live upgrade completed with 98,719
 measurements, SQLite integrity `ok`, one active 15-minute timer, and the
-sidebar adapter preserved.  The remaining release work exercises the current
-curl bootstrap through removal and reinstall while preserving those controls.
+sidebar adapter preserved.  Version `1.0.6` subsequently passed curl removal,
+reinstall, and stable runner acceptance while preserving those controls.
 The verified bootstrap must also discover the installed source commit from the
 root-owned manifest and use that exact commit for data-preserving uninstall,
 without requiring the installed and bootstrap versions to match.
@@ -254,10 +254,9 @@ hostname must fail before installation mutation.
 
 Preserve the runner output, dashboard health responses, timer listings, adapter
 manifests, and recovery evidence as acceptance evidence.  After acceptance,
-change no source or asset.  The stable `v1.0.6` release must then be published
-from the same commit with byte-identical bootstrap assets, and the ordinary
-command without the override must be verified to resolve it before the curl
-workflow issue is closed.
+change no source or asset.  For `v1.0.6`, the stable release was published
+from the accepted rc.9 commit with byte-identical bootstrap assets, and the
+ordinary runner passed on the Raspberry Pi.
 
 ### Version 1.0.6-rc.7 acceptance result
 
@@ -285,11 +284,15 @@ timer services remained active.  Release candidate 7 passed this complete
 functional sequence, but a later Chrome split-view comparison exposed
 companion typography that did not match the Pi-hole LCARS theme.  It is
 superseded for final acceptance and remains published as historical evidence.
-Release candidate 8 must preserve every rc.7 result and pass the Antonio font
-check.  rc.9 must show uppercase companion headings in the Pi-hole dashboard's
-muted blue-gray, while keeping buttons and measurement text capitalization
-unchanged.  rc.8 remains published as historical evidence and is superseded
-for acceptance.  Stable `v1.0.6` remains held.
+Release candidate 8 added Antonio typography but exposed heading case and
+color differences in Chrome split view.  It remains published as historical
+evidence and is superseded for acceptance.  Release candidate 9 corrected the
+headings without changing button or measurement text capitalization.  The
+owner accepted Overview and Setup, and the tagged installer, repeat installer,
+uninstaller, reinstall, continued scheduled collection, and stable runner
+passed.  Stable `v1.0.6` is published from rc.9's exact release commit with
+byte-identical assets.  The last provided Pi evidence recorded measurement
+98,828 with SQLite integrity `ok` and unchanged settings checksum.
 
 ## Stop conditions
 

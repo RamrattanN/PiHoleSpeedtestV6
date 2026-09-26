@@ -2,17 +2,17 @@
 
 ## Status
 
-Version `1.0.5` is the installed and owner-approved production baseline.
+Version `1.0.6` is the published and owner-approved production baseline.
 Version `1.0.3` is
 withdrawn because live download verification correctly detected that its
 published bundle bytes did not match its embedded checksum.  Do not use the
 version `1.0.3` bootstrap.  Version `1.0.5` supports uninstalling any verified
 installed version and corrects post-install cleanup.  Its curl uninstall and
 reinstall acceptance passed with measurement history and settings preserved.
-Reboot, interrupted-install, and explicit purge acceptance remain tracked in
-issue #3.
+Version `1.0.6-rc.7` passed reboot continuity and isolated disposable-data
+purge acceptance.  The stable one-line runner passed on the Raspberry Pi.
 
-Production `v1.0.6` is held and unpublished.  Prerelease `v1.0.6-rc.1` was
+Production `v1.0.6` is published.  Prerelease `v1.0.6-rc.1` was
 published and accepted on the Raspberry Pi for upgrade, data preservation,
 services, sidebar, and charts.  It exposed a collection scheduling defect, a
 15-minute setting recording about every 30 minutes, so it is superseded for
@@ -39,13 +39,16 @@ that did not match Pi-hole's LCARS theme.  It is superseded for acceptance and
 remains published as historical evidence.  `v1.0.6-rc.8` uses Pi-hole's Antonio
 font stack but its companion headings differed in case and color from Pi-hole's
 dashboard.  rc.8 is superseded for acceptance and remains published as
-historical evidence.  `v1.0.6-rc.9` is the current acceptance candidate and
-corrects those headings while retaining the rc.4 timing behavior.  Version `1.0.6` adds the one-line
-convenience runner, its
+historical evidence.  `v1.0.6-rc.9` corrected those headings while retaining
+the rc.4 timing behavior and passed the owner's Chrome Overview and Setup
+review, tagged install, repeat install, uninstall, reinstall, and scheduled
+collection acceptance.  Stable `v1.0.6` and rc.9 share release commit
+`673119bff0b4751fd3afa4fa9af922a09a27cc3d` and byte-identical assets.
+The ordinary stable runner also passed all seven install checks and exited `0`
+on the Raspberry Pi.  Version `1.0.6` adds the one-line convenience runner, its
 prerelease acceptance override, guarded release publication, and the
 `install-all` and `uninstall-all` bootstrap actions described below.  Its
-production trust anchors will be recorded here only after the stable release is
-published and verified.
+production trust anchors are recorded below.
 
 ## Trust chain
 
@@ -68,9 +71,9 @@ unchanged.
 
 ## Version 1.0.6 convenience runner
 
-The runner is on `main`, but it cannot complete until a GitHub Release carries
-the verified version `1.0.6` bootstrap and its checksum.  Until then it stops
-safely at the download step without changing anything.
+The runner on `main` selects the latest stable GitHub Release.  The published
+`v1.0.6` release carries the verified bootstrap and checksum.  The owner ran
+this unpinned command on the Raspberry Pi and it passed.
 
 ```bash
 curl -fsSL \
@@ -114,8 +117,7 @@ GitHub resolves `releases/latest` only to the latest stable release, never to a
 prerelease, so publishing a prerelease cannot silently replace the stable
 release used by the ordinary command.
 
-After rc.9 is published, prerelease acceptance uses
-`PIHOLE_SPEEDTEST_RELEASE_TAG` to select one exact
+Historical prerelease verification uses `PIHOLE_SPEEDTEST_RELEASE_TAG` to select one exact
 release, downloaded from
 `https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/download/<tag>/`:
 
@@ -152,7 +154,7 @@ prerelease acceptance reuses the accepted commit and bytes.
    with `scripts/render_release_bootstrap.sh`, and commit the rendered
    `release/pihole-speedtest-v6-bootstrap.sh`.  That bootstrap commit is the
    release commit.
-4. Publish the current release candidate, `v1.0.6-rc.9` for this release,
+4. Publish a release candidate, `v1.0.6-rc.9` for the completed release,
    from the exact release commit with `scripts/publish_github_release.sh`.
 5. On the Raspberry Pi, run the one-line installation, health, timer, sidebar,
    data-preservation, uninstall, and reinstall acceptance with
@@ -295,6 +297,21 @@ metadata, and no other licence files.  Bundles published through version
 
 ## Production trust anchors
 
+Stable `v1.0.6` and accepted prerelease `v1.0.6-rc.9` point to the same
+release commit.  The published bootstrap and checksum file were independently
+downloaded and compared byte for byte with the accepted rc.9 assets.
+
+| Item | Immutable value |
+| --- | --- |
+| Application source commit | `fea0efe90e7b61e2e763bb18017525f381169e22` |
+| Bundle asset commit | `4a05675d6f7b323ee95f87d703ff34ed275e7c7f` |
+| Bundle SHA-256 | `3168f3df48fc133c3037d859f143ec193fcf5255259b4cdab8ad75121b8edad1` |
+| Bootstrap release commit | `673119bff0b4751fd3afa4fa9af922a09a27cc3d` |
+| Bootstrap SHA-256 | `cf7db2d9c028ed5ea8a8df21e5f268afd0f72d22f6ff31d6735615902fcbc120` |
+| Release bootstrap checksum file SHA-256 | `d437e05eb48d427bf504ae725a650091a70c810c53492e711724ded1fba1b8b1` |
+
+### Historical v1.0.5 trust anchors
+
 | Item | Immutable value |
 | --- | --- |
 | Application source commit | `2400a3108235a477c6d9c2c3af0d2024f1cf9633` |
@@ -304,7 +321,7 @@ metadata, and no other licence files.  Bundles published through version
 | Bootstrap commit | `8d6a779b34341a302a8a6c84502f2d95002dc95e` |
 | Bootstrap SHA-256 | `af2d2ca9c17d2420c22bb0ba894a409f00f468b0557eb95e8aacddfe9b430335` |
 
-## Production install command
+## Checksum-pinned production install command
 
 Run this on the Raspberry Pi.  It downloads and verifies the bootstrap before
 the bootstrap downloads and verifies the complete bundle.  `sudo` is invoked
@@ -315,19 +332,20 @@ bootstrap=/tmp/pihole-speedtest-v6-bootstrap.sh && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
   --output "$bootstrap" \
-  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/8d6a779b34341a302a8a6c84502f2d95002dc95e/release/pihole-speedtest-v6-bootstrap.sh && \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/673119bff0b4751fd3afa4fa9af922a09a27cc3d/release/pihole-speedtest-v6-bootstrap.sh && \
 printf '%s  %s\n' \
-  'af2d2ca9c17d2420c22bb0ba894a409f00f468b0557eb95e8aacddfe9b430335' \
+  'cf7db2d9c028ed5ea8a8df21e5f268afd0f72d22f6ff31d6735615902fcbc120' \
   "$bootstrap" | sha256sum --check --status - && \
-bash "$bootstrap" install
+bash "$bootstrap" install-all
 ```
 
 The default capture interval is 15 minutes.  A supported alternative can be
-selected by adding, for example, `--interval-minutes 60` after `install`.
+selected by adding, for example, `--interval-minutes 60` after `install-all`.
 
 ## Sidebar install command
 
-After the companion installation passes, use the already verified bootstrap:
+The pinned command above installs both the companion and sidebar.  To install
+only the sidebar on a previously installed companion, use the verified bootstrap:
 
 ```bash
 bash /tmp/pihole-speedtest-v6-bootstrap.sh install-adapter
@@ -368,8 +386,9 @@ bash /tmp/pihole-speedtest-v6-bootstrap.sh uninstall
 ```
 
 If `/tmp` has been cleared, repeat the download and bootstrap checksum steps
-from the production install command, then replace the final `install` action
-with the required removal action.
+from the pinned production install command, then replace the final action
+with the required removal action.  The ordinary one-line runner also supports
+`bash -s -- uninstall` for data-preserving full-product removal.
 
 Permanent deletion remains a separate command and must never be combined with
 default uninstall:
@@ -455,5 +474,11 @@ exposed typography that did not match Pi-hole's LCARS interface, so rc.7 is
 superseded for final acceptance.  rc.8 added Antonio typography but its heading
 case and color did not match Pi-hole's dashboard in Chrome split view, so it
 remains published as historical evidence and is superseded for acceptance.
-Still required: publish and accept rc.9 with the heading correction, then publish stable `v1.0.6` from that exact
-accepted commit with byte-identical assets and verify the ordinary runner.
+Release candidate 9 passed the owner's Chrome Overview and Setup review and
+tagged install, repeat install, uninstall, reinstall, and scheduled collection
+checks.  The last recorded Pi result was measurement 98,828 at 03:15:50 UTC
+on September 26, 2026 with SQLite integrity `ok` and unchanged settings SHA-256
+`425db05cc9b28d13d42457364eae626eb13e8e89906ba6ee1e127366cc19129f`.
+Stable `v1.0.6` was published from the same accepted commit with byte-identical
+assets.  The ordinary runner verified its bootstrap, passed all seven
+installation checks, and exited `0` on the Raspberry Pi.

@@ -1,7 +1,7 @@
 # Approved dashboard baseline
 
 > Version `0.1.0.dev4` remains the approved historical baseline described on
-> this page.  Version `1.0.5` is the owner-approved production baseline.  It
+> this page.  Version `1.0.5` was the owner-approved production baseline.  It
 > keeps
 > substantial collection outages blank and breaks line charts across them
 > without adding labels, shaded overlays, or synthetic measurements, restores
@@ -11,6 +11,9 @@
 > Live acceptance completed on September 24, 2026 with 98,719 measurements,
 > SQLite integrity `ok`, one active 15-minute timer, and the sidebar adapter
 > preserved.
+> Version `1.0.6` is the current production release.  It retains this
+> historical baseline and includes the separately accepted chart, timing,
+> HTTPS, and typography updates documented in [QA and Acceptance](QA-AND-ACCEPTANCE.md).
 
 ## Decision
 

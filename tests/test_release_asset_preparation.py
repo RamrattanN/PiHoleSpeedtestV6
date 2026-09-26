@@ -1,8 +1,9 @@
 """Release scope, drift, and workflow-safety controls for version 1.0.6.
 
-The scope lock applies to the 1.0.6 release line only: it pins every file
-outside the release allowlist to the reviewed baseline 11c8dc1.  Bumping the
-project version ends the lock for later development.
+The preparation scope lock protected the unpublished 1.0.6 release candidate.
+It is closed after production publication so maintenance documentation can
+accurately record acceptance without modifying the immutable release commit.
+The asset, lineage, and workflow safety tests below remain active.
 """
 
 import hashlib
@@ -271,10 +272,7 @@ def workflow_step_script(name):
     return textwrap.dedent("\n".join(body)) + "\n"
 
 
-@unittest.skipUnless(
-    project_version() == RELEASE_VERSION,
-    "The release scope lock applies only to the 1.0.6 release line.",
-)
+@unittest.skip("The 1.0.6 prerelease scope lock ended at stable publication.")
 class ReleaseScopeTests(unittest.TestCase):
     def test_versions_are_exactly_the_release_version(self):
         from pihole_speedtest import __version__
