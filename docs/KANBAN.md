@@ -137,6 +137,11 @@ Docker is not part of version `1.0.6`.  The reference project
 <https://github.com/arevindh/pihole-speedtest> offers useful ideas; no source
 code is to be copied from it.
 
+An experimental Compose implementation is in [DOCKER.md](DOCKER.md).  Its
+dashboard, quarter-hour collector, shared persistent volume, and official CLI
+mount require validation on an AMD64 and an ARM64 Docker host before any
+container image is published or Docker is called supported.
+
 Ideas to adopt:
 
 - publish container images through GitHub Container Registry;
