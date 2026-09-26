@@ -121,6 +121,7 @@ detailed acceptance criteria for active engineering work.
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
 | General backup and restore controls | [Roadmap](ROADMAP.md) | Define a recovery exercise for settings and history after production release |
+| Experimental Docker Compose companion | [Draft PR #21](https://github.com/RamrattanN/PiHoleSpeedtestV6/pull/21) | Candidate is under review.  Complete physical ARM64 and Ookla checks, restart continuity, and HTTP/sidebar integration acceptance before promotion.  Stable `v1.0.6` remains native-only. |
 
 ## Backlog
 
@@ -131,7 +132,7 @@ detailed acceptance criteria for active engineering work.
 - Chart date ranges, optional preferred server selection, table sorting, and
   complete accessible-state verification.
 
-### Future: version 1.1.0 Docker deployment
+### Proposed version 1.1.0 Docker deployment
 
 Docker is not part of version `1.0.6`.  The reference project
 <https://github.com/arevindh/pihole-speedtest> offers useful ideas; no source
