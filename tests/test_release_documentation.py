@@ -89,16 +89,23 @@ class ReleaseDocumentationTests(unittest.TestCase):
         self.assertIn(f"against the published `{CURRENT_CANDIDATE}` prerelease", qa)
         self.assertIn(f"`PIHOLE_SPEEDTEST_RELEASE_TAG={CURRENT_CANDIDATE}`", qa)
 
-    def test_status_names_the_current_candidate_and_held_production(self):
+    def test_status_names_published_production_and_accepted_candidate(self):
         for name in ("README.md", "docs/CURL-INSTALLATION.md", "docs/WIKI.md"):
             text = normalized(read(name))
             with self.subTest(document=name):
-                self.assertRegex(text, r"Production `v1\.0\.6` is held")
+                self.assertIn("`v1.0.6`", text)
+                self.assertIn("published", text)
                 self.assertIn(f"`{CURRENT_CANDIDATE}`", text)
-                self.assertIn("current acceptance candidate", text)
+                self.assertNotIn("current acceptance candidate", text)
+                self.assertNotRegex(text, r"Production `v1\.0\.6` is held")
+
+        curl = normalized(read("docs/CURL-INSTALLATION.md"))
+        self.assertIn("673119bff0b4751fd3afa4fa9af922a09a27cc3d", curl)
+        self.assertIn("cf7db2d9c028ed5ea8a8df21e5f268afd0f72d22f6ff31d6735615902fcbc120", curl)
+        self.assertIn("ordinary stable runner", curl)
 
     def test_superseded_candidates_are_described_historically(self):
-        for name in ("README.md", "docs/CURL-INSTALLATION.md", "docs/WIKI.md"):
+        for name in ("docs/CURL-INSTALLATION.md", "docs/WIKI.md"):
             text = normalized(read(name))
             with self.subTest(document=name):
                 self.assertIn("`v1.0.6-rc.1` was published and accepted", text)

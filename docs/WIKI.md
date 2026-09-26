@@ -13,7 +13,7 @@ useful entry point rather than an independent source of truth.
 - [Roadmap](ROADMAP.md) - capability and release backlog.
 - [Deployment](../DEPLOY.md) - supported and approval-gated deployment paths.
 - [Checksum-verified curl workflow](CURL-INSTALLATION.md) - immutable download,
-  verification, preservation, rollback, and purge contract, plus the unpublished
+  verification, preservation, rollback, and purge contract, plus the published
   version `1.0.6` one-line runner, prerelease acceptance, release sequence,
   guarded release publication, and full-product actions.
 - [Removal and recovery](CURL-INSTALLATION.md#preservation-and-recovery) -
@@ -43,9 +43,10 @@ useful entry point rather than an independent source of truth.
 - [Pi-hole v6 Adapter](PIHOLE-V6-ADAPTER.md) - optional sidebar integration and
   exact rollback contract.
 
-## Active tracked work
+## Release and tracked work
 
-- [Issue #3: Engineer supported curl install and uninstall workflow](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3)
+- [Stable v1.0.6 release](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.6)
+- [Issue #3: Supported curl install and uninstall workflow](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) - acceptance complete.
 
 ## Current approved baseline
 
@@ -54,7 +55,7 @@ and Pi-hole Web v6.6 integration baseline, where the companion service,
 collection timer, embedded dashboard, and independently reversible sidebar
 adapter first completed live acceptance.
 
-Version `1.0.5` is the installed and owner-approved production baseline.  It
+Version `1.0.5` was the preceding owner-approved production baseline.  It
 uses a 24-hour default window, responsive hourly grid, uniform bar geometry,
 blank outage spans, and a corrected post-install cleanup path.  Its source
 passed GitHub CI run 68, and its immutable bundle and bootstrap were
@@ -64,7 +65,7 @@ installed sidebar adapter.
 Its curl uninstall and reinstall acceptance preserved measurement history and
 settings, and the owner accepted the restored dashboard and sidebar.
 
-Production `v1.0.6` is held and has not been published.  Prerelease
+Production `v1.0.6` is published and accepted on the Raspberry Pi.  Prerelease
 `v1.0.6-rc.1` was published and accepted on the Raspberry Pi for upgrade, data
 preservation, services, sidebar, and charts.  It exposed a collection
 scheduling defect, a 15-minute setting recording about every 30 minutes, so it
@@ -95,6 +96,11 @@ typography that did not match the Pi-hole LCARS theme.  It is superseded for
 acceptance and remains published as historical evidence.  `v1.0.6-rc.8`
 applied Pi-hole's Antonio font stack but its companion headings differed in
 case and color from Pi-hole's dashboard.  rc.8 is superseded for acceptance
-and remains published as historical evidence.  `v1.0.6-rc.9` is the current
-acceptance candidate and corrects those headings.  Stable `v1.0.6` publication and
-ordinary runner verification remain open.
+and remains published as historical evidence.  `v1.0.6-rc.9` corrected those
+headings and passed the owner's Overview and Setup review, tagged install,
+repeat install, uninstall, reinstall, and continued scheduled collection.
+Stable `v1.0.6` shares rc.9's release commit
+`673119bff0b4751fd3afa4fa9af922a09a27cc3d` and byte-identical assets.
+The ordinary stable curl runner verified bootstrap SHA-256
+`cf7db2d9c028ed5ea8a8df21e5f268afd0f72d22f6ff31d6735615902fcbc120`
+and passed all seven installation checks on the Raspberry Pi.
