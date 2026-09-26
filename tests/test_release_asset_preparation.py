@@ -91,7 +91,7 @@ APPROVED_OVERRIDES = {
     "THIRD_PARTY_NOTICES.md": "6594ec9722c4de5c6f8385cbb4fcea230b1267e9cfeade4fa09cd83101fc7595",
     "pyproject.toml": "356d7b137f96e71720e44315966e09f4ef16949b820287bb413b5d2d129cc7eb",
     # The rc.9 bundle builder normalizes archive modes across runner umasks.
-    "scripts/build_release_assets.sh": "ed2c19b00d0e2f7e1b3fd8e13c75e37021abe8d255936c40e7f2d5f3da1ea417",
+    "scripts/build_release_assets.sh": "99de1902073a34b65bd3460e41d75c2a2e746b91564e4250460298276f52aee8",
     "src/pihole_speedtest/server.py": "8a81fa20411d5798f8e3f0d8a80b5de0219183119c8177db8928f8289af13ff4",
     "src/pihole_speedtest/web/app.js": "918b8f7d8bb887d4f024fe28a3e331331ef746e8c272a46faa08532b56408c86",
     # Post-rc.8 owner-requested uppercase heading and Pi-hole title-color correction.
@@ -332,7 +332,7 @@ class ReleaseScopeTests(unittest.TestCase):
         for path in ("install.sh", "scripts/publish_github_release.sh"):
             self.assertEqual(entries[path][0], "100755", path)
 
-    def test_bundle_bytes_are_independent_of_caller_umask(self):
+    def test_bundle_bytes_are_independent_of_shell_and_git_umasks(self):
         source_commit = git("rev-parse", "HEAD").stdout.strip()
         with tempfile.TemporaryDirectory() as tmp:
             outputs = []
@@ -344,6 +344,9 @@ class ReleaseScopeTests(unittest.TestCase):
                      "--source-commit", source_commit,
                      "--output-directory", str(destination)],
                     cwd=ROOT, check=True, stdout=subprocess.PIPE, text=True,
+                    env={**os.environ, "GIT_CONFIG_COUNT": "1",
+                         "GIT_CONFIG_KEY_0": "tar.umask",
+                         "GIT_CONFIG_VALUE_0": setting},
                 )
                 outputs.append((destination / BUNDLE.name).read_bytes())
             self.assertEqual(outputs[0], outputs[1])
