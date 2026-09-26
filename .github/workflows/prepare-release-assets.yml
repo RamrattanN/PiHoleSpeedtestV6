@@ -94,6 +94,7 @@ jobs:
             case "$path" in
               .github/workflows/prepare-release-assets.yml|\
               tests/test_release_asset_preparation.py|\
+              scripts/build_release_assets.sh|\
               THIRD_PARTY_NOTICES.md|pyproject.toml|\
               src/pihole_speedtest/server.py|\
               src/pihole_speedtest/web/app.js|\

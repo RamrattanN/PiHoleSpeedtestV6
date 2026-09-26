@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Archive modes must not depend on the caller's umask.
+umask 022
 
 usage() {
   cat <<'EOF'

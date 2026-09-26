@@ -90,6 +90,8 @@ APPROVED_OVERRIDES = {
     # The owner-approved post-rc.7 Pi-hole LCARS typography correction.
     "THIRD_PARTY_NOTICES.md": "6594ec9722c4de5c6f8385cbb4fcea230b1267e9cfeade4fa09cd83101fc7595",
     "pyproject.toml": "356d7b137f96e71720e44315966e09f4ef16949b820287bb413b5d2d129cc7eb",
+    # The rc.9 bundle builder normalizes archive modes across runner umasks.
+    "scripts/build_release_assets.sh": "ed2c19b00d0e2f7e1b3fd8e13c75e37021abe8d255936c40e7f2d5f3da1ea417",
     "src/pihole_speedtest/server.py": "8a81fa20411d5798f8e3f0d8a80b5de0219183119c8177db8928f8289af13ff4",
     "src/pihole_speedtest/web/app.js": "918b8f7d8bb887d4f024fe28a3e331331ef746e8c272a46faa08532b56408c86",
     # Post-rc.8 owner-requested uppercase heading and Pi-hole title-color correction.
@@ -101,7 +103,10 @@ APPROVED_OVERRIDES = {
     "tests/test_web_assets.py": "18bbcd1ce8b03283f1497563d6454fdf9579ee8bd86edb27f4c382eb7677f7e3",
     "tests/test_release_documentation.py": "9b99116da24f3948f887c820d12a2d04301e0bbe9e4294ab03af22514e8cab82",
 }
-APPROVED_OVERRIDE_MODES = {path: "100644" for path in APPROVED_OVERRIDES}
+APPROVED_OVERRIDE_MODES = {
+    path: "100755" if path == "scripts/build_release_assets.sh" else "100644"
+    for path in APPROVED_OVERRIDES
+}
 # Ordered partition of every tracked file outside the allowlist and overrides.
 PROTECTED_GROUPS = [
     ("chart", ("src/pihole_speedtest/web/", "web/")),
@@ -119,7 +124,7 @@ PROTECTED_GROUPS = [
 BASELINE_DIGESTS = {
     "chart": ("afa6e76c260c8e510f9014a003a5a0f437c8308a024af5e0bbbe5e608c2e9c0a", 6),
     "runtime": ("bba3082480c1901d6a2880defb5b2e7d07c942a260349435c6ca19f21ebd8374", 15),
-    "installer": ("c7dff88b1b630a7812764b9c6bdbab4c86f9f74d2597c4a7b358961d0e751d8f", 19),
+    "installer": ("27cd67ec3cc4a071cf6dd3aa3e76e4dbc6b73be556a5de1f85ea3430c5d78a01", 18),
     "version-and-template": ("d3b04dcacfcd663122b831a41207aaee1de02baffc096e78665692d5876795f0", 1),
     "licensing": ("277478439fad1f542b1f766675df58a1c32c7738a64f6f0e3e8bd921fbfe2bbc", 1),
     "docker": ("51898daa73be46eb2dfa82700dedc02a9fd29370a81f2f9ca65160156cec60b3", 4),
@@ -326,6 +331,22 @@ class ReleaseScopeTests(unittest.TestCase):
         entries = tracked_files()
         for path in ("install.sh", "scripts/publish_github_release.sh"):
             self.assertEqual(entries[path][0], "100755", path)
+
+    def test_bundle_bytes_are_independent_of_caller_umask(self):
+        source_commit = git("rev-parse", "HEAD").stdout.strip()
+        with tempfile.TemporaryDirectory() as tmp:
+            outputs = []
+            for setting in ("0022", "0002"):
+                destination = Path(tmp) / setting
+                subprocess.run(
+                    ["bash", "-c", 'umask "$1"; shift; exec "$@"', "bash", setting,
+                     str(ROOT / "scripts" / "build_release_assets.sh"),
+                     "--source-commit", source_commit,
+                     "--output-directory", str(destination)],
+                    cwd=ROOT, check=True, stdout=subprocess.PIPE, text=True,
+                )
+                outputs.append((destination / BUNDLE.name).read_bytes())
+            self.assertEqual(outputs[0], outputs[1])
 
     def test_changed_files_are_within_the_allowlist(self):
         if git("cat-file", "-e", f"{REVIEWED_BASE}^{{commit}}", check=False).returncode:
