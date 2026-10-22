@@ -133,7 +133,12 @@ stored at
 - permit framing only from the explicitly configured Pi-hole origin;
 - verify all existing Pi-hole pages and controls;
 - remove the adapter and prove exact restoration;
-- simulate an unknown Pi-hole layout and confirm refusal.
+- simulate an unknown Pi-hole layout and confirm refusal;
+- simulate a fully restored sidebar with both pages missing and a stale
+  installed record; confirm guarded reconciliation, retained historical
+  evidence, rollback of a failed attempt, an interruption blocking later
+  actions until verified `recover`, and refusal of every partial or modified
+  state (see [adapter recovery](ADAPTER-RECOVERY.md)).
 
 The disposable installed-tree rehearsal passed on September 22, 2026 local
 time.  Installation, checksum validation, exact removal, live-sidebar

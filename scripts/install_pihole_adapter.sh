@@ -63,6 +63,14 @@ if [ -d "$source_root/.git" ]; then
   fi
 fi
 
+# Serialize guarded deployment mutations; the descriptor stays open through rollback.
+if [ -L /run/pihole-speedtest-adapter.lock ]; then
+  echo "STOP: Adapter operation lock is a symlink." >&2
+  exit 1
+fi
+exec 9>> /run/pihole-speedtest-adapter.lock
+flock -n 9 || { echo "STOP: Another deployment operation is running." >&2; exit 1; }
+
 application_cli="/opt/pihole-speedtest/venv/bin/pihole-speedtest"
 application_python="/opt/pihole-speedtest/venv/bin/python"
 data_dir="/var/lib/pihole-speedtest"
@@ -79,9 +87,12 @@ timer_unit="pihole-speedtest-collect.timer"
 adapter_manifest=""
 adapter_installed=0
 state_updated=0
+reconciliation_dir=""
+reconcile_needed=0
 header_policy_attempted=0
 headers_before=""
 headers_installed=""
+headers_rollback=""
 
 for command in python3 systemctl curl sha256sum pihole pihole-FTL stat tr; do
   command -v "$command" >/dev/null 2>&1 || {
@@ -177,12 +188,18 @@ if [ "$installed_commit" != "$expected_installed_commit" ]; then
   echo "Actual:   ${installed_commit:-unknown}" >&2
   exit 1
 fi
-if [ "$(sed -n 's/^pihole_adapter_installed=//p' "$install_manifest")" != "false" ]; then
-  echo "STOP: Deployment manifest does not record an absent adapter." >&2
+# A pending journal blocks retries even when interruption left an absent flag.
+if [ -e "$backup_root/reconciliation.pending.json" ] || [ -L "$backup_root/reconciliation.pending.json" ]; then
+  echo "STOP: Interrupted reconciliation. Review $backup_root/reconciliation.pending.json and docs/ADAPTER-RECOVERY.md." >&2
   exit 1
 fi
-if grep -q '^pihole_adapter_manifest=' "$install_manifest"; then
-  echo "STOP: Deployment manifest already records an adapter recovery manifest." >&2
+if [ "$(sed -n 's/^pihole_adapter_installed=//p' "$install_manifest")" = "true" ]; then
+  python3 -I "$source_root/scripts/reconcile_pihole_adapter.py" check
+  reconcile_needed=1
+elif [ "$(sed -n 's/^pihole_adapter_installed=//p' "$install_manifest")" != "false" ] ||
+  grep -q '^pihole_adapter_manifest=' "$install_manifest"
+then
+  echo "STOP: Deployment manifest does not record an absent adapter." >&2
   exit 1
 fi
 for unit in "$dashboard_unit" "$timer_unit"; do
@@ -197,7 +214,7 @@ if [ "$(sha256sum "$sidebar" | awk '{print $1}')" != "$expected_sidebar_sha" ]; 
   echo "STOP: Live Pi-hole v6.6 sidebar checksum is not approved." >&2
   exit 1
 fi
-if grep -q 'PIHOLE-SPEEDTEST-V6' "$sidebar" || [ -e "$overview" ] || [ -e "$setup" ]; then
+if grep -q 'PIHOLE-SPEEDTEST-V6' "$sidebar" || [ -e "$overview" ] || [ -L "$overview" ] || [ -e "$setup" ] || [ -L "$setup" ]; then
   echo "STOP: Adapter markers or target pages already exist." >&2
   exit 1
 fi
@@ -224,13 +241,43 @@ if [ "$installed_web_version" != "v6.6" ]; then
   echo "Detected: ${installed_web_version:-unknown}" >&2
   exit 1
 fi
-companion_curl /api/health >/dev/null
+companion_curl /api/health | python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin).get("status") == "ok" else "STOP: Companion health is not ok")'
+if [ "$(systemctl list-unit-files --type=timer --state=enabled --no-legend 'pihole-speedtest*' | awk '{print $1}')" != "$timer_unit" ]; then
+  echo "STOP: Expected exactly one enabled collection timer." >&2
+  exit 1
+fi
 companion_curl / -D - -o /dev/null |
   tr -d '\r' |
   grep -Fq "frame-ancestors 'self' $pihole_origin" || {
     echo "STOP: Companion frame policy does not allow $pihole_origin." >&2
     exit 1
   }
+
+# Check Pi-hole before reconciling any installation metadata.
+systemctl is-active --quiet pihole-FTL
+pihole_curl /admin/ -o /dev/null
+pihole status >/dev/null
+if [ "$reconcile_needed" -eq 1 ]; then
+  "$application_python" - "$backup_root" "$install_manifest" /etc/pihole/pihole.toml "$companion_url" <<'PYHEADERS'
+import json
+import pathlib
+import sys
+import tomllib
+
+state = dict(line.split("=", 1) for line in pathlib.Path(sys.argv[2]).read_text().splitlines())
+old_manifest = pathlib.Path(state["pihole_adapter_manifest"])
+if json.loads(old_manifest.read_text())["companion_url"] != sys.argv[4]:
+    raise SystemExit("STOP: Repair must use the historical companion URL.")
+old = old_manifest.parent
+with open(sys.argv[3], "rb") as source:
+    current = tomllib.load(source)["webserver"]["headers"]
+before = json.loads((old / "pihole-web-headers.before.json").read_text())
+installed = json.loads((old / "pihole-web-headers.installed.json").read_text())
+if current not in (before, installed):
+    raise SystemExit("STOP: Pi-hole headers differ from both historical recovery states; manual review required.")
+PYHEADERS
+  reconciliation_dir="$(python3 -I "$source_root/scripts/reconcile_pihole_adapter.py" prepare)"
+fi
 
 rollback() {
   status=$?
@@ -240,8 +287,8 @@ rollback() {
   trap - EXIT
   echo >&2
   echo "Sidebar adapter installation failed.  Restoring the prior state..." >&2
-  if [ "$header_policy_attempted" -eq 1 ] && [ -s "$headers_before" ]; then
-    pihole-FTL --config webserver.headers "$(cat "$headers_before")" >/dev/null 2>&1 || true
+  if [ "$header_policy_attempted" -eq 1 ] && [ -s "$headers_rollback" ]; then
+    pihole-FTL --config webserver.headers "$(cat "$headers_rollback")" >/dev/null 2>&1 || true
   fi
   if [ "$adapter_installed" -eq 1 ] && [ -n "$adapter_manifest" ]; then
     "$application_cli" adapter-remove --manifest "$adapter_manifest" >/dev/null 2>&1 || true
@@ -250,6 +297,14 @@ rollback() {
     recovery_dir="$(dirname "$adapter_manifest")"
     cp -a "$recovery_dir/install-manifest.before.txt" "$install_manifest" 2>/dev/null || true
     cp -a "$recovery_dir/collection-manifest.before.txt" "$collection_manifest" 2>/dev/null || true
+  fi
+  # Restore the pre-reconciliation record only if the web tree is proven restored again.
+  if [ -n "$reconciliation_dir" ]; then
+    if python3 -I "$source_root/scripts/reconcile_pihole_adapter.py" recover >&2; then
+      echo "Pre-reconciliation deployment records restored; evidence kept in $reconciliation_dir." >&2
+    else
+      echo "Reconciliation remains pending: $reconciliation_dir. Follow docs/ADAPTER-RECOVERY.md before retrying." >&2
+    fi
   fi
   echo "Rollback attempt finished.  Pi-hole status follows:" >&2
   pihole status >&2 || true
@@ -274,12 +329,13 @@ cp -a "$install_manifest" "$recovery_dir/install-manifest.before.txt"
 cp -a "$collection_manifest" "$recovery_dir/collection-manifest.before.txt"
 headers_before="$recovery_dir/pihole-web-headers.before.json"
 headers_installed="$recovery_dir/pihole-web-headers.installed.json"
+headers_rollback="$recovery_dir/pihole-web-headers.attempt-before.json"
 
 "$application_python" - \
   /etc/pihole/pihole.toml \
   "$companion_url" \
   "$headers_before" \
-  "$headers_installed" <<'PY'
+  "$headers_installed" "$reconciliation_dir" "$headers_rollback" <<'PY'
 import json
 import os
 import pathlib
@@ -289,11 +345,19 @@ import tomllib
 from pihole_speedtest.pihole_headers import allow_companion_frame
 
 
-config_path, companion_url, before_path, installed_path = sys.argv[1:]
+config_path, companion_url, before_path, installed_path, reconciliation_dir, rollback_path = sys.argv[1:]
 with open(config_path, "rb") as source:
     headers = tomllib.load(source)["webserver"]["headers"]
-installed = allow_companion_frame(headers, companion_url)
-for path, value in ((before_path, headers), (installed_path, installed)):
+rollback_headers = headers
+if reconciliation_dir:
+    journal = json.loads((pathlib.Path(reconciliation_dir) / "reconciliation.json").read_text())
+    old = pathlib.Path(journal["historical_manifest"]).parent
+    historical = json.loads((old / "pihole-web-headers.installed.json").read_text())
+    installed = historical if headers == historical else allow_companion_frame(headers, companion_url)
+    headers = json.loads((old / "pihole-web-headers.before.json").read_text())
+else:
+    installed = allow_companion_frame(headers, companion_url)
+for path, value in ((before_path, headers), (installed_path, installed), (rollback_path, rollback_headers)):
     target = pathlib.Path(path)
     target.write_text(json.dumps(value, separators=(",", ":")) + "\n", encoding="utf-8")
     os.chmod(target, 0o600)
@@ -406,6 +470,34 @@ companion_curl /api/health > "$recovery_dir/health.after.json"
 pihole status > "$recovery_dir/pihole-status.after.txt"
 systemctl status "$dashboard_unit" --no-pager > "$recovery_dir/dashboard-status.after.txt"
 systemctl status "$timer_unit" --no-pager > "$recovery_dir/timer-status.after.txt"
+
+if [ -n "$reconciliation_dir" ]; then
+  python3 - "$reconciliation_dir" "$adapter_manifest" "$backup_root" <<'PYDONE'
+import json
+import pathlib
+import sys
+from datetime import datetime, timezone
+
+journal, manifest, root = map(pathlib.Path, sys.argv[1:])
+with (journal / "completed.json").open("x", encoding="utf-8") as destination:
+    json.dump({"installed_manifest": str(manifest), "completed_at": datetime.now(timezone.utc).isoformat()}, destination)
+    destination.flush()
+    import os
+    os.fsync(destination.fileno())
+for directory in (journal, root):
+    descriptor = os.open(directory, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+(root / "reconciliation.pending.json").unlink()
+descriptor = os.open(root, os.O_RDONLY)
+try:
+    os.fsync(descriptor)
+finally:
+    os.close(descriptor)
+PYDONE
+fi
 
 echo "$install_output"
 echo

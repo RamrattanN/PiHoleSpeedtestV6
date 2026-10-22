@@ -479,6 +479,19 @@ report_full_action_stop() {
   exit "$status"
 }
 
+repair_recorded_adapter() {
+  if [ "$(manifest_value pihole_adapter_installed)" = "true" ]; then
+    if ! verify_adapter_installed; then
+      echo "Checking whether the recorded adapter is fully restored."
+      sudo bash "$source_root/scripts/install_pihole_adapter.sh" \
+        --expected-source-commit "$source_commit" \
+        --expected-installed-commit "$installed_commit" \
+        --companion-url "$companion_url" \
+        --pihole-origin "$pihole_origin" || return 1
+    fi
+  fi
+}
+
 run_install_all() {
   while [ "$#" -gt 0 ]; do
     if [ "$#" -lt 2 ]; then
@@ -504,6 +517,8 @@ run_install_all() {
         echo "Version $version is already installed; keeping it and its data."
       else
         echo "Installed commit $installed_commit will be upgraded by a data-preserving reinstall."
+        # Reconcile before removal; never uninstall the companion to repair stale state.
+        repair_recorded_adapter
         phase_prefix="upgrade"
         remove_installed_product
         phase_prefix="install-all"
@@ -530,6 +545,8 @@ run_install_all() {
   phase 4/7 "Install the Pi-hole sidebar adapter"
   if [ "$(manifest_value pihole_adapter_installed)" = "true" ]; then
     echo "Sidebar adapter is already installed; verifying it."
+    installed_commit="$(read_installed_commit)"
+    repair_recorded_adapter
   else
     installed_commit="$(read_installed_commit)"
     adapter_attempted=1
@@ -555,6 +572,13 @@ run_install_all() {
   echo "Collection timer: $timer_unit"
   echo "Data: $data_dir"
 }
+
+if sudo test -e /var/lib/pihole-speedtest-adapter-recovery/reconciliation.pending.json ||
+  sudo test -L /var/lib/pihole-speedtest-adapter-recovery/reconciliation.pending.json
+then
+  echo "STOP: Interrupted adapter reconciliation; follow docs/ADAPTER-RECOVERY.md." >&2
+  exit 1
+fi
 
 case "$action" in
   install-all)
@@ -611,11 +635,15 @@ case "$action" in
       exit 1
     fi
     installed_commit="$(read_installed_commit)"
-    sudo bash "$source_root/scripts/install_pihole_adapter.sh" \
-      --expected-source-commit "$source_commit" \
-      --expected-installed-commit "$installed_commit" \
-      --companion-url "$companion_url" \
-      --pihole-origin "$pihole_origin"
+    if [ "$(manifest_value pihole_adapter_installed)" = "true" ]; then
+      repair_recorded_adapter
+    else
+      sudo bash "$source_root/scripts/install_pihole_adapter.sh" \
+        --expected-source-commit "$source_commit" \
+        --expected-installed-commit "$installed_commit" \
+        --companion-url "$companion_url" \
+        --pihole-origin "$pihole_origin"
+    fi
     ;;
   remove-adapter)
     if [ "$#" -ne 0 ]; then
