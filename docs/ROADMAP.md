@@ -133,6 +133,12 @@
 - [x] Publish the stable `v1.0.6` release from the accepted commit with
   byte-identical assets and verify the ordinary command resolves it.
 - [x] Tag the first supported v6 release.
+- [x] Reconcile a stale sidebar-adapter record and recover interrupted
+  installs (PR #24), and support Pi-hole Web v6.6.1 with adapter-only repair
+  on a 1.0.6 companion (PR #25).
+- [x] Prepare and publish `v1.0.7-rc.1` (PR #26), accept its adapter-only
+  repair on the Raspberry Pi, then publish stable `v1.0.7` from the same commit
+  with byte-identical assets.
 
 ## Future: version 1.1.0
 

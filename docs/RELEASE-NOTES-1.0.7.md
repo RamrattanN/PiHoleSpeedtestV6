@@ -1,23 +1,24 @@
 # Version 1.0.7 release notes
 
-**Status:** prerelease
-[`v1.0.7-rc.1`](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7-rc.1)
-is published, and its adapter-only repair passed Raspberry Pi acceptance on
-October 23, 2026.  **Stable `v1.0.7` is not published.**  Stable `v1.0.6`
-remains the latest release, and the ordinary one-line runner still selects it.
-Stable `v1.0.7` must be published from the same release commit with
-byte-identical assets.
+**Status:** [`v1.0.7`](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7)
+is the current stable release.  It was published on October 23, 2026 from the
+same release commit as the accepted prerelease
+[`v1.0.7-rc.1`](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7-rc.1),
+with byte-identical assets.  The adapter-only repair passed Raspberry Pi
+acceptance as rc.1 the same day.  `releases/latest` and the ordinary one-line
+runner select `v1.0.7`.
 
 Version 1.0.7 is a recovery and compatibility release for the Pi-hole sidebar
 adapter.  The companion service, collector, storage, schedule and web UI are
 unchanged from 1.0.6 apart from the reported version.  A healthy 1.0.6
 installation does not need a companion reinstall to receive these fixes.
 
-## Prerelease trust anchors
+## Trust anchors
 
 | Item | Value |
 |---|---|
-| Prerelease tag | `v1.0.7-rc.1` (published October 23, 2026, marked prerelease) |
+| Stable tag | `v1.0.7` (published October 23, 2026, latest release) |
+| Accepted prerelease tag | `v1.0.7-rc.1` (published October 23, 2026, marked prerelease) |
 | Release commit (tag target) | `fc351cfefc3c7a7d3861fbe5070c296b25d350c7` |
 | Application source commit | `63ccf3ecdf3da456d9a93b11c2c21c74b581d541` |
 | Bundle asset commit | `df141ae75424205ba761008d79e26fcae71201e8` |
@@ -25,8 +26,9 @@ installation does not need a companion reinstall to receive these fixes.
 | Bootstrap SHA-256 | `6ece7587dd30aecbe81cea1d861cb80fe01e88c00006f8bd70cc955d183be699` |
 | Bootstrap checksum file SHA-256 | `0755a24cdf70354995846738a996ce103ec8aebf0c1e0888b47391d74a5ad8bd` |
 
-The prerelease carries exactly the bootstrap and its checksum file.  After
-publication both were downloaded independently and matched these values.  The
+Both releases carry exactly the bootstrap and its checksum file.  After each
+publication, both files were downloaded independently and matched these values;
+the stable assets are byte-identical to rc.1's.  The
 bootstrap was byte-identical to the copy at the release commit, and the bundle
 from the asset commit matched its SHA-256 and size.
 
@@ -92,8 +94,8 @@ recreates the environment file, none of which this repair needs.
 `install-adapter` does not reinstall, restart or reconfigure the companion, and
 it does not touch its database, settings or TLS files.
 
-The pinned values below are the verified `v1.0.7-rc.1` trust anchors above.
-Stable `v1.0.7` will use the same release commit and bootstrap.
+The pinned values below are the verified `v1.0.7` trust anchors above.
+Stable `v1.0.7` and `v1.0.7-rc.1` share this release commit and bootstrap.
 
 ### 1. Read-only preflight
 

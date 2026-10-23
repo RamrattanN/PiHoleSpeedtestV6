@@ -2,8 +2,12 @@
 
 The dashboard companion service, 15-minute automated collection, and optional
 Pi-hole navigation adapter passed live verification on the Raspberry Pi.
-Version `1.0.6` is the installed and owner-approved production baseline.  The
-ordinary stable one-line curl runner passed on the Raspberry Pi.
+Version `1.0.7` is the current stable release.  On the Raspberry Pi, its
+checksum-verified adapter-only repair restored the sidebar on Pi-hole Web
+v6.6.1 on October 23, 2026, keeping the installed and owner-approved 1.0.6
+companion.  The ordinary stable one-line curl runner passed on the Raspberry Pi
+for 1.0.6.  On a 1.0.6 installation it now performs the data-preserving
+companion upgrade to 1.0.7.
 
 The former installer copied files into Pi-hole web directories and added a cron
 entry before the runner and web page had reliable automated tests.  That path is
