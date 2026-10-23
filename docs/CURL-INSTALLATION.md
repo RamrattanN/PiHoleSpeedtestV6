@@ -404,7 +404,7 @@ The version `1.0.5` bootstrap exposes five distinct actions.  Version `1.0.6`
 retains them and adds `install-all` and `uninstall-all`:
 
 - `install` installs the unprivileged companion service and collection timer;
-- `install-adapter` separately installs the Pi-hole Web v6.6 sidebar adapter;
+- `install-adapter` separately installs the Pi-hole Web v6.6 / v6.6.1 sidebar adapter;
 - `remove-adapter` verifies and removes only the sidebar adapter;
 - `uninstall` removes services, application files, and the service account but
   preserves all user data;
@@ -438,8 +438,8 @@ Installation refuses to continue unless all of the following are true:
 - HTTPS uses the verified `/etc/pihole/tls.pem` certificate and that
   certificate is valid for the companion hostname.
 
-The optional adapter retains its stricter Pi-hole Web v6.6 layout and checksum
-gates.
+The optional adapter retains its stricter Pi-hole Web v6.6 / v6.6.1 version,
+layout and checksum gates.
 
 If `install-all 6/7: Verify the sidebar adapter` stops with `STOP: Installed
 sidebar does not match the adapter manifest.`, the companion and its data are

@@ -98,16 +98,33 @@ class AdapterTests(unittest.TestCase):
         self.assertTrue(manifest_path.with_name("removal.json").is_file())
 
     def test_unknown_version_is_refused_without_changes(self):
-        with self.assertRaisesRegex(AdapterError, "unsupported"):
-            install_adapter(
-                self.root,
-                "v6.7",
-                "http://pihole.example.test:8765",
-                "http://pihole.example.test",
-                self.backups,
-            )
-        self.assertEqual(self.sidebar.read_text(encoding="utf-8"), SIDEBAR)
-        self.assertFalse(self.backups.exists())
+        for version in ("v6.7", "v6.5", "v6.6.2", "v6.6.1-beta", "6.6.1", "v6", ""):
+            with self.subTest(version=version):
+                with self.assertRaisesRegex(AdapterError, "unsupported"):
+                    install_adapter(
+                        self.root,
+                        version,
+                        "http://pihole.example.test:8765",
+                        "http://pihole.example.test",
+                        self.backups,
+                    )
+                self.assertEqual(self.sidebar.read_text(encoding="utf-8"), SIDEBAR)
+                self.assertFalse(self.backups.exists())
+
+    def test_each_approved_release_installs_and_records_its_version(self):
+        for version in ("v6.6", "v6.6.1"):
+            with self.subTest(version=version):
+                manifest_path = install_adapter(
+                    self.root,
+                    version,
+                    "http://pihole.example.test:8765",
+                    "http://pihole.example.test",
+                    self.backups,
+                )
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                self.assertEqual(manifest["web_version"], version)
+                remove_adapter(manifest_path)
+                self.assertEqual(self.sidebar.read_text(encoding="utf-8"), SIDEBAR)
 
     def test_unrecognized_layout_is_refused(self):
         self.sidebar.write_text("<html>different</html>", encoding="utf-8")

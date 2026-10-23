@@ -13,7 +13,10 @@ from typing import Any
 from urllib.parse import urlparse
 
 
-SUPPORTED_WEB_VERSIONS = {"v6.6"}
+# Exact Pi-hole Web releases verified to ship the sidebar and included templates
+# this adapter patches byte-for-byte (v6.6.1 changed only JavaScript and two
+# settings pages). The guarded installer also pins the live sidebar checksum.
+SUPPORTED_WEB_VERSIONS = frozenset({"v6.6", "v6.6.1"})
 BEGIN_MARKER = "<!-- BEGIN PIHOLE-SPEEDTEST-V6 -->"
 END_MARKER = "<!-- END PIHOLE-SPEEDTEST-V6 -->"
 DONATE_ANCHOR = '                <!-- Donate button -->'

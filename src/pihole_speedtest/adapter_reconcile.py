@@ -15,7 +15,14 @@ import stat
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .adapter import DONATE_ANCHOR, AdapterError, _page, _sha256, _sidebar_entry
+from .adapter import (
+    DONATE_ANCHOR,
+    SUPPORTED_WEB_VERSIONS,
+    AdapterError,
+    _page,
+    _sha256,
+    _sidebar_entry,
+)
 from .adapter import _write_atomic as _atomic
 from .pihole_headers import allow_companion_frame
 
@@ -125,9 +132,11 @@ def _trusted_manifest(
     manifest = json.loads(path.read_text())
     sidebar = web / "scripts/lua/sidebar.lp"
     backup = path.with_name("sidebar.lp.before")
+    # web_version is the release live when this evidence was created; it may
+    # differ from the live release now and is never rewritten.
     if (
         manifest["schema"] != 1
-        or manifest["web_version"] != "v6.6"
+        or manifest["web_version"] not in SUPPORTED_WEB_VERSIONS
         or manifest["web_root"] != str(web)
         or manifest["sidebar"]["path"] != str(sidebar)
         or manifest["sidebar"]["backup"] != str(backup)
