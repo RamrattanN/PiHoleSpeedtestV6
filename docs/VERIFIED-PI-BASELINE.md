@@ -27,6 +27,11 @@ recoverable pause of the legacy speed-test cron entry.
 Pi-hole FTL was active and enabled, port 53 was listening on IPv4 and IPv6,
 and blocking was enabled before and after the legacy schedule was paused.
 
+The table records the September 22, 2026 baseline.  By the October 23, 2026
+`v1.0.7-rc.1` adapter repair, the same Pi ran Pi-hole Core v6.5, Web v6.6.1 and
+FTL v6.8 with Python 3.11.2.  The approved sidebar SHA-256 was unchanged:
+`83943cbdf5258fe43e819108a5135e070d6742e273753ba398a8d28e1a008fdb`.
+
 ## Legacy installation findings
 
 The prototype installed in September 2025 was still collecting one official

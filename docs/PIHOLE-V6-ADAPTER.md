@@ -231,3 +231,13 @@ unknown states still fail closed. See [adapter recovery](ADAPTER-RECOVERY.md) fo
 exact checks, timestamped evidence, interruption handling, rollback and the
 checksum-verified adapter-only repair procedure. Do not manually delete manifests
 or modify `sidebar.lp` to bypass verification.
+
+## Live v6.6.1 repair
+
+On October 23, 2026 the checksum-verified `v1.0.7-rc.1` bootstrap's
+`install-adapter` repaired the production adapter on Pi-hole Web v6.6.1.  It
+reconciled the stale record against the September 26, 2026 v6.6 evidence and
+reinstalled both pages from the verified bundle, writing new recovery manifest
+`20261023T050127170525Z`.  The Speedtest sidebar returned and passed the
+owner's browser check.  The existing 1.0.6 companion was kept, and FTL, the
+dashboard and the collection timer stayed active.

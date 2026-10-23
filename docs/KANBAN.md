@@ -115,18 +115,55 @@ detailed acceptance criteria for active engineering work.
   passed all seven install checks, and exited `0` on the Raspberry Pi.
 - Complete the supported curl install and uninstall acceptance tracked by
   [issue #3](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3).
+- Diagnose the October 22, 2026 `install-all` failure at 6/7.  The deployment
+  record said the sidebar adapter was installed, but Pi-hole had restored its
+  original sidebar and removed both pages, most likely during the Pi-hole Web
+  v6.6.1 update.
+- Merge [PR #24](https://github.com/RamrattanN/PiHoleSpeedtestV6/pull/24):
+  fail-closed reconciliation of a fully restored adapter, a pending journal,
+  `restored` and `finalized` recovery outcomes, hashing of all historical
+  evidence, and a shared deployment lock.
+- Merge [PR #25](https://github.com/RamrattanN/PiHoleSpeedtestV6/pull/25):
+  an exact Pi-hole Web `v6.6`/`v6.6.1` allowlist with the unchanged sidebar
+  checksum, acceptance of historical v6.6 evidence as written, and pages
+  generated from the verified bundle so `install-adapter` works on a 1.0.6
+  companion.
+- Merge [PR #26](https://github.com/RamrattanN/PiHoleSpeedtestV6/pull/26) and
+  publish prerelease
+  [`v1.0.7-rc.1`](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7-rc.1)
+  from release commit `fc351cfefc3c7a7d3861fbe5070c296b25d350c7`.  The
+  reproducible bundle `deeec68c…` and bootstrap `6ece7587…` were
+  independently download-verified after publication; `releases/latest`
+  remained `v1.0.6`.
+- Accept `v1.0.7-rc.1` on the Raspberry Pi on October 23, 2026.  The
+  checksum-verified adapter-only repair restored both pages and the Speedtest
+  sidebar on Pi-hole Web v6.6.1, and the owner confirmed it in the browser.
+  FTL, the dashboard and the collection timer stayed active, companion HTTPS
+  returned HTTP 200, and the 1.0.6 companion was kept without a reinstall.
+  The new recovery manifest is `20261023T050127170525Z`.
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
+| Publish stable `v1.0.7` | [Issue #27](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/27) | `v1.0.7-rc.1` accepted on October 23, 2026.  Owner approval to publish production `v1.0.7` from release commit `fc351cf…` with byte-identical assets, then record its trust anchors. |
 | General backup and restore controls | [Roadmap](ROADMAP.md) | Define a recovery exercise for settings and history after production release |
 | Experimental Docker Compose companion | [Draft PR #21](https://github.com/RamrattanN/PiHoleSpeedtestV6/pull/21) | Candidate is under review.  Complete physical ARM64 and Ookla checks, restart continuity, and HTTP/sidebar integration acceptance before promotion.  Stable `v1.0.6` remains native-only. |
 
 ## Backlog
 
 - Full backup and restore exercise.
-- Pi-hole update failure-isolation exercise after sidebar integration.
+- Pi-hole update failure-isolation exercise after sidebar integration.  A
+  Pi-hole Web update reset the adapter pages in October 2026; the guarded
+  `install-adapter` reconciliation now repairs that state while the release
+  stays on the approved allowlist.  Each future Pi-hole Web release still
+  needs review before it is added.
+- Stop root-run adapter helpers from writing `__pycache__` into the bootstrap's
+  temporary bundle copy.  That caused non-blocking permission-denied cleanup
+  warnings after the October 23 repair.
+- Decide whether `pi.hole` should resolve in a shell on the Pi itself.  It did
+  not on October 23; the installer uses loopback and was unaffected.  This is a
+  local DNS configuration question, not a code change.
 - Structured journal messages and conservative retention.
 - Dashboard service status, next-run, last-failure, storage, and log views.
 - Chart date ranges, optional preferred server selection, table sorting, and

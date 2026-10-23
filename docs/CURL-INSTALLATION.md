@@ -50,15 +50,28 @@ prerelease acceptance override, guarded release publication, and the
 `install-all` and `uninstall-all` bootstrap actions described below.  Its
 production trust anchors are recorded below.
 
-## Version 1.0.7 (prepared, unpublished)
+## Version 1.0.7 prerelease
 
-Version 1.0.7 adds stale sidebar-adapter reconciliation, interrupted-install
-recovery and Pi-hole Web v6.6.1 support.  It is prepared through the same
-staged, checksum-verified release sequence and is not published.  Its trust
-anchors are recorded only after publication.  To repair the sidebar on an
-existing 1.0.6 installation, use the verified bootstrap's `install-adapter`, not
-`install-all` or the one-line runner.  See the
-[1.0.7 release notes](RELEASE-NOTES-1.0.7.md) for the exact procedure.
+Prerelease `v1.0.7-rc.1` adds stale sidebar-adapter reconciliation,
+interrupted-install recovery and Pi-hole Web v6.6.1 support.  It was published
+on October 23, 2026 through the staged, checksum-verified release sequence.
+The same day its adapter-only repair passed Raspberry Pi acceptance.
+**Stable `v1.0.7` is not published**, so `releases/latest` and the ordinary
+one-line runner still select stable `v1.0.6`.
+
+| Item | `v1.0.7-rc.1` value |
+| --- | --- |
+| Release commit | `fc351cfefc3c7a7d3861fbe5070c296b25d350c7` |
+| Application source commit | `63ccf3ecdf3da456d9a93b11c2c21c74b581d541` |
+| Bundle asset commit | `df141ae75424205ba761008d79e26fcae71201e8` |
+| Bundle SHA-256 | `deeec68c6e5db7cf02743182189332c1f8001a2cb350a8dbf3880481a497921f` |
+| Bootstrap SHA-256 | `6ece7587dd30aecbe81cea1d861cb80fe01e88c00006f8bd70cc955d183be699` |
+| Release bootstrap checksum file SHA-256 | `0755a24cdf70354995846738a996ce103ec8aebf0c1e0888b47391d74a5ad8bd` |
+
+To repair the sidebar on an existing 1.0.6 installation, use this pinned
+bootstrap's `install-adapter`, not `install-all` or the one-line runner.  Those
+would upgrade the companion.  The [1.0.7 release notes](RELEASE-NOTES-1.0.7.md)
+give the exact procedure, expected state, recovery and acceptance record.
 
 ## Trust chain
 
