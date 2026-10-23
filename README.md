@@ -5,19 +5,18 @@ It keeps collection, history, and the full dashboard independent from Pi-hole
 so a Pi-hole upgrade cannot erase data or disable scheduled tests.  Optional
 sidebar pages open the dashboard from inside the Pi-hole web interface.
 
-> **Release status:** [v1.0.6](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.6)
-> is the published production release.  The ordinary install command below
-> selects it and passed Raspberry Pi verification.  Stable `v1.0.6` and the
-> accepted `v1.0.6-rc.9` point to the same release commit and carry identical
-> bootstrap assets.  Earlier release candidates remain published as historical
-> evidence.  See the [acceptance record](docs/CURL-INSTALLATION.md#acceptance).
+> **Release status:** [v1.0.7](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7)
+> is the current stable release, and the ordinary install command below
+> selects it.  It adds sidebar-adapter recovery and Pi-hole Web v6.6.1 support.
+> It was published on October 23, 2026 from the same release commit as the
+> accepted `v1.0.7-rc.1`, with byte-identical assets.  That prerelease repaired
+> the production sidebar with an adapter-only install that kept the existing
+> companion.  See the [1.0.7 release notes](docs/RELEASE-NOTES-1.0.7.md).
 >
-> Prerelease
-> [v1.0.7-rc.1](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7-rc.1)
-> adds sidebar-adapter recovery and Pi-hole Web v6.6.1 support.  On
-> October 23, 2026 it repaired the production sidebar with an adapter-only
-> install that kept the existing companion.  Stable v1.0.7 is not yet
-> published.  See the [1.0.7 release notes](docs/RELEASE-NOTES-1.0.7.md).
+> The preceding stable release, `v1.0.6`, remains published.  It and the
+> accepted `v1.0.6-rc.9` point to the same release commit, and earlier release
+> candidates remain published as historical evidence.  See the
+> [acceptance record](docs/CURL-INSTALLATION.md#acceptance).
 
 ## What it does
 
@@ -112,8 +111,8 @@ immutable commands, trust anchors, and recovery contract in the
 
 ## Pinned release selection
 
-To reproduce the accepted rc.9 installation, select its exact release tag.
-The ordinary command above selects stable v1.0.6:
+The ordinary command above selects stable v1.0.7.  To reproduce the
+historical accepted rc.9 installation, select its exact release tag:
 
 ```bash
 curl -fsSL \
@@ -137,8 +136,12 @@ Docker deployment is not supported in this release; it is planned future work.
 
 ## Current status
 
-Version `1.0.6` is the published, owner-accepted production baseline on the
-verified Raspberry Pi.  The tagged rc.9 install, repeat install, uninstall,
+Version `1.0.7` is the current stable release.  On the verified Raspberry Pi,
+its adapter-only repair restored the sidebar on Pi-hole Web v6.6.1 and kept the
+installed 1.0.6 companion, whose runtime is functionally identical.
+
+Version `1.0.6` is the preceding published, owner-accepted production baseline
+on the verified Raspberry Pi.  The tagged rc.9 install, repeat install, uninstall,
 reinstall, scheduled collection, and owner Overview and Setup review passed.
 The ordinary stable runner also exited successfully after validating the
 published bootstrap.  Version `1.0.5` and rc.1 through rc.8 remain historical

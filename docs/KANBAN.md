@@ -141,12 +141,18 @@ detailed acceptance criteria for active engineering work.
   FTL, the dashboard and the collection timer stayed active, companion HTTPS
   returned HTTP 200, and the 1.0.6 companion was kept without a reinstall.
   The new recovery manifest is `20261023T050127170525Z`.
+- Publish stable
+  [`v1.0.7`](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7)
+  on October 23, 2026 from the accepted rc.1 release commit `fc351cf…`, with
+  byte-identical bootstrap `6ece7587…` and checksum assets.  The stable assets
+  were independently download-verified, and `releases/latest` resolves to
+  `v1.0.7`.  This closed
+  [issue #27](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/27).
 
 ## In progress
 
 | Work item | Tracking | Entry condition |
 | --- | --- | --- |
-| Publish stable `v1.0.7` | [Issue #27](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/27) | `v1.0.7-rc.1` accepted on October 23, 2026.  Owner approval to publish production `v1.0.7` from release commit `fc351cf…` with byte-identical assets, then record its trust anchors. |
 | General backup and restore controls | [Roadmap](ROADMAP.md) | Define a recovery exercise for settings and history after production release |
 | Experimental Docker Compose companion | [Draft PR #21](https://github.com/RamrattanN/PiHoleSpeedtestV6/pull/21) | Candidate is under review.  Complete physical ARM64 and Ookla checks, restart continuity, and HTTP/sidebar integration acceptance before promotion.  Stable `v1.0.6` remains native-only. |
 

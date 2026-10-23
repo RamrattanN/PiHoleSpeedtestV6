@@ -45,7 +45,10 @@ useful entry point rather than an independent source of truth.
 
 ## Release and tracked work
 
-- [Stable v1.0.6 release](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.6)
+- [Stable v1.0.7 release](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7) -
+  current stable release, from the accepted `v1.0.7-rc.1` release commit.
+- [Stable v1.0.6 release](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.6) -
+  preceding stable release.
 - [Issue #3: Supported curl install and uninstall workflow](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/3) - acceptance complete.
 - [Prerelease v1.0.7-rc.1](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7-rc.1) -
   sidebar-adapter recovery and Pi-hole Web v6.6.1 support from PRs #24, #25 and
@@ -53,7 +56,7 @@ useful entry point rather than an independent source of truth.
   2026.  See the [1.0.7 release notes](RELEASE-NOTES-1.0.7.md) and
   [adapter recovery](ADAPTER-RECOVERY.md).
 - [Issue #27: Publish stable v1.0.7](https://github.com/RamrattanN/PiHoleSpeedtestV6/issues/27) -
-  open; stable `v1.0.6` remains the latest release.
+  complete; stable `v1.0.7` was published on October 23, 2026.
 
 ## Current approved baseline
 

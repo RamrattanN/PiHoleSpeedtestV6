@@ -158,7 +158,8 @@ acceptance on Pi-hole Web v6.6.1.  The checksum-verified bootstrap reconciled
 the stale installed record, and both pages and the Speedtest sidebar returned
 and passed the owner's browser check.  FTL, the dashboard and the collection
 timer stayed active, companion HTTPS returned HTTP 200, and the 1.0.6
-companion was kept without a reinstall.  Stable `v1.0.7` is not published.
+companion was kept without a reinstall.  Stable `v1.0.7` was then published
+from the same release commit with byte-identical assets.
 
 ## Gate 6: release acceptance
 

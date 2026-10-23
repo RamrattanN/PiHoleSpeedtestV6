@@ -2,7 +2,8 @@
 
 ## Status
 
-Version `1.0.6` is the published and owner-approved production baseline.
+Version `1.0.7` is the current published stable release.  Version `1.0.6` is
+the preceding published and owner-approved production baseline.
 Version `1.0.3` is
 withdrawn because live download verification correctly detected that its
 published bundle bytes did not match its embedded checksum.  Do not use the
@@ -50,28 +51,21 @@ prerelease acceptance override, guarded release publication, and the
 `install-all` and `uninstall-all` bootstrap actions described below.  Its
 production trust anchors are recorded below.
 
-## Version 1.0.7 prerelease
+## Version 1.0.7 stable release
 
-Prerelease `v1.0.7-rc.1` adds stale sidebar-adapter reconciliation,
-interrupted-install recovery and Pi-hole Web v6.6.1 support.  It was published
-on October 23, 2026 through the staged, checksum-verified release sequence.
-The same day its adapter-only repair passed Raspberry Pi acceptance.
-**Stable `v1.0.7` is not published**, so `releases/latest` and the ordinary
-one-line runner still select stable `v1.0.6`.
+Stable `v1.0.7` was published on October 23, 2026 from the same release commit
+as accepted prerelease `v1.0.7-rc.1`, with byte-identical assets.  It adds stale
+sidebar-adapter reconciliation, interrupted-install recovery and Pi-hole Web
+v6.6.1 support.  Its adapter-only repair passed Raspberry Pi acceptance as
+`v1.0.7-rc.1` the same day.  `releases/latest` and the ordinary one-line runner
+now select `v1.0.7`.  The trust anchors are under
+[production trust anchors](#production-trust-anchors).
 
-| Item | `v1.0.7-rc.1` value |
-| --- | --- |
-| Release commit | `fc351cfefc3c7a7d3861fbe5070c296b25d350c7` |
-| Application source commit | `63ccf3ecdf3da456d9a93b11c2c21c74b581d541` |
-| Bundle asset commit | `df141ae75424205ba761008d79e26fcae71201e8` |
-| Bundle SHA-256 | `deeec68c6e5db7cf02743182189332c1f8001a2cb350a8dbf3880481a497921f` |
-| Bootstrap SHA-256 | `6ece7587dd30aecbe81cea1d861cb80fe01e88c00006f8bd70cc955d183be699` |
-| Release bootstrap checksum file SHA-256 | `0755a24cdf70354995846738a996ce103ec8aebf0c1e0888b47391d74a5ad8bd` |
-
-To repair the sidebar on an existing 1.0.6 installation, use this pinned
-bootstrap's `install-adapter`, not `install-all` or the one-line runner.  Those
-would upgrade the companion.  The [1.0.7 release notes](RELEASE-NOTES-1.0.7.md)
-give the exact procedure, expected state, recovery and acceptance record.
+On an existing 1.0.6 installation, the ordinary runner and `install-all`
+perform the data-preserving companion upgrade.  To repair only the sidebar
+without touching the companion, use the pinned bootstrap's `install-adapter`.
+The [1.0.7 release notes](RELEASE-NOTES-1.0.7.md) give the exact procedure,
+expected state, recovery and acceptance record.
 
 ## Trust chain
 
@@ -320,6 +314,23 @@ metadata, and no other licence files.  Bundles published through version
 
 ## Production trust anchors
 
+Stable `v1.0.7` and accepted prerelease `v1.0.7-rc.1` point to the same
+release commit.  After publication, the stable bootstrap and checksum file were
+independently downloaded through `releases/latest` and the tag URL.  Both were
+compared byte for byte with the accepted rc.1 assets, and the bundle from the
+asset commit matched its SHA-256 and size.
+
+| Item | Immutable value |
+| --- | --- |
+| Application source commit | `63ccf3ecdf3da456d9a93b11c2c21c74b581d541` |
+| Bundle asset commit | `df141ae75424205ba761008d79e26fcae71201e8` |
+| Bundle SHA-256 (1,163,537 bytes) | `deeec68c6e5db7cf02743182189332c1f8001a2cb350a8dbf3880481a497921f` |
+| Bootstrap release commit | `fc351cfefc3c7a7d3861fbe5070c296b25d350c7` |
+| Bootstrap SHA-256 | `6ece7587dd30aecbe81cea1d861cb80fe01e88c00006f8bd70cc955d183be699` |
+| Release bootstrap checksum file SHA-256 | `0755a24cdf70354995846738a996ce103ec8aebf0c1e0888b47391d74a5ad8bd` |
+
+### Historical v1.0.6 trust anchors
+
 Stable `v1.0.6` and accepted prerelease `v1.0.6-rc.9` point to the same
 release commit.  The published bootstrap and checksum file were independently
 downloaded and compared byte for byte with the accepted rc.9 assets.
@@ -355,12 +366,17 @@ bootstrap=/tmp/pihole-speedtest-v6-bootstrap.sh && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
   --output "$bootstrap" \
-  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/673119bff0b4751fd3afa4fa9af922a09a27cc3d/release/pihole-speedtest-v6-bootstrap.sh && \
+  https://raw.githubusercontent.com/RamrattanN/PiHoleSpeedtestV6/fc351cfefc3c7a7d3861fbe5070c296b25d350c7/release/pihole-speedtest-v6-bootstrap.sh && \
 printf '%s  %s\n' \
-  'cf7db2d9c028ed5ea8a8df21e5f268afd0f72d22f6ff31d6735615902fcbc120' \
+  '6ece7587dd30aecbe81cea1d861cb80fe01e88c00006f8bd70cc955d183be699' \
   "$bootstrap" | sha256sum --check --status - && \
 bash "$bootstrap" install-all
 ```
+
+This pins stable `v1.0.7`.  On an existing 1.0.6 installation, `install-all`
+performs the data-preserving companion upgrade.  For a sidebar-only repair,
+replace `install-all` with `install-adapter`; see the
+[1.0.7 release notes](RELEASE-NOTES-1.0.7.md).
 
 The default capture interval is 15 minutes.  A supported alternative can be
 selected by adding, for example, `--interval-minutes 60` after `install-all`.
