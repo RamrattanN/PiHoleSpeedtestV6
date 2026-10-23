@@ -1,6 +1,6 @@
 name: Prepare release assets
 
-# Read-only preparation and validation of the version 1.0.6 release assets.
+# Read-only preparation and validation of the version 1.0.7 release assets.
 #
 # The stage is derived from what this pull request changed relative to the
 # reviewed base, so a recut never reuses assets already on main:
@@ -25,10 +25,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: "1.0.6"
-  RELEASE_BRANCH: fix/v1.0.6-heading-style
-  REVIEWED_BASE: cb51f9595e72cb9cda33d10acbdab6414bf4c952
-  # Superseded, never-published assets that must not be reused.
+  RELEASE_VERSION: "1.0.7"
+  RELEASE_BRANCH: release/prepare-v1.0.7-20261022
+  REVIEWED_BASE: 00d3c7945e6bf6ece4ffb67875c134fdf9cbd728
+  # Superseded or already-published assets that must not be reused.
   SUPERSEDED_SHA256: >-
     40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce
     59a67636376c918da111b6efba78715cc57f88929895faf0cfbb779b794a8844
@@ -51,14 +51,16 @@ env:
     fe0bd79aa80389654b2038dd55a45d7bd1bc0d984c8c1ef0db92b3f9ff9c3a6e
     de89ec112dd64cd0123777ee66f150f1830faf00b203cca97d1bba6514f1db77
     948435ea38017633125c9cf107d2a56abb03b9ea3e7aa30d2d7bbdff8177992c
-  PRERELEASE_TAG: v1.0.6-rc.9
+    3168f3df48fc133c3037d859f143ec193fcf5255259b4cdab8ad75121b8edad1
+    cf7db2d9c028ed5ea8a8df21e5f268afd0f72d22f6ff31d6735615902fcbc120
+  PRERELEASE_TAG: v1.0.7-rc.1
   REPOSITORY: RamrattanN/PiHoleSpeedtestV6
-  BUNDLE: pihole-speedtest-v6-1.0.6.tar.gz
+  BUNDLE: pihole-speedtest-v6-1.0.7.tar.gz
   BOOTSTRAP: pihole-speedtest-v6-bootstrap.sh
 
 jobs:
   prepare:
-    if: github.head_ref == 'fix/v1.0.6-heading-style'
+    if: github.head_ref == 'release/prepare-v1.0.7-20261022'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -94,21 +96,12 @@ jobs:
             case "$path" in
               .github/workflows/prepare-release-assets.yml|\
               tests/test_release_asset_preparation.py|\
-              scripts/build_release_assets.sh|\
-              THIRD_PARTY_NOTICES.md|pyproject.toml|\
-              src/pihole_speedtest/server.py|\
-              src/pihole_speedtest/web/app.js|\
-              src/pihole_speedtest/web/styles.css|\
-              src/pihole_speedtest/web/fonts/antonio-v19-latin-100.woff2|\
-              src/pihole_speedtest/web/fonts/antonio-v19-latin-regular.woff2|\
-              src/pihole_speedtest/web/fonts/antonio-v19-latin-700.woff2|\
-              tests/test_server.py|tests/test_web_assets.py|\
-              tests/test_release_documentation.py|\
-              README.md|DEPLOY.md|\
-              docs/CURL-INSTALLATION.md|docs/KANBAN.md|docs/QA-AND-ACCEPTANCE.md|\
-              docs/PIHOLE-V6-ADAPTER.md|docs/ROADMAP.md|docs/WIKI.md|\
-              release/pihole-speedtest-v6-1.0.6.tar.gz|\
-              release/pihole-speedtest-v6-1.0.6.tar.gz.sha256|\
+              tests/test_version.py|\
+              pyproject.toml|src/pihole_speedtest/__init__.py|\
+              release/bootstrap.template.sh|\
+              README.md|docs/CURL-INSTALLATION.md|docs/RELEASE-NOTES-1.0.7.md|\
+              release/pihole-speedtest-v6-1.0.7.tar.gz|\
+              release/pihole-speedtest-v6-1.0.7.tar.gz.sha256|\
               release/pihole-speedtest-v6-bootstrap.sh) ;;
               *) echo "::error::Changed file is outside the release allowlist: $path"; exit 1 ;;
             esac
@@ -327,7 +320,7 @@ jobs:
           set -euo pipefail
           PYTHONPATH=src python3 -m unittest discover -s tests -v
           python3 -m compileall -q src tests
-          for script in install.sh mod test scripts/*.sh release/bootstrap.template.sh "release/$BOOTSTRAP"; do
+          for script in install.sh mod scripts/*.sh release/bootstrap.template.sh "release/$BOOTSTRAP"; do
             bash -n "$script"
           done
           git diff --check "$REVIEWED_BASE" HEAD
@@ -337,7 +330,7 @@ jobs:
         uses: actions/upload-artifact@v4
         timeout-minutes: 3
         with:
-          name: v1.0.6-${{ steps.stage.outputs.stage == 'A' && 'bundle-stage' || steps.stage.outputs.stage == 'B' && 'bootstrap-stage' || 'release-validated' }}
+          name: v1.0.7-${{ steps.stage.outputs.stage == 'A' && 'bundle-stage' || steps.stage.outputs.stage == 'B' && 'bootstrap-stage' || 'release-validated' }}
           path: ${{ runner.temp }}/artifact/
           if-no-files-found: error
           retention-days: 7

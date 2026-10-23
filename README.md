@@ -11,6 +11,10 @@ sidebar pages open the dashboard from inside the Pi-hole web interface.
 > accepted `v1.0.6-rc.9` point to the same release commit and carry identical
 > bootstrap assets.  Earlier release candidates remain published as historical
 > evidence.  See the [acceptance record](docs/CURL-INSTALLATION.md#acceptance).
+>
+> Version 1.0.7, a sidebar-adapter recovery and Pi-hole Web v6.6.1
+> compatibility release, is prepared but unpublished.  See the
+> [1.0.7 release notes](docs/RELEASE-NOTES-1.0.7.md).
 
 ## What it does
 

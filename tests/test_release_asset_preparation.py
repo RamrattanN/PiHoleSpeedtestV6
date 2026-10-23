@@ -1,9 +1,9 @@
-"""Release scope, drift, and workflow-safety controls for version 1.0.6.
+"""Release scope, drift, and workflow-safety controls for version 1.0.7.
 
-The preparation scope lock protected the unpublished 1.0.6 release candidate.
-It is closed after production publication so maintenance documentation can
-accurately record acceptance without modifying the immutable release commit.
-The asset, lineage, and workflow safety tests below remain active.
+The 1.0.6 preparation scope lock (ReleaseScopeTests and its baseline digests)
+ended at that release's production publication and is kept as history.  The
+1.0.7 scope is enforced by the workflow guard's allowlist, mirrored below.
+The asset, lineage, and workflow safety tests remain active.
 """
 
 import hashlib
@@ -20,13 +20,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 PREPARE = WORKFLOWS / "prepare-release-assets.yml"
-RELEASE_VERSION = "1.0.6"
-# Content baseline for the scope lock: the reviewed rc.7 merge on main.
+RELEASE_VERSION = "1.0.7"
+# Historical 1.0.6 scope-lock content baseline: the reviewed rc.7 merge on main.
 REVIEWED_BASE = "f4b742e89c293b6c6d351c32dfc011b6f78223bc"
-# Pull request base for the current recut, pinned by the preparation workflow.
-PR_BASE = "cb51f9595e72cb9cda33d10acbdab6414bf4c952"
-RELEASE_BRANCH = "fix/v1.0.6-heading-style"
-# Assets recut before publication; they must never be reused.
+# Pull request base for this release, pinned by the preparation workflow:
+# main after PR #25 (Pi-hole Web v6.6.1 support).
+PR_BASE = "00d3c7945e6bf6ece4ffb67875c134fdf9cbd728"
+RELEASE_BRANCH = "release/prepare-v1.0.7-20261022"
+# Assets recut before publication, or already published; never reuse them.
 SUPERSEDED_SHA256 = {
     "40ea0b5c1c60f4143441244d03e338dde8cfa1fa23f3684cb3cd9de75c7408ce",
     "59a67636376c918da111b6efba78715cc57f88929895faf0cfbb779b794a8844",
@@ -58,12 +59,12 @@ SUPERSEDED_SHA256 = {
     # Published rc.8 assets remain historical evidence and cannot be reused for rc.9.
     "de89ec112dd64cd0123777ee66f150f1830faf00b203cca97d1bba6514f1db77",
     "948435ea38017633125c9cf107d2a56abb03b9ea3e7aa30d2d7bbdff8177992c",
+    # Published stable v1.0.6 bundle and bootstrap.
+    "3168f3df48fc133c3037d859f143ec193fcf5255259b4cdab8ad75121b8edad1",
+    "cf7db2d9c028ed5ea8a8df21e5f268afd0f72d22f6ff31d6735615902fcbc120",
 }
-# The superseded bundle on main (source commit, SHA-256) that this recut replaces.
-INHERITED_BUNDLE = (
-    "cabcbd7b217666b6b98ed41f1581c05a38bb11d4",
-    "de89ec112dd64cd0123777ee66f150f1830faf00b203cca97d1bba6514f1db77",
-)
+# No 1.0.7 bundle is inherited from main, so no recut is in progress.
+INHERITED_BUNDLE = None
 BUNDLE = ROOT / "release" / f"pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz"
 BOOTSTRAP = ROOT / "release" / "pihole-speedtest-v6-bootstrap.sh"
 PRIVATE_IPV4 = re.compile(
@@ -73,37 +74,20 @@ PRIVATE_IPV4 = re.compile(
 RELEASE_ALLOWLIST = {
     ".github/workflows/prepare-release-assets.yml",
     "tests/test_release_asset_preparation.py",
+    "tests/test_version.py",
+    "pyproject.toml",
+    "src/pihole_speedtest/__init__.py",
+    "release/bootstrap.template.sh",
     "README.md",
-    "DEPLOY.md",
     "docs/CURL-INSTALLATION.md",
-    "docs/KANBAN.md",
-    "docs/PIHOLE-V6-ADAPTER.md",
-    "docs/QA-AND-ACCEPTANCE.md",
-    "docs/ROADMAP.md",
-    "docs/WIKI.md",
+    "docs/RELEASE-NOTES-1.0.7.md",
     f"release/pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz",
     f"release/pihole-speedtest-v6-{RELEASE_VERSION}.tar.gz.sha256",
     "release/pihole-speedtest-v6-bootstrap.sh",
 }
-# Files outside the allowlist that carry an exact owner-approved change.  Each is
-# pinned to its complete corrected content and excluded from the group digests.
-APPROVED_OVERRIDES = {
-    # The owner-approved post-rc.7 Pi-hole LCARS typography correction.
-    "THIRD_PARTY_NOTICES.md": "6594ec9722c4de5c6f8385cbb4fcea230b1267e9cfeade4fa09cd83101fc7595",
-    "pyproject.toml": "356d7b137f96e71720e44315966e09f4ef16949b820287bb413b5d2d129cc7eb",
-    # The rc.9 bundle builder normalizes archive modes across runner umasks.
-    "scripts/build_release_assets.sh": "e2f2e8919e250ee8569d04e8dad6436ac801ded482696e9f071e740497464550",
-    "src/pihole_speedtest/server.py": "8a81fa20411d5798f8e3f0d8a80b5de0219183119c8177db8928f8289af13ff4",
-    "src/pihole_speedtest/web/app.js": "918b8f7d8bb887d4f024fe28a3e331331ef746e8c272a46faa08532b56408c86",
-    # Post-rc.8 owner-requested uppercase heading and Pi-hole title-color correction.
-    "src/pihole_speedtest/web/styles.css": "f44386bc24ab32526a1640ed8aef5a9abe8f43de95bfe7ce04861d8d3882a7ea",
-    "src/pihole_speedtest/web/fonts/antonio-v19-latin-100.woff2": "dfabf3dee53dc9c8b2a15b9661242cd06717aaeb7f19ea36a19b04596b7221a8",
-    "src/pihole_speedtest/web/fonts/antonio-v19-latin-700.woff2": "b6d68353c888773b36c65d1cddbc8aa805259dd74d8cc9e500def7f41818840e",
-    "src/pihole_speedtest/web/fonts/antonio-v19-latin-regular.woff2": "c367b51912a07ce2f2ec2fe9bf4c332c8e27133f466c7e22925088c2fdbf6040",
-    "tests/test_server.py": "2a2b8cd073d9b153939da15d495afe4748ee211efe51d9a77956456752104e5a",
-    "tests/test_web_assets.py": "18bbcd1ce8b03283f1497563d6454fdf9579ee8bd86edb27f4c382eb7677f7e3",
-    "tests/test_release_documentation.py": "9b99116da24f3948f887c820d12a2d04301e0bbe9e4294ab03af22514e8cab82",
-}
+# Exact-content exceptions outside the allowlist.  1.0.7 needs none; the 1.0.6
+# entries ended with that release's scope lock.
+APPROVED_OVERRIDES = {}
 APPROVED_OVERRIDE_MODES = {
     path: "100755" if path == "scripts/build_release_assets.sh" else "100644"
     for path in APPROVED_OVERRIDES
@@ -272,7 +256,7 @@ def workflow_step_script(name):
     return textwrap.dedent("\n".join(body)) + "\n"
 
 
-@unittest.skip("The 1.0.6 prerelease scope lock ended at stable publication.")
+@unittest.skip("Historical: the 1.0.6 prerelease scope lock ended at stable publication.")
 class ReleaseScopeTests(unittest.TestCase):
     def test_versions_are_exactly_the_release_version(self):
         from pihole_speedtest import __version__
@@ -390,12 +374,12 @@ class ReleaseScopeTests(unittest.TestCase):
 
 @unittest.skipUnless(
     project_version() == RELEASE_VERSION,
-    "The release asset checks apply only to the 1.0.6 release line.",
+    "The release asset checks apply only to the 1.0.7 release line.",
 )
 class ReleaseAssetTests(unittest.TestCase):
     def setUp(self):
         if not BUNDLE.exists():
-            self.skipTest("The version 1.0.6 bundle has not been committed yet.")
+            self.skipTest("The version 1.0.7 bundle has not been committed yet.")
         self.root = f"pihole-speedtest-v6-{RELEASE_VERSION}"
         with tarfile.open(BUNDLE, "r:gz") as archive:
             self.members = archive.getnames()
@@ -463,7 +447,7 @@ class ReleaseAssetTests(unittest.TestCase):
     def test_rendered_bootstrap_references_this_bundle(self):
         text = BOOTSTRAP.read_text(encoding="utf-8")
         if bootstrap_value(text, "version") != RELEASE_VERSION:
-            self.skipTest("The version 1.0.6 bootstrap has not been rendered yet.")
+            self.skipTest("The version 1.0.7 bootstrap has not been rendered yet.")
         self.assertNotRegex(text, r"@(SOURCE_COMMIT|ASSET_COMMIT|BUNDLE_SHA256)@")
         self.assertEqual(bootstrap_value(text, "repository"), "RamrattanN/PiHoleSpeedtestV6")
         self.assertRegex(bootstrap_value(text, "asset_commit"), r"^[0-9a-f]{40}$")
@@ -484,7 +468,7 @@ class ReleaseAssetTests(unittest.TestCase):
     def test_rendered_bootstrap_asset_commit_is_the_bundle_commit(self):
         text = BOOTSTRAP.read_text(encoding="utf-8")
         if bootstrap_value(text, "version") != RELEASE_VERSION:
-            self.skipTest("The version 1.0.6 bootstrap has not been rendered yet.")
+            self.skipTest("The version 1.0.7 bootstrap has not been rendered yet.")
         if self.bundle_state(text) == "awaiting-render":
             self.skipTest("Recut in progress: the committed bundle awaits its Stage B bootstrap.")
         self.assertEqual(self.bundle_state(text), "match")
@@ -618,8 +602,9 @@ class PrepareWorkflowSafetyTests(unittest.TestCase):
         self.assertIn("if-no-files-found: error", self.code)
 
     def test_workflow_builds_twice_and_compares_bytes(self):
-        self.assertEqual(self.code.count("scripts/build_release_assets.sh"), 3)
-        self.assertIn("scripts/build_release_assets.sh|\\", self.code)
+        # Stage A and Stages B/C each build; the builder itself is not in scope for 1.0.7.
+        self.assertEqual(self.code.count("scripts/build_release_assets.sh"), 2)
+        self.assertNotIn("scripts/build_release_assets.sh|\\", self.code)
         self.assertIn('cmp "$RUNNER_TEMP/first/$BUNDLE" "$RUNNER_TEMP/second/$BUNDLE"', self.code)
         self.assertIn('cmp "$RUNNER_TEMP/$build/$BUNDLE" "release/$BUNDLE"', self.code)
         self.assertIn("sha256sum --check --strict", self.code)
@@ -692,7 +677,7 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
             f'version="{RELEASE_VERSION}"\n', encoding="utf-8"
         )
         (self.repo / "release" / "pihole-speedtest-v6-bootstrap.sh").write_text(
-            'version="1.0.5"\n', encoding="utf-8"
+            'version="1.0.6"\n', encoding="utf-8"
         )
         (self.repo / "docs" / "WIKI.md").write_text("wiki\n", encoding="utf-8")
         self.git("init", "-q")
@@ -754,7 +739,7 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
         return result, output.strip()
 
     def test_guard_accepts_allowlisted_changes(self):
-        (self.repo / "docs" / "WIKI.md").write_text("updated\n", encoding="utf-8")
+        (self.repo / "docs" / "RELEASE-NOTES-1.0.7.md").write_text("notes\n", encoding="utf-8")
         self.commit("docs")
 
         self.assertEqual(self.guard().returncode, 0)
@@ -762,6 +747,8 @@ class PrepareWorkflowGuardTests(unittest.TestCase):
     def test_guard_rejects_the_wrong_branch(self):
         for head_ref in (
             "feature/other",
+            "fix/v1.0.6-heading-style",
+            "release/prepare-v1.0.7",
             "release/v1.0.6-assets",
             "release/v1.0.6-assets-2",
             "fix/v1.0.6-release-publication",
