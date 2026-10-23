@@ -50,6 +50,16 @@ prerelease acceptance override, guarded release publication, and the
 `install-all` and `uninstall-all` bootstrap actions described below.  Its
 production trust anchors are recorded below.
 
+## Version 1.0.7 (prepared, unpublished)
+
+Version 1.0.7 adds stale sidebar-adapter reconciliation, interrupted-install
+recovery and Pi-hole Web v6.6.1 support.  It is prepared through the same
+staged, checksum-verified release sequence and is not published.  Its trust
+anchors are recorded only after publication.  To repair the sidebar on an
+existing 1.0.6 installation, use the verified bootstrap's `install-adapter`, not
+`install-all` or the one-line runner.  See the
+[1.0.7 release notes](RELEASE-NOTES-1.0.7.md) for the exact procedure.
+
 ## Trust chain
 
 The pinned command below never pipes a mutable branch directly into a shell.
