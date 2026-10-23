@@ -137,8 +137,9 @@ stored at
 - simulate a fully restored sidebar with both pages missing and a stale
   installed record; confirm guarded reconciliation, retained historical
   evidence, rollback of a failed attempt, an interruption blocking later
-  actions until verified `recover`, and refusal of every partial or modified
-  state (see [adapter recovery](ADAPTER-RECOVERY.md)).
+  actions until verified `recover` either restores the original records or
+  finalizes a fully installed adapter, and refusal of every partial or
+  modified state (see [adapter recovery](ADAPTER-RECOVERY.md)).
 
 The disposable installed-tree rehearsal passed on September 22, 2026 local
 time.  Installation, checksum validation, exact removal, live-sidebar

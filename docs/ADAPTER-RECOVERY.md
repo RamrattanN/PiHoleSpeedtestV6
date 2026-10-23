@@ -93,43 +93,91 @@ blocks installer, removal and uninstall entry points. Do not delete it to retry.
 On an ordinary failure the installer's error trap restores the header policy
 present before the attempt, removes any adapter files it verified as its own,
 and then runs the same checksum-verified `recover` step described below while
-still holding the deployment lock. If the web tree is proven fully restored,
-the two deployment records return byte-for-byte to their pre-reconciliation
-snapshots, `recovered.json` is written, pending intent is cleared and the
-output says so. The reconciliation and failed-attempt directories are kept as
-evidence. Resolve the reported cause and rerun the same verified command.
+still holding the deployment lock. The output names the outcome. The
+reconciliation and failed-attempt directories are kept as evidence. Resolve the
+reported cause and rerun the same verified command.
 
 If that automatic step refuses, or SIGKILL or power loss prevented the trap,
-the pending journal remains and every entry point stays blocked:
+the pending journal remains and every entry point stays blocked. Preserve the
+pending journal, its `reconciliation-TIMESTAMP` directory and all newer
+timestamped adapter recovery directories, then run the helper from the
+**extracted, SHA-256-verified new release bundle**:
 
-1. Read the pending journal and its referenced reconciliation directory. Preserve
-   those files and all newer timestamped adapter recovery directories.
-2. If the sidebar is still exactly restored and both pages are absent, use the
-   helper from the **extracted, SHA-256-verified new release bundle**:
+```bash
+sudo python3 -I /path/to/verified-bundle/scripts/reconcile_pihole_adapter.py recover
+```
 
-   ```bash
-   sudo python3 -I /path/to/verified-bundle/scripts/reconcile_pihole_adapter.py recover
-   ```
+The helper takes the deployment lock and first proves the journal itself: its
+location and permissions, both pre-reconciliation snapshot checksums, the
+historical manifest checksum and the checksum of every file in the historical
+recovery directory. It refuses if any deployment value other than the adapter
+keys changed. It then accepts exactly one of two live states:
 
-   This validates journal/snapshot checksums, rechecks the restored web state,
-   refuses unrelated deployment changes, restores the two pre-reconciliation
-   metadata snapshots, archives `recovered.json`, and clears pending intent.
-   It changes no web files, headers, database or settings. Repeat the verified
-   `install-adapter` action after resolving the original failure. Repeating an
-   interrupted metadata recovery is safe while these checks still pass.
-3. If any new installed/partial files remain, or a new manifest is recorded,
-   the helper refuses. Manual review must identify the new installation manifest
-   and compare every live file against it. A fully matching installation can be
-   removed through the existing low-level `adapter-remove --manifest PATH`
-   checksum gate; unknown partial files must not be overwritten or deleted.
-   Compare live headers with that attempt's archived installed and
-   `pihole-web-headers.attempt-before.json` values before restoring any header
-   configuration. Reconcile the reviewed deployment record only after exact web
-   restoration is proven. Do not run companion uninstall or purge to resolve it.
+- **Restored** (`Pre-reconciliation deployment records restored`): the sidebar
+  is the approved original, both pages are absent and the records still name
+  the historical manifest. Both records return byte-for-byte to their snapshots
+  and `recovered.json` is written. Rerun the verified `install-adapter` action
+  after resolving the original failure.
+- **Finalized** (`Verified adapter installation finalized`): power was lost
+  after the new adapter was installed. Both records must name the same new
+  manifest created after this journal. That manifest must pass the same path,
+  ownership, layout and recomputed-checksum checks as the historical one. The
+  live sidebar and both pages must match its installed checksums. Its archived
+  header policy must match the historical original, and its pre-installation
+  snapshots must equal the prepared state recorded in the journal. An existing
+  `completed.json` is accepted only if it names that same manifest; it is never
+  proof on its own. `completed.json` is written if missing, `finalized.json`
+  records the recovery, and no web file, header or deployment record changes.
+
+Either outcome then removes the pending marker and syncs its directory. Running
+`recover` again after a second interruption repeats the same checks and is
+safe; once nothing is pending it reports `nothing to recover` and changes
+nothing.
+
+Any other state is refused with every file left as found. Examples are a
+modified sidebar or page, partial files from an interrupted write, records that
+disagree, an untrusted or inconsistent manifest or snapshot, or changed
+historical evidence. That needs manual review. Identify which recovery manifest,
+if any, every live file matches, and compare live headers with the archived
+`pihole-web-headers.*.json` values. Do not delete or edit the pending journal,
+deployment records, manifests or web files to get past the refusal, and do not
+run companion uninstall or purge to resolve it.
 
 Successful repair is reversed with the verified bootstrap's `remove-adapter`.
 That verifies new installed checksums and headers before restoring the original
 sidebar/header policy. Measurement data and historical recovery evidence remain.
+
+## Predeployment verification (separate approval)
+
+These checks are prerequisites for deploying the fix. Make them read-only, and
+do not combine them with the repair itself:
+
+- **Ownership and permissions.** Reconciliation refuses unless every path it
+  reads is root-owned, has no group or other write permission and contains no
+  symlink. Confirm this for the Pi-hole web directories, the sidebar, the
+  adapter recovery evidence and both active deployment manifests:
+
+  ```bash
+  sudo stat -c '%U:%G %a %F %n' /var/www/html/admin /var/www/html/admin/scripts \
+    /var/www/html/admin/scripts/lua /var/www/html/admin/scripts/lua/sidebar.lp \
+    /var/lib/pihole-speedtest/install-manifest.txt \
+    /var/lib/pihole-speedtest/collection-manifest.txt \
+    /var/lib/pihole-speedtest-adapter-recovery \
+    /var/lib/pihole-speedtest-adapter-recovery/20260926T031216666609Z \
+    /var/lib/pihole-speedtest-adapter-recovery/20260926T031216666609Z/*
+  ```
+
+- **Sidebar baseline.** `pihole -v` must report Web `v6.6`, and
+  `sha256sum /var/www/html/admin/scripts/lua/sidebar.lp` must equal the approved
+  `83943cbdf5258fe43e819108a5135e070d6742e273753ba398a8d28e1a008fdb`.
+- **HTTPS origin and frame policy.** Record the installed `pihole_origin` and
+  `companion_url`. For an HTTPS origin, confirm that the existing loopback
+  requests return the admin page and the current `Content-Security-Policy`, for
+  example `curl -kfsS --resolve pi.hole:443:127.0.0.1 -D - -o /dev/null
+  https://pi.hole/admin/`. The isolated tests cover this path; the real
+  certificate and FTL behaviour still need confirming on the device.
+- **Release preparation.** A new version and checksum-verified release assets
+  are prepared separately. This fix does not change the version number.
 
 ## Upgrade distinction and release procedure
 

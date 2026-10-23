@@ -7,11 +7,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from pihole_speedtest.adapter import AdapterError
-from pihole_speedtest.adapter_reconcile import inspect_restored, prepare, recover
+from pihole_speedtest.adapter_reconcile import inspect_restored, prepare, recover_outcome
 
 LOCK = "/run/pihole-speedtest-adapter.lock"
 INHERITED_LOCK = 9
 ROOT_UID = 0
+OUTCOMES = {
+    "restored": "Pre-reconciliation deployment records restored",
+    "finalized": "Verified adapter installation finalized",
+}
 
 
 def acquire_lock():
@@ -37,17 +41,22 @@ def acquire_lock():
 try:
     if len(sys.argv) != 2:
         raise ValueError("expected one operation: check, prepare or recover")
-    operation = {"check": inspect_restored, "prepare": prepare, "recover": recover}[
-        sys.argv[1]
-    ]
+    operation = {
+        "check": inspect_restored,
+        "prepare": prepare,
+        "recover": recover_outcome,
+    }[sys.argv[1]]
     acquire_lock()
-    print(
-        operation(
-            Path("/var/lib/pihole-speedtest"),
-            Path("/var/lib/pihole-speedtest-adapter-recovery"),
-            Path("/var/www/html/admin"),
-            uid=ROOT_UID,
-        )
+    result = operation(
+        Path("/var/lib/pihole-speedtest"),
+        Path("/var/lib/pihole-speedtest-adapter-recovery"),
+        Path("/var/www/html/admin"),
+        uid=ROOT_UID,
     )
+    if sys.argv[1] == "recover":
+        journal, outcome = result
+        print(f"{OUTCOMES[outcome]}; evidence kept in {journal}")
+    else:
+        print(result)
 except (AdapterError, OSError, ValueError, KeyError, TypeError) as exc:
     raise SystemExit(f"STOP: Adapter reconciliation refused: {exc}") from exc

@@ -53,7 +53,10 @@ def executable(path, content):
 
 
 @unittest.skipUnless(tomllib and _bash_has_mapfile(), "Python 3.11+ and bash 4+ are required")
-class GuardedInstallerReconciliationTests(unittest.TestCase):
+class _Sandbox(unittest.TestCase):
+    origin = ORIGIN
+    companion = COMPANION
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -78,7 +81,7 @@ class GuardedInstallerReconciliationTests(unittest.TestCase):
             path = self.data / name
             path.write_text(
                 f"installed_at=20260926T031124Z\nsource_commit={INSTALLED_COMMIT}\n"
-                f"pihole_origin={ORIGIN}\ncompanion_url={COMPANION}\n"
+                f"pihole_origin={self.origin}\ncompanion_url={self.companion}\n"
                 "pihole_adapter_installed=false\n",
                 encoding="utf-8",
             )
@@ -138,6 +141,8 @@ class GuardedInstallerReconciliationTests(unittest.TestCase):
 
     def _write_stubs(self):
         bin_dir, python, state = self.t / "bin", sys.executable, self.state
+        real_grep = shutil.which("grep")
+        scheme = self.companion.split(":", 1)[0]
         venv = self.t / "opt/pihole-speedtest/venv/bin"
         venv.mkdir(parents=True)
         (bin_dir / "python3").symlink_to(python)
@@ -170,15 +175,28 @@ class GuardedInstallerReconciliationTests(unittest.TestCase):
         executable(bin_dir / "curl", f"""
             #!{python}
             import json, os, sys, tomllib
+            from urllib.parse import urlparse
             args, url = sys.argv[1:], sys.argv[-1]
-            if url.endswith("/api/health"):
+            with open("{self.t}/curl.log", "a", encoding="utf-8") as log:
+                log.write(json.dumps(args) + "\\n")
+            target = urlparse(url)
+            if target.scheme == "https":
+                # TLS endpoints are reached only through the installer's loopback mechanism.
+                if not any(a.startswith("-") and not a.startswith("--") and "k" in a for a in args):
+                    sys.exit(60)
+                if target.hostname != "127.0.0.1" and (
+                    "--resolve" not in args
+                    or args[args.index("--resolve") + 1] != f"{{target.hostname}}:443:127.0.0.1"
+                ):
+                    sys.exit(6)
+            if url == "{scheme}://127.0.0.1:8765/api/health":
                 ok = not os.path.exists("{state}/companion-unhealthy")
                 print(json.dumps({{"status": "ok" if ok else "degraded", "version": "1.0.6"}}))
-            elif url == "http://127.0.0.1:8765/":
-                print("Content-Security-Policy: frame-ancestors 'self' {ORIGIN}")
-            elif url == "{ORIGIN}/admin/":
+            elif url == "{scheme}://127.0.0.1:8765/":
+                print("Content-Security-Policy: frame-ancestors 'self' {self.origin}")
+            elif url == "{self.origin}/admin/":
                 pass
-            elif url == "{ORIGIN}/admin/speedtest":
+            elif url == "{self.origin}/admin/speedtest":
                 if not os.path.exists("{self.pages[0]}"):
                     sys.exit(22)
                 if not os.path.exists("{state}/no-frame-policy"):
@@ -186,6 +204,14 @@ class GuardedInstallerReconciliationTests(unittest.TestCase):
                         print("\\n".join(tomllib.load(source)["webserver"]["headers"]))
             else:
                 sys.exit(22)
+            """)
+        # The first command after both deployment records name the new manifest.
+        executable(bin_dir / "grep", f"""
+            #!{python}
+            import os, signal, sys
+            if "BEGIN PIHOLE-SPEEDTEST-V6" in sys.argv[1:] and os.path.exists("{state}/kill-after-record"):
+                os.killpg(os.getpgrp(), signal.SIGKILL)  # simulated power loss
+            os.execv("{real_grep}", ["grep", *sys.argv[1:]])
             """)
         executable(bin_dir / "pihole", f"""
             #!/bin/sh
@@ -237,12 +263,12 @@ class GuardedInstallerReconciliationTests(unittest.TestCase):
             stderr=subprocess.STDOUT, text=True, timeout=120,
         )
 
-    def install(self, companion=COMPANION):
+    def install(self, companion=None):
         return self.run_script(
             "bash", str(self.bundle / "scripts/install_pihole_adapter.sh"),
             "--expected-source-commit", SOURCE_COMMIT,
             "--expected-installed-commit", INSTALLED_COMMIT,
-            "--companion-url", companion, "--pihole-origin", ORIGIN,
+            "--companion-url", companion or self.companion, "--pihole-origin", self.origin,
         )
 
     def remove(self):
@@ -280,6 +306,13 @@ class GuardedInstallerReconciliationTests(unittest.TestCase):
         self.assertEqual(self.tree(self.historical.parent), self.evidence)
         for path, content in self.user_data.items():
             self.assertEqual(path.read_bytes(), content)
+
+    @property
+    def pending(self):
+        return self.recovery / "reconciliation.pending.json"
+
+
+class GuardedInstallerReconciliationTests(_Sandbox):
 
     def test_restored_state_is_reconciled_and_reinstalled_with_new_evidence(self):
         result = self.install()
@@ -413,7 +446,7 @@ class GuardedInstallerReconciliationTests(unittest.TestCase):
                 records = self.records()
                 recovery = sorted(self.recovery.iterdir())
                 web = self.tree(self.web)
-                result = self.install(companion or COMPANION)
+                result = self.install(companion)
                 self.assertNotEqual(result.returncode, 0, result.stdout)
                 self.assertEqual(self.records(), records)
                 self.assertEqual(sorted(self.recovery.iterdir()), recovery)
@@ -430,6 +463,202 @@ class GuardedInstallerReconciliationTests(unittest.TestCase):
                 self.toml.write_bytes(headers_before)
                 for flag in self.state.iterdir():
                     flag.unlink()
+
+
+    # Post-installation interruption: records name the new manifest, pending remains.
+
+    def interrupt_after_record(self):
+        (self.state / "kill-after-record").touch()
+        result = self.install()
+        (self.state / "kill-after-record").unlink()
+        self.assertEqual(result.returncode, -9, result.stdout)
+        new = Path(self.value("pihole_adapter_manifest"))
+        self.assertNotEqual(new, self.historical)
+        for content in self.records().values():
+            self.assertIn(f"pihole_adapter_manifest={new}\n".encode(), content)
+        self.assertTrue(self.pending.is_file())
+        (journal,) = self.journals()
+        self.assertFalse((journal / "completed.json").exists())
+        return new, journal
+
+    def test_kill_point_is_after_both_records_and_before_completion(self):
+        script = (ROOT / "scripts/install_pihole_adapter.sh").read_text()
+        record = script.index("state_updated=1")
+        hook = script.index("grep -q 'BEGIN PIHOLE-SPEEDTEST-V6' \"$sidebar\"")
+        self.assertLess(record, hook)
+        self.assertLess(hook, script.index('(journal / "completed.json")'))
+        self.assertEqual(script.count("BEGIN PIHOLE-SPEEDTEST-V6"), 1)
+
+    def test_power_loss_after_records_is_finalized_by_recover(self):
+        new, journal = self.interrupt_after_record()
+        web, records, headers = self.tree(self.web), self.records(), self.toml.read_bytes()
+
+        blocked = self.install()
+        self.assertNotEqual(blocked.returncode, 0)
+        self.assertIn("Interrupted reconciliation", blocked.stdout)
+        self.assertNotEqual(self.remove().returncode, 0)
+
+        result = self.helper("recover")
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("Verified adapter installation finalized", result.stdout)
+        self.assertFalse(self.pending.exists())
+        completed = json.loads((journal / "completed.json").read_text())
+        self.assertEqual(completed["installed_manifest"], str(new))
+        self.assertTrue((journal / "finalized.json").is_file())
+        # Finalization changes no web file, header policy or deployment record.
+        self.assertEqual(self.tree(self.web), web)
+        self.assertEqual(self.records(), records)
+        self.assertEqual(self.toml.read_bytes(), headers)
+        self.assert_preserved()
+
+        journal_files = self.tree(journal)
+        again = self.helper("recover")
+        self.assertNotEqual(again.returncode, 0)
+        self.assertIn("nothing to recover", again.stdout)
+        self.assertEqual(self.tree(journal), journal_files)
+        self.assertEqual(self.records(), records)
+
+        removal = self.remove()
+        self.assertEqual(removal.returncode, 0, removal.stdout)
+        self.assertEqual(self.sidebar.read_text(), SIDEBAR)
+        self.assertFalse(any(page.exists() for page in self.pages))
+        self.assertEqual(self.headers(), HEADERS)
+        self.assertEqual(self.value("pihole_adapter_installed"), "false")
+        self.assert_preserved()
+
+    def test_interruption_after_completion_record_and_repeated_recovery(self):
+        result = self.install()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        (journal,) = self.journals()
+        completed = (journal / "completed.json").read_bytes()
+        web, records = self.tree(self.web), self.records()
+        for attempt in range(2):
+            with self.subTest(attempt=attempt):
+                # Power loss before the pending marker's removal reached disk.
+                self.pending.write_text(json.dumps({"journal": str(journal)}) + "\n")
+                self.pending.chmod(0o600)
+                recovered = self.helper("recover")
+                self.assertEqual(recovered.returncode, 0, recovered.stdout)
+                self.assertIn("finalized", recovered.stdout)
+                self.assertFalse(self.pending.exists())
+                self.assertEqual((journal / "completed.json").read_bytes(), completed)
+                self.assertEqual(self.tree(self.web), web)
+                self.assertEqual(self.records(), records)
+        self.assert_preserved()
+
+    def test_finalization_refuses_modified_or_inconsistent_installs(self):
+        new, journal = self.interrupt_after_record()
+        collection = self.data / "collection-manifest.txt"
+        snapshot = new.with_name("install-manifest.before.txt")
+
+        def edit(path, change):
+            content = path.read_bytes()
+            change(path)
+            return lambda: path.write_bytes(content)
+
+        def append(path, text):
+            return edit(path, lambda p: p.write_text(p.read_text() + text))
+
+        def chmod(path, mode):
+            original = path.stat().st_mode & 0o777
+            path.chmod(mode)
+            return lambda: path.chmod(original)
+
+        def replace_with_symlink(path):
+            content = path.read_bytes()
+            target = path.with_name("elsewhere.txt")
+            target.write_bytes(content)
+            path.unlink()
+            path.symlink_to(target)
+
+            def undo():
+                path.unlink()
+                target.unlink()
+                path.write_bytes(content)
+                path.chmod(0o600)
+            return undo
+
+        def json_edit(path, change):
+            def apply(p):
+                value = json.loads(p.read_text())
+                change(value)
+                p.write_text(json.dumps(value))
+            return edit(path, apply)
+
+        def completion(manifest):
+            path = journal / "completed.json"
+            path.write_text(json.dumps({"installed_manifest": manifest}))
+            path.chmod(0o600)
+            return path.unlink
+
+        cases = {
+            "modified sidebar": lambda: append(self.sidebar, "<!-- local -->\n"),
+            "modified overview page": lambda: append(self.pages[0], "<!-- local -->\n"),
+            "modified setup page": lambda: append(self.pages[1], "<!-- local -->\n"),
+            "disagreeing records": lambda: edit(collection, lambda p: p.write_text(
+                p.read_text().replace(str(new), str(self.historical)))),
+            "unrelated record change": lambda: append(collection, "operator=change\n"),
+            "untrusted new manifest": lambda: chmod(new, 0o666),
+            "inconsistent new manifest": lambda: json_edit(
+                new, lambda m: m.update(pihole_origin="http://elsewhere.example.test")),
+            "inconsistent pre-install snapshot": lambda: append(snapshot, "extra=value\n"),
+            "symlinked pre-install snapshot": lambda: replace_with_symlink(snapshot),
+            "changed historical evidence": lambda: append(
+                self.historical.with_name("collection-manifest.before.txt"), "late=edit\n"),
+            "completion record for another manifest": lambda: completion(str(self.historical)),
+        }
+        for label, mutate in cases.items():
+            with self.subTest(label):
+                undo = mutate()
+                web, records = self.tree(self.web), self.records()
+                pending = self.pending.read_bytes()
+                journal_files = self.tree(journal)
+                result = self.helper("recover")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("Adapter reconciliation refused", result.stdout)
+                self.assertEqual(self.pending.read_bytes(), pending)
+                self.assertEqual(self.tree(journal), journal_files)
+                self.assertEqual(self.tree(self.web), web)
+                self.assertEqual(self.records(), records)
+                undo()
+        # With every mutation undone, the verified state finalizes.
+        result = self.helper("recover")
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("finalized", result.stdout)
+
+
+class HttpsReconciliationTests(_Sandbox):
+    origin = "https://pi.hole"
+    companion = "https://pi.hole:8765"
+
+    def test_https_reconciliation_uses_tls_aware_requests(self):
+        log = self.t / "curl.log"
+        log.unlink()
+        result = self.install()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        (journal,) = self.journals()
+        self.assertTrue((journal / "completed.json").is_file())
+        self.assertIn("frame-src https://pi.hole:8765", "\n".join(self.headers()))
+        requests = [json.loads(line) for line in log.read_text().splitlines()]
+        pihole = [r for r in requests if r[-1].startswith("https://pi.hole/")]
+        companion = [r for r in requests if r[-1].startswith("https://127.0.0.1:8765/")]
+        self.assertIn("https://pi.hole/admin/", [r[-1] for r in pihole])
+        self.assertIn("https://pi.hole/admin/speedtest", [r[-1] for r in pihole])
+        self.assertTrue(companion)
+        for request in pihole:
+            self.assertEqual(request[request.index("--resolve") + 1], "pi.hole:443:127.0.0.1")
+        self.assertFalse([r for r in requests if r[-1].startswith("http://")])
+        self.assert_preserved()
+
+    def test_https_frame_policy_failure_restores_the_stale_record(self):
+        (self.state / "no-frame-policy").touch()
+        result = self.install()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("did not serve the installed companion frame policy", result.stdout)
+        self.assertIn("Pre-reconciliation deployment records restored", result.stdout)
+        self.assertEqual(self.records(), self.stale)
+        self.assertFalse(self.pending.exists())
+        self.assert_preserved()
 
 
 if __name__ == "__main__":

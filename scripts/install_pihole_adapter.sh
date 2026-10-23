@@ -298,11 +298,9 @@ rollback() {
     cp -a "$recovery_dir/install-manifest.before.txt" "$install_manifest" 2>/dev/null || true
     cp -a "$recovery_dir/collection-manifest.before.txt" "$collection_manifest" 2>/dev/null || true
   fi
-  # Restore the pre-reconciliation record only if the web tree is proven restored again.
+  # Resolve pending intent only from an independently verified restored or installed state.
   if [ -n "$reconciliation_dir" ]; then
-    if python3 -I "$source_root/scripts/reconcile_pihole_adapter.py" recover >&2; then
-      echo "Pre-reconciliation deployment records restored; evidence kept in $reconciliation_dir." >&2
-    else
+    if ! python3 -I "$source_root/scripts/reconcile_pihole_adapter.py" recover >&2; then
       echo "Reconciliation remains pending: $reconciliation_dir. Follow docs/ADAPTER-RECOVERY.md before retrying." >&2
     fi
   fi

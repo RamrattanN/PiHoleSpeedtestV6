@@ -200,6 +200,24 @@ class ReconciliationTests(unittest.TestCase):
         recover(*self.args, **self.options)
         self.assertEqual(self.check(), self.old)
 
+    def test_recovery_refuses_any_change_to_historical_evidence(self):
+        prepare(*self.args, **self.options)
+        records = {p: p.read_bytes() for p in self.data.iterdir()}
+        for name in ("collection-manifest.before.txt", "removal.json"):
+            path = self.old.with_name(name)
+            content = path.read_bytes()
+            path.write_bytes(content + b"late=edit\n")
+            with self.subTest(name), self.assertRaisesRegex(AdapterError, "evidence changed"):
+                recover(*self.args, **self.options)
+            path.write_bytes(content)
+        extra = self.old.with_name("unexpected.txt")
+        extra.write_text("added later")
+        with self.assertRaisesRegex(AdapterError, "evidence changed"):
+            recover(*self.args, **self.options)
+        extra.unlink()
+        self.assertEqual({p: p.read_bytes() for p in self.data.iterdir()}, records)
+        recover(*self.args, **self.options)
+
     def test_recovery_never_overwrites_changed_web_or_deployment_state(self):
         prepare(*self.args, **self.options)
         self.sidebar.write_text("custom")
