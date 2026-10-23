@@ -6,6 +6,20 @@ if [ "${EUID}" -ne 0 ]; then
   exit 1
 fi
 
+# Serialize guarded deployment mutations; the descriptor stays open through rollback.
+if [ -L /run/pihole-speedtest-adapter.lock ]; then
+  echo "STOP: Adapter operation lock is a symlink." >&2
+  exit 1
+fi
+exec 9>> /run/pihole-speedtest-adapter.lock
+flock -n 9 || { echo "STOP: Another deployment operation is running." >&2; exit 1; }
+
+if [ -e /var/lib/pihole-speedtest-adapter-recovery/reconciliation.pending.json ] ||
+  [ -L /var/lib/pihole-speedtest-adapter-recovery/reconciliation.pending.json ]; then
+  echo "STOP: Interrupted adapter reconciliation; follow docs/ADAPTER-RECOVERY.md." >&2
+  exit 1
+fi
+
 application_cli="/opt/pihole-speedtest/venv/bin/pihole-speedtest"
 application_python="/opt/pihole-speedtest/venv/bin/python"
 data_dir="/var/lib/pihole-speedtest"

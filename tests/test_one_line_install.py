@@ -789,6 +789,73 @@ class BootstrapBehaviourTests(unittest.TestCase):
         self.assertEqual(self.harness.phases(), [])
         self.assertIn("already installed", result.stdout)
 
+    def restore_adapter_files(self):
+        sidebar = self.harness.path("var/www/html/admin/scripts/lua/sidebar.lp")
+        sidebar.write_text("original sidebar\n")
+        for name in ("speedtest.lp", "speedtest-setup.lp"):
+            self.harness.path("var/www/html/admin/" + name).unlink()
+
+    def test_stale_record_routes_to_guarded_repair_and_repeat_is_idempotent(self):
+        self.install_all()
+        self.restore_adapter_files()
+        self.harness.clear_phases()
+        self.install_all()
+        self.assertEqual(self.harness.phases(), ["install_pihole_adapter.sh"])
+        self.harness.clear_phases()
+        self.install_all()
+        self.assertEqual(self.harness.phases(), [])
+
+    def test_stale_record_is_repaired_before_companion_upgrade(self):
+        self.install_all()
+        self.restore_adapter_files()
+        manifest = self.harness.path("var/lib/pihole-speedtest/install-manifest.txt")
+        manifest.write_text(self.harness.manifest().replace(SOURCE_COMMIT, "c" * 40))
+        self.harness.clear_phases()
+        self.install_all()
+        self.assertEqual(self.harness.phases(), ["install_pihole_adapter.sh",
+                         "remove_pihole_adapter.sh", "uninstall_release.sh",
+                         "install_release.sh", "install_pihole_adapter.sh"])
+
+    def test_refused_repair_stops_before_companion_upgrade(self):
+        self.install_all()
+        self.restore_adapter_files()
+        manifest = self.harness.path("var/lib/pihole-speedtest/install-manifest.txt")
+        manifest.write_text(self.harness.manifest().replace(SOURCE_COMMIT, "c" * 40))
+        (self.harness.path("state") / "fail-adapter").touch()
+        self.harness.clear_phases()
+        result = self.harness.run("install-all")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.harness.phases(), ["install_pihole_adapter.sh"])
+        self.assertTrue(self.harness.path("opt/pihole-speedtest").is_dir())
+
+    def test_adapter_only_healthy_repeat_does_not_upgrade_or_install(self):
+        self.install_all()
+        self.harness.clear_phases()
+        result = self.harness.run("install-adapter")
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.harness.phases(), [])
+
+    def test_adapter_only_stale_record_repair_never_touches_the_companion(self):
+        self.install_all()
+        self.restore_adapter_files()
+        manifest = self.harness.path("var/lib/pihole-speedtest/install-manifest.txt")
+        manifest.write_text(self.harness.manifest().replace(SOURCE_COMMIT, "c" * 40))
+        self.harness.clear_phases()
+        result = self.harness.run("install-adapter")
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(self.harness.phases(), ["install_pihole_adapter.sh"])
+        self.assertIn(f"source_commit={'c' * 40}", self.harness.manifest())
+
+    def test_pending_reconciliation_blocks_all_bootstrap_mutations(self):
+        pending = self.harness.path("var/lib/pihole-speedtest-adapter-recovery/reconciliation.pending.json")
+        pending.parent.mkdir(parents=True, exist_ok=True)
+        pending.write_text("{}")
+        for action in ("install-all", "install-adapter", "remove-adapter", "uninstall-all", "install", "uninstall"):
+            result = self.harness.run(action)
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIn("Interrupted adapter reconciliation", result.stdout)
+        self.assertEqual(self.harness.phases(), [])
+
     def test_install_all_requires_exactly_one_enabled_timer(self):
         self.install_all()
         extra = "pihole-speedtest-legacy.timer"

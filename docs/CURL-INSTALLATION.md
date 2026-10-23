@@ -441,6 +441,12 @@ Installation refuses to continue unless all of the following are true:
 The optional adapter retains its stricter Pi-hole Web v6.6 layout and checksum
 gates.
 
+If `install-all 6/7: Verify the sidebar adapter` stops with `STOP: Installed
+sidebar does not match the adapter manifest.`, the companion and its data are
+unaffected. Do not edit `sidebar.lp`, delete manifests or uninstall the
+companion. Follow [adapter recovery](ADAPTER-RECOVERY.md), which covers the
+verified adapter-only repair available from a newer approved release.
+
 ## Preservation and recovery
 
 Default uninstall creates and verifies an online SQLite recovery copy before
@@ -482,3 +488,18 @@ on September 26, 2026 with SQLite integrity `ok` and unchanged settings SHA-256
 Stable `v1.0.6` was published from the same accepted commit with byte-identical
 assets.  The ordinary runner verified its bootstrap, passed all seven
 installation checks, and exited `0` on the Raspberry Pi.
+
+## Stale adapter recovery and upgrade caution
+
+The new source reconciliation path addresses an installed flag whose sidebar is
+already restored and whose two adapter pages are absent. It retains the complete
+checksum-pinned bootstrap chain. See [adapter recovery](ADAPTER-RECOVERY.md) for
+checks, evidence, pending-operation recovery and release/deployment procedure.
+Older release assets remain unchanged and do not contain this fix.
+
+Use a newly verified bootstrap's `install-adapter` for an adapter-only repair.
+A new source commit passed to `install-all` triggers the existing companion
+uninstall/reinstall path, including service stops/restarts and environment-file
+recreation. Database and settings are preserved and checked, but custom TLS or
+environment configuration needs review before that full upgrade. Never manually
+delete recovery manifests or edit `sidebar.lp` to get past a failed verification.

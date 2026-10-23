@@ -184,3 +184,12 @@ Verified outcomes:
 - both created pages were removed;
 - the live sidebar checksum remained unchanged;
 - FTL continued listening on port 53 and Pi-hole blocking remained enabled.
+
+## Stale recorded state
+
+A fully restored original sidebar with both pages missing can now be reconciled
+by the guarded installer using the historical recovery manifest. All partial or
+unknown states still fail closed. See [adapter recovery](ADAPTER-RECOVERY.md) for
+exact checks, timestamped evidence, interruption handling, rollback and the
+checksum-verified adapter-only repair procedure. Do not manually delete manifests
+or modify `sidebar.lp` to bypass verification.
