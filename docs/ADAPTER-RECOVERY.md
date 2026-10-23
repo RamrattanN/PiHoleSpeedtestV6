@@ -36,6 +36,11 @@ October 17, 2026, the restored sidebar's modification time is October 22, 2026,
 and FTL still serves the installed `frame-src` policy. FTL configuration lives
 outside the web checkout, so an update reset would not remove it.
 
+A future Pi-hole update or repair may therefore reset the web files again. The
+deployment record would then be stale in the same way. Rerun the
+checksum-verified `install-adapter` repair while the release is still approved,
+and treat any other state as a refusal that needs review.
+
 ## Automatic repair boundary
 
 `install-all` first verifies a recorded adapter. If verification fails, it calls
@@ -97,14 +102,23 @@ Without explicit options, `install-adapter` reads `pihole_origin` and
 `companion_url` from the deployment manifest. The repair refuses unless the
 companion URL equals the one recorded in the historical recovery manifest.
 
-On the current production state, the stale `pihole_adapter_installed=true`
-record has no pending marker, the restored v6.6.1 sidebar and both pages are
-missing, and the v6.6 recovery evidence is intact. `install-adapter` sees that
-the recorded adapter fails verification and enters the checks above. When they
-pass, it journals, reconciles and reinstalls without reinstalling the companion.
-The pages come from the verified bundle's adapter code, because the installed
-v1.0.6 companion predates v6.6.1 support.
-If any check fails, it stops before changing anything.
+For a stale `pihole_adapter_installed=true` record with no pending marker, an
+approved restored sidebar, both pages missing and intact recovery evidence,
+`install-adapter` sees that the recorded adapter fails verification and enters
+the checks above. When they pass, it journals, reconciles and reinstalls
+without reinstalling the companion. If any check fails, it stops before
+changing anything. The pages come from the verified bundle's adapter code, so a
+v1.0.6 companion, which predates v6.6.1 support, works.
+
+**Production repair, October 23, 2026.** This was the production state on
+Pi-hole Web v6.6.1, with v6.6 recovery evidence from September 26, 2026. The
+checksum-verified `v1.0.7-rc.1` bootstrap's `install-adapter` reconciled it.
+Both pages were installed, the Speedtest sidebar returned and passed browser
+acceptance, and the existing 1.0.6 companion was kept. The new recovery
+manifest is
+`/var/lib/pihole-speedtest-adapter-recovery/20261023T050127170525Z/manifest.json`;
+the historical evidence is retained alongside it. See the
+[1.0.7 release notes](RELEASE-NOTES-1.0.7.md#raspberry-pi-acceptance-october-23-2026).
 
 ### Post-installation acceptance
 

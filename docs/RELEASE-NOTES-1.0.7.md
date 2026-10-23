@@ -1,13 +1,50 @@
 # Version 1.0.7 release notes
 
-**Status:** prepared, unpublished.  Stable `v1.0.6` remains the published
-release until `v1.0.7` passes prerelease acceptance and is published from the
-same release commit with byte-identical assets.
+**Status:** prerelease
+[`v1.0.7-rc.1`](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7-rc.1)
+is published, and its adapter-only repair passed Raspberry Pi acceptance on
+October 23, 2026.  **Stable `v1.0.7` is not published.**  Stable `v1.0.6`
+remains the latest release, and the ordinary one-line runner still selects it.
+Stable `v1.0.7` must be published from the same release commit with
+byte-identical assets.
 
 Version 1.0.7 is a recovery and compatibility release for the Pi-hole sidebar
 adapter.  The companion service, collector, storage, schedule and web UI are
 unchanged from 1.0.6 apart from the reported version.  A healthy 1.0.6
 installation does not need a companion reinstall to receive these fixes.
+
+## Prerelease trust anchors
+
+| Item | Value |
+|---|---|
+| Prerelease tag | `v1.0.7-rc.1` (published October 23, 2026, marked prerelease) |
+| Release commit (tag target) | `fc351cfefc3c7a7d3861fbe5070c296b25d350c7` |
+| Application source commit | `63ccf3ecdf3da456d9a93b11c2c21c74b581d541` |
+| Bundle asset commit | `df141ae75424205ba761008d79e26fcae71201e8` |
+| Bundle SHA-256 (1,163,537 bytes) | `deeec68c6e5db7cf02743182189332c1f8001a2cb350a8dbf3880481a497921f` |
+| Bootstrap SHA-256 | `6ece7587dd30aecbe81cea1d861cb80fe01e88c00006f8bd70cc955d183be699` |
+| Bootstrap checksum file SHA-256 | `0755a24cdf70354995846738a996ce103ec8aebf0c1e0888b47391d74a5ad8bd` |
+
+The prerelease carries exactly the bootstrap and its checksum file.  After
+publication both were downloaded independently and matched these values.  The
+bootstrap was byte-identical to the copy at the release commit, and the bundle
+from the asset commit matched its SHA-256 and size.
+
+## Raspberry Pi acceptance (October 23, 2026)
+
+The production Pi ran Pi-hole Web v6.6.1 with the stale
+`pihole_adapter_installed=true` record and both pages absent.  The
+checksum-verified `v1.0.7-rc.1` bootstrap repaired it with `install-adapter`:
+
+- the stale record was reconciled against the September 26, 2026 v6.6 evidence;
+- both adapter pages were installed, and the Speedtest sidebar entries returned;
+- the new recovery manifest is
+  `/var/lib/pihole-speedtest-adapter-recovery/20261023T050127170525Z/manifest.json`;
+- the owner confirmed in the browser that Speedtest appears and works as
+  expected;
+- Pi-hole FTL, the companion dashboard and the collection timer were active,
+  and the companion's HTTPS endpoint returned HTTP 200;
+- the existing 1.0.6 companion was kept and was not reinstalled.
 
 ## Changes
 
@@ -55,11 +92,8 @@ recreates the environment file, none of which this repair needs.
 `install-adapter` does not reinstall, restart or reconfigure the companion, and
 it does not touch its database, settings or TLS files.
 
-The reviewed values come from the release-preparation pull request's validated
-Stage C summary and must match the published release record:
-
-- `RELEASE_COMMIT`: the release commit that holds the rendered bootstrap;
-- `BOOTSTRAP_SHA256`: the SHA-256 of `pihole-speedtest-v6-bootstrap.sh`.
+The pinned values below are the verified `v1.0.7-rc.1` trust anchors above.
+Stable `v1.0.7` will use the same release commit and bootstrap.
 
 ### 1. Read-only preflight
 
@@ -85,14 +119,13 @@ sudo grep -E '^(source_commit|pihole_origin|companion_url|pihole_adapter_[a-z_]+
 
 ### 2. Verified adapter-only repair
 
-Replace both placeholders with the reviewed values.  The bootstrap is
-downloaded from its immutable release commit and checked before anything runs.
-The bootstrap then verifies the bundle, and `sudo` is used only after both
-checks pass.
+The bootstrap is downloaded from its immutable release commit and checked
+before anything runs.  The bootstrap then verifies the bundle, and `sudo` is
+used only after both checks pass.
 
 ```bash
-release_commit='RELEASE_COMMIT'
-bootstrap_sha256='BOOTSTRAP_SHA256'
+release_commit='fc351cfefc3c7a7d3861fbe5070c296b25d350c7'
+bootstrap_sha256='6ece7587dd30aecbe81cea1d861cb80fe01e88c00006f8bd70cc955d183be699'
 bootstrap="$(mktemp -d)/pihole-speedtest-v6-bootstrap.sh" && \
 curl --fail --show-error --silent --location \
   --proto '=https' --tlsv1.2 \
@@ -165,6 +198,21 @@ Then confirm, read-only:
   header policy.  Measurements and recovery evidence are kept.
 
 ## Known limitations
+
+Observations from acceptance (non-blocking):
+
+- **Cleanup warnings.**  After the successful repair, the bootstrap's
+  temporary-directory cleanup printed permission-denied warnings.  The likely
+  cause is that root-run Python imports from the bootstrap's user-owned bundle
+  copy write root-owned `__pycache__` directories, which the unprivileged
+  cleanup cannot remove.  The repair result is unaffected.  Leftover temporary
+  files are cleared by normal `/tmp` cleanup.
+- **`pi.hole` on the Pi itself.**  `pi.hole` did not resolve in a shell on the
+  Pi itself.  The installer reaches Pi-hole and the companion through
+  loopback, so this did not affect the repair.  The companion returned HTTP 200
+  through `127.0.0.1`.  No DNS change was made.
+
+Release limitations:
 
 - Only Pi-hole Web `v6.6` and `v6.6.1` are accepted.  A later Web release is
   refused until it is reviewed and added.

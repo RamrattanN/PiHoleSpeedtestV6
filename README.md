@@ -12,9 +12,12 @@ sidebar pages open the dashboard from inside the Pi-hole web interface.
 > bootstrap assets.  Earlier release candidates remain published as historical
 > evidence.  See the [acceptance record](docs/CURL-INSTALLATION.md#acceptance).
 >
-> Version 1.0.7, a sidebar-adapter recovery and Pi-hole Web v6.6.1
-> compatibility release, is prepared but unpublished.  See the
-> [1.0.7 release notes](docs/RELEASE-NOTES-1.0.7.md).
+> Prerelease
+> [v1.0.7-rc.1](https://github.com/RamrattanN/PiHoleSpeedtestV6/releases/tag/v1.0.7-rc.1)
+> adds sidebar-adapter recovery and Pi-hole Web v6.6.1 support.  On
+> October 23, 2026 it repaired the production sidebar with an adapter-only
+> install that kept the existing companion.  Stable v1.0.7 is not yet
+> published.  See the [1.0.7 release notes](docs/RELEASE-NOTES-1.0.7.md).
 
 ## What it does
 
@@ -171,8 +174,9 @@ integration.  The product provides:
 - automated unit tests and pull-request CI.
 
 The approved companion service, 15-minute collection timer, and reversible
-Pi-hole Web v6.6 sidebar adapter are running on the verified Raspberry Pi 3
-baseline.  Version `1.0.5` replaced the irregular mixed-cadence default with a
+sidebar adapter are running on the verified Raspberry Pi 3 baseline.  The
+adapter was repaired on Pi-hole Web v6.6.1 with `v1.0.7-rc.1` on October 23,
+2026.  Version `1.0.5` replaced the irregular mixed-cadence default with a
 Pi-hole-style 24-hour chart, responsive hourly grid, uniform bar geometry, and
 blank outage intervals while retaining zoom access to older history.  It also
 corrects post-install cleanup so a successful installation cannot be reported
