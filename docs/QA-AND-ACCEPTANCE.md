@@ -140,6 +140,9 @@ stored at
   actions until verified `recover` either restores the original records or
   finalizes a fully installed adapter, and refusal of every partial or
   modified state (see [adapter recovery](ADAPTER-RECOVERY.md)).
+- run the adapter against Web v6.6 and v6.6.1 (the exact allowlist), with v6.6
+  recovery evidence on a v6.6.1 installation over HTTPS; refuse every other
+  release string and any unexpected sidebar checksum.
 
 The disposable installed-tree rehearsal passed on September 22, 2026 local
 time.  Installation, checksum validation, exact removal, live-sidebar

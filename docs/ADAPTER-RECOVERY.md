@@ -27,8 +27,14 @@ ls -la /var/log/pihole/
 
 Do not apply or drop a stash; the guarded installer recreates the pages. If
 this is the cause, later Pi-hole updates can produce the same state again. The
-reconciliation remains available only while Pi-hole Web is still v6.6 with the
-approved sidebar baseline; a newer Web release is refused by the version gate.
+reconciliation remains available only while Pi-hole Web is an approved release
+(v6.6 or v6.6.1) with the approved sidebar baseline; any other release is
+refused by the version gate.
+
+The production evidence is consistent with this. Web v6.6.1 was published on
+October 17, 2026, the restored sidebar's modification time is October 22, 2026,
+and FTL still serves the installed `frame-src` policy. FTL configuration lives
+outside the web checkout, so an update reset would not remove it.
 
 ## Automatic repair boundary
 
@@ -42,9 +48,11 @@ state, without upgrading the companion. All these conditions must pass:
   write permission; paths cannot traverse symlinks or escape the expected tree.
 - The recovery schema, Web version, exact paths, checksums, sidebar backup,
   deployment snapshots and both header-policy snapshots are consistent.
-- The sidebar exactly matches the approved Web v6.6 original checksum, contains
-  no adapter markers, and neither page exists (including dangling symlinks).
-- Live Web is v6.6; the companion is healthy, dashboard and timer are active and
+- The sidebar exactly matches the approved original checksum (shared by Web
+  v6.6 and v6.6.1), contains no adapter markers, and neither page exists
+  (including dangling symlinks).
+- Live Web is exactly v6.6 or v6.6.1; the historical manifest may record either
+  approved release and is accepted as written. The companion is healthy, dashboard and timer are active and
   enabled, exactly one collection timer is enabled, and FTL, Pi-hole status and
   the web interface pass their checks.
 - The historical companion URL matches the repair URL, the companion permits
@@ -84,6 +92,37 @@ SQLite database, settings, environment and TLS files untouched. It configures
 Pi-hole web headers through the existing FTL config command; allow for web/FTL
 configuration reload effects and verify DNS and web service after approval on
 the real device. It does not explicitly restart companion services or timers.
+
+Without explicit options, `install-adapter` reads `pihole_origin` and
+`companion_url` from the deployment manifest. The repair refuses unless the
+companion URL equals the one recorded in the historical recovery manifest.
+
+On the current production state, the stale `pihole_adapter_installed=true`
+record has no pending marker, the restored v6.6.1 sidebar and both pages are
+missing, and the v6.6 recovery evidence is intact. `install-adapter` sees that
+the recorded adapter fails verification and enters the checks above. When they
+pass, it journals, reconciles and reinstalls without reinstalling the companion.
+The pages come from the verified bundle's adapter code, because the installed
+v1.0.6 companion predates v6.6.1 support.
+If any check fails, it stops before changing anything.
+
+### Post-installation acceptance
+
+After an approved repair, check:
+
+- the output ends with `LIVE PI-HOLE SIDEBAR ADAPTER INSTALLED`, and no
+  `reconciliation.pending.json` remains;
+- both deployment manifests name the same new recovery manifest, which records
+  the live Web release, and `pihole_adapter_reconciliation` names the journal
+  containing `completed.json`;
+- the historical `20260926T031216666609Z` directory is unchanged and still
+  records `v6.6`;
+- `Speedtest > Overview` and `Setup` render inside Pi-hole over HTTPS, the
+  companion still sends `frame-ancestors 'self' https://pi.hole`, and Pi-hole
+  still sends `frame-src https://pi.hole:8765`;
+- FTL is active, DNS resolves, blocking is enabled, the dashboard health check
+  reports `ok`, exactly one collection timer is enabled and active, and the
+  database integrity check and settings checksum are unchanged.
 
 ## Interrupted or failed repair
 
@@ -167,7 +206,7 @@ do not combine them with the repair itself:
     /var/lib/pihole-speedtest-adapter-recovery/20260926T031216666609Z/*
   ```
 
-- **Sidebar baseline.** `pihole -v` must report Web `v6.6`, and
+- **Sidebar baseline.** `pihole -v` must report Web `v6.6` or `v6.6.1`, and
   `sha256sum /var/www/html/admin/scripts/lua/sidebar.lp` must equal the approved
   `83943cbdf5258fe43e819108a5135e070d6742e273753ba398a8d28e1a008fdb`.
 - **HTTPS origin and frame policy.** Record the installed `pihole_origin` and

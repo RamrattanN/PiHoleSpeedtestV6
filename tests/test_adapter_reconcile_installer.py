@@ -56,6 +56,9 @@ def executable(path, content):
 class _Sandbox(unittest.TestCase):
     origin = ORIGIN
     companion = COMPANION
+    # Web releases the *installed* companion's adapter accepts; None means the
+    # same code as the bundle under test.
+    installed_supports = None
 
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
@@ -145,17 +148,33 @@ class _Sandbox(unittest.TestCase):
         scheme = self.companion.split(":", 1)[0]
         venv = self.t / "opt/pihole-speedtest/venv/bin"
         venv.mkdir(parents=True)
-        (bin_dir / "python3").symlink_to(python)
+        installed_src = self.bundle / "src"
+        if self.installed_supports is not None:
+            installed_src = self.t / "installed-src"
+            shutil.copytree(self.bundle / "src", installed_src)
+            adapter = installed_src / "pihole_speedtest/adapter.py"
+            text = adapter.read_text()
+            gate = 'SUPPORTED_WEB_VERSIONS = frozenset({"v6.6", "v6.6.1"})'
+            self.assertIn(gate, text)
+            adapter.write_text(text.replace(gate, f"SUPPORTED_WEB_VERSIONS = {set(self.installed_supports)!r}"))
+        # The installer runs the bundle's install_adapter through python3 -I.
+        executable(bin_dir / "python3", f"""
+            #!{python}
+            import os, signal, sys
+            args = sys.argv[1:]
+            if (os.path.exists("{state}/kill-during-install") and args[:2] == ["-I", "-"]
+                    and args[-1] == "{self.recovery}"):
+                os.killpg(os.getpgrp(), signal.SIGKILL)  # simulated power loss
+            os.execv("{python}", ["{python}", *args])
+            """)
         executable(venv / "python", f"""
             #!/bin/sh
-            PYTHONPATH="{self.bundle}/src" exec "{python}" "$@"
+            PYTHONPATH="{installed_src}" exec "{python}" "$@"
             """)
         executable(venv / "pihole-speedtest", f"""
             #!{python}
-            import os, signal, sys
-            sys.path.insert(0, "{self.bundle}/src")
-            if sys.argv[1:2] == ["adapter-install"] and os.path.exists("{state}/kill-during-install"):
-                os.killpg(os.getpgrp(), signal.SIGKILL)  # simulated power loss
+            import sys
+            sys.path.insert(0, "{installed_src}")
             from pihole_speedtest.cli import main
             sys.exit(main())
             """)
@@ -312,6 +331,24 @@ class _Sandbox(unittest.TestCase):
         return self.recovery / "reconciliation.pending.json"
 
 
+    # Post-installation interruption: records name the new manifest, pending remains.
+
+    def interrupt_after_record(self):
+        (self.state / "kill-after-record").touch()
+        result = self.install()
+        (self.state / "kill-after-record").unlink()
+        self.assertEqual(result.returncode, -9, result.stdout)
+        new = Path(self.value("pihole_adapter_manifest"))
+        self.assertNotEqual(new, self.historical)
+        for content in self.records().values():
+            self.assertIn(f"pihole_adapter_manifest={new}\n".encode(), content)
+        self.assertTrue(self.pending.is_file())
+        journal = self.journals()[-1]
+        self.assertEqual(json.loads(self.pending.read_text())["journal"], str(journal))
+        self.assertFalse((journal / "completed.json").exists())
+        return new, journal
+
+
 class GuardedInstallerReconciliationTests(_Sandbox):
 
     def test_restored_state_is_reconciled_and_reinstalled_with_new_evidence(self):
@@ -464,22 +501,6 @@ class GuardedInstallerReconciliationTests(_Sandbox):
                 for flag in self.state.iterdir():
                     flag.unlink()
 
-
-    # Post-installation interruption: records name the new manifest, pending remains.
-
-    def interrupt_after_record(self):
-        (self.state / "kill-after-record").touch()
-        result = self.install()
-        (self.state / "kill-after-record").unlink()
-        self.assertEqual(result.returncode, -9, result.stdout)
-        new = Path(self.value("pihole_adapter_manifest"))
-        self.assertNotEqual(new, self.historical)
-        for content in self.records().values():
-            self.assertIn(f"pihole_adapter_manifest={new}\n".encode(), content)
-        self.assertTrue(self.pending.is_file())
-        (journal,) = self.journals()
-        self.assertFalse((journal / "completed.json").exists())
-        return new, journal
 
     def test_kill_point_is_after_both_records_and_before_completion(self):
         script = (ROOT / "scripts/install_pihole_adapter.sh").read_text()
@@ -660,6 +681,136 @@ class HttpsReconciliationTests(_Sandbox):
         self.assertFalse(self.pending.exists())
         self.assert_preserved()
 
+
+
+class ProductionShapedUpgradeTests(_Sandbox):
+    """Historical v6.6 evidence, live Web upgraded to v6.6.1, HTTPS origins."""
+
+    origin = "https://pi.hole"
+    companion = "https://pi.hole:8765"
+    installed_supports = ("v6.6",)  # companion v1.0.6 (fea0efe) on the Pi
+
+    def setUp(self):
+        super().setUp()
+        self.upgrade("v6.6.1")
+
+    def upgrade(self, version):
+        (self.state / "web-version").write_text(version)
+
+    def manifest(self, path):
+        return json.loads(Path(path).read_text())
+
+    def assert_tls_requests(self):
+        requests = [json.loads(line) for line in (self.t / "curl.log").read_text().splitlines()]
+        pihole = [r for r in requests if r[-1].startswith("https://pi.hole/")]
+        self.assertIn("https://pi.hole/admin/speedtest", [r[-1] for r in pihole])
+        for request in pihole:
+            self.assertEqual(request[request.index("--resolve") + 1], "pi.hole:443:127.0.0.1")
+        self.assertFalse([r for r in requests if r[-1].startswith("http://")])
+
+    def test_v66_evidence_reconciles_on_v661_then_installs_and_removes(self):
+        self.assertEqual(self.manifest(self.historical)["web_version"], "v6.6")
+        (self.t / "curl.log").unlink()
+        result = self.install()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assert_tls_requests()
+        new = Path(self.value("pihole_adapter_manifest"))
+        self.assertEqual(self.manifest(new)["web_version"], "v6.6.1")
+        # The historical v6.6 evidence is accepted as written, never rewritten.
+        self.assertEqual(self.manifest(self.historical)["web_version"], "v6.6")
+        self.assert_preserved()
+        (journal,) = self.journals()
+        self.assertTrue((journal / "completed.json").is_file())
+        self.assertIn("frame-src https://pi.hole:8765", "\n".join(self.headers()))
+
+        removal = self.remove()
+        self.assertEqual(removal.returncode, 0, removal.stdout)
+        self.assertEqual(self.sidebar.read_text(), SIDEBAR)
+        self.assertEqual(self.headers(), HEADERS)
+
+        # A plain install on v6.6.1 after removal records the live release.
+        fresh = self.install()
+        self.assertEqual(fresh.returncode, 0, fresh.stdout)
+        self.assertEqual(self.manifest(self.value("pihole_adapter_manifest"))["web_version"], "v6.6.1")
+        self.assertEqual(len(self.journals()), 1)
+        self.assertEqual(self.remove().returncode, 0)
+        self.assertEqual(self.sidebar.read_text(), SIDEBAR)
+        self.assert_preserved()
+
+    def test_unapproved_releases_or_sidebar_are_refused_before_any_change(self):
+        cases = {f"Web {v or 'unknown'}": (v, None) for v in
+                 ("v6.6.2", "v6.7", "v6.5", "v6.6.1-rc1", "v6.6.10", "")}
+        cases["unexpected sidebar on v6.6.1"] = ("v6.6.1", "<!-- local -->\n")
+        for label, (version, sidebar_suffix) in cases.items():
+            with self.subTest(label):
+                self.upgrade(version)
+                if sidebar_suffix:
+                    self.sidebar.write_text(SIDEBAR + sidebar_suffix)
+                records, web = self.records(), self.tree(self.web)
+                recovery = sorted(self.recovery.iterdir())
+                result = self.install()
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("STOP:", result.stdout)
+                self.assertEqual(self.records(), records)
+                self.assertEqual(self.tree(self.web), web)
+                self.assertEqual(sorted(self.recovery.iterdir()), recovery)
+                self.sidebar.write_text(SIDEBAR)
+        self.upgrade("v6.6.1")
+        self.assertEqual(self.install().returncode, 0)
+
+    def test_failed_reinstall_on_v661_restores_the_stale_record(self):
+        (self.state / "no-frame-policy").touch()
+        result = self.install()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Pre-reconciliation deployment records restored", result.stdout)
+        self.assertEqual(self.records(), self.stale)
+        self.assertEqual(self.headers(), self.installed_headers)
+        self.assertFalse(self.pending.exists())
+        self.assert_preserved()
+
+    def test_interruptions_on_v661_recover_and_repeat_safely(self):
+        (self.state / "kill-during-install").touch()
+        self.assertEqual(self.install().returncode, -9)
+        (self.state / "kill-during-install").unlink()
+        restored = self.helper("recover")
+        self.assertIn("Pre-reconciliation deployment records restored", restored.stdout)
+        self.assertEqual(self.records(), self.stale)
+
+        new, journal = self.interrupt_after_record()
+        self.assertEqual(self.manifest(new)["web_version"], "v6.6.1")
+        finalized = self.helper("recover")
+        self.assertEqual(finalized.returncode, 0, finalized.stdout)
+        self.assertIn("Verified adapter installation finalized", finalized.stdout)
+        records, web = self.records(), self.tree(self.web)
+        self.assertIn("nothing to recover", self.helper("recover").stdout)
+        self.assertEqual((self.records(), self.tree(self.web)), (records, web))
+        self.assertEqual(self.remove().returncode, 0)
+        self.assertEqual(self.headers(), HEADERS)
+        self.assert_preserved()
+
+    def test_tampered_historical_evidence_is_refused_on_v661(self):
+        manifest = self.historical.read_bytes()
+        value = json.loads(manifest)
+        value["web_version"] = "v6.7"
+        self.historical.write_text(json.dumps(value))
+        records = self.records()
+        result = self.install()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Adapter reconciliation refused", result.stdout)
+        self.assertEqual(self.records(), records)
+        self.assertEqual(self.journals(), [])
+        self.historical.write_bytes(manifest)
+
+        self.interrupt_after_record()
+        before = self.historical.with_name("pihole-web-headers.before.json")
+        content = before.read_bytes()
+        before.write_text(json.dumps(HEADERS, indent=1))  # same value, different bytes
+        refused = self.helper("recover")
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("evidence changed", refused.stdout)
+        self.assertTrue(self.pending.is_file())
+        before.write_bytes(content)
+        self.assertIn("finalized", self.helper("recover").stdout)
 
 if __name__ == "__main__":
     unittest.main()

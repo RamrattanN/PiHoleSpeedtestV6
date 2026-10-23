@@ -121,7 +121,7 @@ The tag rules, uninstall form, and full release sequence are in the
 
 - Pi-hole Core v6 with systemd on an `aarch64` or `x86_64` Debian-family host,
   such as Raspberry Pi OS 64-bit;
-- Pi-hole Web v6.6 with its approved sidebar for the sidebar pages;
+- Pi-hole Web v6.6 or v6.6.1 with its approved sidebar for the sidebar pages;
 - Python 3.9 or newer;
 - the official Ookla CLI at `/usr/bin/speedtest`;
 - a regular user account with `sudo` rights.
@@ -163,7 +163,7 @@ integration.  The product provides:
   and reset;
 - a verified SQLite recovery backup before every reset;
 - unprivileged systemd service and schedule assets;
-- a version-gated, recovery-backed Pi-hole Web v6.6 sidebar adapter;
+- a version-gated, recovery-backed Pi-hole Web v6.6 / v6.6.1 sidebar adapter;
 - automated unit tests and pull-request CI.
 
 The approved companion service, 15-minute collection timer, and reversible

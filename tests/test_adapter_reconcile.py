@@ -119,6 +119,24 @@ class ReconciliationTests(unittest.TestCase):
         with self.assertRaisesRegex(AdapterError, "symlink"):
             self.check()
 
+    def test_recorded_web_version_must_be_an_approved_release(self):
+        original = self.old.read_text()
+        for version in ("v6.6", "v6.6.1"):
+            manifest = json.loads(original)
+            manifest["web_version"] = version
+            self.old.write_text(json.dumps(manifest))
+            with self.subTest(version=version):
+                self.assertEqual(self.check(), self.old)
+        for version in ("v6.7", "v6.6.2", "v6.5", "", None):
+            manifest = json.loads(original)
+            manifest["web_version"] = version
+            self.old.write_text(json.dumps(manifest))
+            with self.subTest(version=version), self.assertRaisesRegex(
+                AdapterError, "schema, version or paths"
+            ):
+                self.check()
+        self.old.write_text(original)
+
     def test_unsafe_recorded_paths_or_checksums_are_refused(self):
         original = self.old.read_text()
         for field, value in (

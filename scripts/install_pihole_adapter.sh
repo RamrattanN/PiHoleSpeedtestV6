@@ -9,7 +9,7 @@ Usage: sudo scripts/install_pihole_adapter.sh \
   --companion-url URL \
   --pihole-origin ORIGIN
 
-Installs the version-gated Pi-hole Web v6.6 sidebar adapter, verifies the
+Installs the version-gated Pi-hole Web v6.6/v6.6.1 sidebar adapter, verifies the
 result, and records its recovery manifest in the companion deployment state.
 EOF
 }
@@ -211,7 +211,7 @@ for unit in "$dashboard_unit" "$timer_unit"; do
   fi
 done
 if [ "$(sha256sum "$sidebar" | awk '{print $1}')" != "$expected_sidebar_sha" ]; then
-  echo "STOP: Live Pi-hole v6.6 sidebar checksum is not approved." >&2
+  echo "STOP: Live Pi-hole Web sidebar checksum is not the approved baseline." >&2
   exit 1
 fi
 if grep -q 'PIHOLE-SPEEDTEST-V6' "$sidebar" || [ -e "$overview" ] || [ -L "$overview" ] || [ -e "$setup" ] || [ -L "$setup" ]; then
@@ -236,11 +236,15 @@ if match:
     print(match.group(1))
 PY
 )"
-if [ "$installed_web_version" != "v6.6" ]; then
-  echo "STOP: Installed Pi-hole Web version is not v6.6." >&2
-  echo "Detected: ${installed_web_version:-unknown}" >&2
-  exit 1
-fi
+# Exact releases only; each ships the sidebar pinned by expected_sidebar_sha.
+case "$installed_web_version" in
+  v6.6|v6.6.1) ;;
+  *)
+    echo "STOP: Installed Pi-hole Web version is not approved for the adapter (v6.6 or v6.6.1)." >&2
+    echo "Detected: ${installed_web_version:-unknown}" >&2
+    exit 1
+    ;;
+esac
 companion_curl /api/health | python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin).get("status") == "ok" else "STOP: Companion health is not ok")'
 if [ "$(systemctl list-unit-files --type=timer --state=enabled --no-legend 'pihole-speedtest*' | awk '{print $1}')" != "$timer_unit" ]; then
   echo "STOP: Expected exactly one enabled collection timer." >&2
@@ -310,12 +314,27 @@ rollback() {
 }
 trap rollback EXIT
 
-install_output="$($application_cli adapter-install \
-  --web-root "$web_root" \
-  --web-version v6.6 \
-  --companion-url "$companion_url" \
-  --pihole-origin "$pihole_origin" \
-  --backup-root "$backup_root")"
+# Generate pages with the verified bundle's adapter code: the installed companion
+# may predate the live Web release.  Removal only checks recorded checksums.
+install_output="$(python3 -I - "$source_root/src" "$web_root" "$installed_web_version" \
+  "$companion_url" "$pihole_origin" "$backup_root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, sys.argv[1])
+from pihole_speedtest.adapter import AdapterError, install_adapter
+
+web_root, web_version, companion_url, pihole_origin, backup_root = sys.argv[2:]
+try:
+    manifest = install_adapter(
+        Path(web_root), web_version, companion_url, pihole_origin, Path(backup_root)
+    )
+except AdapterError as exc:
+    raise SystemExit(f"STOP: Adapter installation refused: {exc}")
+print(json.dumps({"status": "installed", "manifest": str(manifest)}))
+PY
+)"
 adapter_manifest="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["manifest"])' <<<"$install_output")"
 if [ -z "$adapter_manifest" ] || [ ! -f "$adapter_manifest" ]; then
   echo "STOP: Adapter recovery manifest was not created." >&2

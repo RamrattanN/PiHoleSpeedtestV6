@@ -1,4 +1,4 @@
-# Pi-hole Web v6.6 adapter
+# Pi-hole Web v6.6 / v6.6.1 adapter
 
 ## Purpose
 
@@ -21,9 +21,12 @@ DNS, or make Pi-hole responsible for collection and scheduling.
 
 ## Supported boundary
 
-The first adapter supports Pi-hole Web `v6.6` only.  Installation refuses:
+The adapter supports exactly Pi-hole Web `v6.6` and `v6.6.1`.  Installation
+refuses:
 
-- any other declared Web version;
+- any other declared Web version, including later v6.6.x or v6.x releases;
+- a live sidebar whose SHA-256 is not the approved
+  `83943cbdf5258fe43e819108a5135e070d6742e273753ba398a8d28e1a008fdb`;
 - a missing or unrecognized `scripts/lua/sidebar.lp` layout;
 - existing adapter markers;
 - pre-existing adapter page paths;
@@ -33,6 +36,40 @@ The installed Raspberry Pi layout passed disposable-copy validation and guarded
 live installation against the official v6.6 structure.  Future installation or
 repair work must reconfirm the live checksum and version immediately before any
 change.
+
+### Why v6.6.1 is supported
+
+Pi-hole Web v6.6.1 (published October 17, 2026) is a security and JavaScript
+patch release.  Its changes from v6.6 are limited to JavaScript, vendored
+Moment.js, `settings-dhcp.lp`, `settings-dns.lp` and CI files.  Every file the
+adapter patches or includes is byte-identical between the two tags, as checked
+against the upstream `pi-hole/web` repository:
+
+| File | SHA-256 (v6.6 and v6.6.1) |
+|---|---|
+| `scripts/lua/sidebar.lp` | `83943cbdf5258fe43e819108a5135e070d6742e273753ba398a8d28e1a008fdb` |
+| `scripts/lua/header_authenticated.lp` | `16d5a0247304daf7686509a3dfa420d36c4d3414bc1b1ebe5f97444137400c6a` |
+| `scripts/lua/header.lp` | `2f08ab5feb024a8110c9ab45a35c209c3c46a15f6ba92fcd065a53268b7efc4e` |
+| `scripts/lua/footer.lp` | `399ea89867464ed58948693412f79bf8db4f1b89e362e7964b512a89d0f25f51` |
+
+Support is an exact allowlist, not a version range.  Adding a release requires
+the same upstream comparison, a matching live sidebar checksum and new tests.
+
+### Recorded and live versions
+
+Each recovery manifest records the Web release that was live when it was
+created.  The installer gates on the live release, and new manifests record
+it.  Reconciliation, removal and recovery accept historical evidence recorded
+under any approved release and never rewrite it.  The production manifest from
+September 26, 2026 records `v6.6`, and it remains valid evidence on a Pi now
+running v6.6.1.  The sidebar checksum is checked independently of both versions.
+
+The guarded installer generates the pages with the adapter code from the
+checksum-verified release bundle, not the installed companion's CLI.  The
+production companion v1.0.6 accepts only `v6.6`, so this lets an adapter-only
+repair run on v6.6.1 without reinstalling the companion.  Removal and rollback
+still use the installed CLI, which checks only the checksums recorded in the
+manifest and has no version gate.
 
 ## Companion frame policy
 
@@ -123,8 +160,8 @@ the user's own Pi-hole.  The installer does not contain or assume a private
 network address.
 
 The installer fails closed unless the approved source and installed companion
-commits match, Pi-hole Web is exactly v6.6, the pristine sidebar checksum is
-recognized, the adapter targets are absent, both companion services are
+commits match, Pi-hole Web is exactly v6.6 or v6.6.1, the pristine sidebar
+checksum is recognized, the adapter targets are absent, both companion services are
 healthy, the companion frame policy permits the exact Pi-hole origin, and the
 Pi-hole header policy can be extended with the exact companion origin without
 replacing an existing `frame-src`.  It records the adapter recovery manifest in
@@ -145,7 +182,7 @@ update with an older sidebar copy.
 
 Before touching the live Pi-hole web tree:
 
-1. Confirm the installed Web version is still `v6.6`.
+1. Confirm the installed Web version is still `v6.6` or `v6.6.1`.
 2. Resolve the actual web root and sidebar path read-only.
 3. Copy the complete installed web tree to a disposable directory.
 4. Install and remove the adapter against that copy.
@@ -188,7 +225,8 @@ Verified outcomes:
 ## Stale recorded state
 
 A fully restored original sidebar with both pages missing can now be reconciled
-by the guarded installer using the historical recovery manifest. All partial or
+by the guarded installer using the historical recovery manifest, including v6.6
+evidence on a v6.6.1 installation. All partial or
 unknown states still fail closed. See [adapter recovery](ADAPTER-RECOVERY.md) for
 exact checks, timestamped evidence, interruption handling, rollback and the
 checksum-verified adapter-only repair procedure. Do not manually delete manifests
